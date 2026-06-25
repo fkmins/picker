@@ -210,7 +210,7 @@
 
     <script>
         // --- API CONFIGURATION ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwmJ11LLo-76FLOYrNAPSxrQsAltR-oEDxWCuwaBZ75NdhjxdLyLGEFKOrSudKLSww77g/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoX6ic4XRBNhZN0dMjxWbnUOivc3hOcMlhadOoyaoF9b6-Sc2R7efWQj24f4adIDh0/exec";
 
         let db = [], filtered = [], managerMode = false, reportedIds = new Set();
         let citySelectInstance, storeSelectInstance;
@@ -218,8 +218,46 @@
 
         let currentPage = 1;
         const PAGE_SIZE = 50;
-
         const loginTxt = "(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
+
+        // --- GLOBAL ERROR LOGGING UTILITIES ---
+        // Sends unexpected crashes directly to Google Sheet
+        function remoteLogError(msg, stack, details) {
+            const payload = {
+                action: "log_error",
+                message: String(msg || "Unknown UI Error"),
+                stack: String(stack || "N/A"),
+                details: String(details || "GitHub Frontend")
+            };
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            }).catch(e => console.error("Logger failed to reach server:", e)); 
+        }
+
+        // Global Catchers for completely unhandled browser crashes
+        window.onerror = function(message, source, lineno, colno, error) {
+            remoteLogError(message, error ? error.stack : `Line: ${lineno}`, `Source: ${source}`);
+        };
+        window.addEventListener('unhandledrejection', function(event) {
+            remoteLogError(event.reason, event.reason ? event.reason.stack : "N/A", "Unhandled Promise Rejection");
+        });
+
+        // Modifying Network Error to trigger remote logging automatically
+        const onNetworkError = (err, contextInfo) => {
+            setUILock(false);
+            const loader = document.getElementById('appLoader');
+            if (loader) {
+                loader.classList.add('slide-up');
+                setTimeout(() => { loader.style.display = 'none'; }, 700);
+            }
+            showToast("Network Error: " + (err.message || "Could not reach server."), true);
+            
+            // Send to Google Sheet Log Error
+            remoteLogError(err.message || "Fetch Error", err.stack, contextInfo || "API Request");
+        };
+
 
         const checkNA = (str) => {
             let val = String(str).trim().toUpperCase();
@@ -245,23 +283,16 @@
             else panel.classList.remove('ui-locked');
         }
 
-        const onNetworkError = (err) => {
-            setUILock(false);
-            const loader = document.getElementById('appLoader');
-            if (loader) {
-                loader.classList.add('slide-up');
-                setTimeout(() => { loader.style.display = 'none'; }, 700);
-            }
-            showToast("Network Error: " + (err.message || "Could not reach server."), true);
-        };
-
         // --- FETCH DATA ON LOAD ---
         window.onload = () => {
             citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
             storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
             
             fetch(`${SCRIPT_URL}?action=getData`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error("HTTP Status " + response.status);
+                    return response.json();
+                })
                 .then(d => {
                     const loader = document.getElementById('appLoader');
                     loader.classList.add('slide-up');
@@ -269,6 +300,7 @@
 
                     if (d && d.error) {
                         showToast("Failed To Load Data: " + d.error, true);
+                        remoteLogError(d.error, "N/A", "Initial Data Load - Server returned error obj");
                         return;
                     }
                     
@@ -277,7 +309,7 @@
                     citySelectInstance.clearOptions();
                     cities.forEach(c => citySelectInstance.addOption({value: c, text: c}));
                 })
-                .catch(onNetworkError);
+                .catch(err => onNetworkError(err, "Initial Data Load Fetch"));
         };
 
         function setMode(m) {
@@ -415,7 +447,10 @@
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(payload)
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("HTTP Status " + res.status);
+                return res.json();
+            })
             .then(res => {
                 if(res.status === "Success") {
                     showToast("Report Submitted Successfully");
@@ -423,14 +458,15 @@
                     db = backupDb;
                     reportedIds.delete(String(p.casperId));
                     render(); 
-                    showToast("Report Failed: " + res.error, true);
+                    showToast("Report Failed. See log.", true);
+                    remoteLogError(res.error, "N/A", "Backend rejected report submission");
                 }
             })
             .catch(err => {
                 db = backupDb;
                 reportedIds.delete(String(p.casperId));
                 render();
-                onNetworkError(err);
+                onNetworkError(err, "Report Submission Fetch");
             });
         }
 
@@ -439,35 +475,40 @@
             if (filtered.length === 0) return showToast("No Data To Export", true);
             
             setUILock(true);
-            let c = citySelectInstance.getValue(), 
-                s = storeSelectInstance.getValue(), 
-                f = (managerMode ? c : s) + " Pendency", 
-                h = managerMode ? c + " Summary" : s + " Pendency";
-            
-            const { jsPDF } = window.jspdf, doc = new jsPDF(), w = doc.internal.pageSize.getWidth();
-            let st = { halign: 'center', textColor: 0, lineColor: [0, 0, 0], lineWidth: .2, fontStyle: 'bold' };
-            let hst = { fillColor: [253, 253, 150], textColor: 0, lineColor: [0, 0, 0], lineWidth: .2 };
-            
-            doc.setFontSize(16).text(h.replace(/\b\w/g, l => l.toUpperCase()), w / 2, 15, { align: "center" });
-            
-            doc.setFontSize(9).text(loginTxt, w / 2, 22, { align: "center" });
-            
-            if (managerMode) {
-                let sd = Object.entries(filtered.reduce((a, b) => { a[b.clusterManager] = (a[b.clusterManager] || 0) + 1; return a }, {})).map(([k, v]) => [k, v]).sort();
-                doc.autoTable({ head: [['CLUSTER MANAGER', 'PENDENCY']], body: sd, startY: 28, theme: 'grid', styles: st, headStyles: hst });
+            try {
+                let c = citySelectInstance.getValue(), 
+                    s = storeSelectInstance.getValue(), 
+                    f = (managerMode ? c : s) + " Pendency", 
+                    h = managerMode ? c + " Summary" : s + " Pendency";
                 
-                doc.addPage();
-                doc.setFontSize(14).text("Entire Pendency", w / 2, 15, { align: "center" });
-                doc.setFontSize(9).text(loginTxt, w / 2, 21, { align: "center" });
+                const { jsPDF } = window.jspdf, doc = new jsPDF(), w = doc.internal.pageSize.getWidth();
+                let st = { halign: 'center', textColor: 0, lineColor: [0, 0, 0], lineWidth: .2, fontStyle: 'bold' };
+                let hst = { fillColor: [253, 253, 150], textColor: 0, lineColor: [0, 0, 0], lineWidth: .2 };
                 
-                let dd = filtered.sort((a, b) => a.clusterManager.localeCompare(b.clusterManager)).map(i => [i.clusterManager, i.darkStore, i.name, i.casperId]);
-                doc.autoTable({ head: [['CM', 'STORE', 'PICKER', 'ID']], body: dd, startY: 28, theme: 'grid', styles: { ...st, fontSize: 8 }, headStyles: hst });
-            } else {
-                doc.autoTable({ head: [['PICKER NAME', 'CASPER ID']], body: filtered.map(i => [i.name, i.casperId]), startY: 30, theme: 'grid', styles: st, headStyles: hst });
+                doc.setFontSize(16).text(h.replace(/\b\w/g, l => l.toUpperCase()), w / 2, 15, { align: "center" });
+                doc.setFontSize(9).text(loginTxt, w / 2, 22, { align: "center" });
+                
+                if (managerMode) {
+                    let sd = Object.entries(filtered.reduce((a, b) => { a[b.clusterManager] = (a[b.clusterManager] || 0) + 1; return a }, {})).map(([k, v]) => [k, v]).sort();
+                    doc.autoTable({ head: [['CLUSTER MANAGER', 'PENDENCY']], body: sd, startY: 28, theme: 'grid', styles: st, headStyles: hst });
+                    
+                    doc.addPage();
+                    doc.setFontSize(14).text("Entire Pendency", w / 2, 15, { align: "center" });
+                    doc.setFontSize(9).text(loginTxt, w / 2, 21, { align: "center" });
+                    
+                    let dd = filtered.sort((a, b) => a.clusterManager.localeCompare(b.clusterManager)).map(i => [i.clusterManager, i.darkStore, i.name, i.casperId]);
+                    doc.autoTable({ head: [['CM', 'STORE', 'PICKER', 'ID']], body: dd, startY: 28, theme: 'grid', styles: { ...st, fontSize: 8 }, headStyles: hst });
+                } else {
+                    doc.autoTable({ head: [['PICKER NAME', 'CASPER ID']], body: filtered.map(i => [i.name, i.casperId]), startY: 30, theme: 'grid', styles: st, headStyles: hst });
+                }
+                doc.save(f + ".pdf");
+                setUILock(false);
+                showToast("PDF Downloaded");
+            } catch (err) {
+                setUILock(false);
+                showToast("Failed to generate PDF", true);
+                remoteLogError(err.message, err.stack, "PDF Generation Error");
             }
-            doc.save(f + ".pdf");
-            setUILock(false);
-            showToast("PDF Downloaded");
         }
 
         // --- EXPORT TO GSHEET VIA FETCH POST ---
@@ -503,7 +544,10 @@
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(payload)
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("HTTP Status " + res.status);
+                return res.json();
+            })
             .then(data => {
                 b.innerText = "Open As Google Sheet"; 
                 setUILock(false); 
@@ -512,12 +556,13 @@
                     showToast("Sheet Generated");
                     window.open(data.url, '_blank');
                 } else {
-                    showToast("Failed To Create Sheet: " + (data.error || data.url), true);
+                    showToast("Failed To Create Sheet. See Log.", true);
+                    remoteLogError(data.error || data.url, "N/A", "Backend rejected GSheet Export");
                 }
             })
             .catch(err => {
                 b.innerText = "Open As Google Sheet"; 
-                onNetworkError(err);
+                onNetworkError(err, "GSheet Export Fetch");
             });
         }
     </script>
