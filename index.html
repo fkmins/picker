@@ -4,9 +4,12 @@
     <meta charset="utf-8">
     <title>Picker Pendency Dashboard</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#4f46e5">
+    
+    <!-- Explicit Favicon declaration for GitHub Pages -->
     <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,39 +19,80 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <style>
-        ::-webkit-scrollbar { display: none !important; }
-        * { scrollbar-width: none !important; -ms-overflow-style: none !important; box-sizing: border-box; }
+        /* Hide Scrollbars */
+        ::-webkit-scrollbar { 
+            display: none !important; 
+        }
+        * { 
+            scrollbar-width: none !important; 
+            -ms-overflow-style: none !important; 
+            box-sizing: border-box; 
+        }
 
+        /* Original Vibrant SaaS Color Palette */
         :root {
             --primary: #4f46e5;
+            --primary-hover: #4338ca;
             --danger: #ef4444;
             --danger-hover: #dc2626;
             --text-main: #1e293b;
             --text-muted: #64748b;
+            --bg-color: #f8fafc;
         }
         
         body { 
             background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
-            margin: 0; padding: 30px 15px; 
-            min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--text-main); display: flex; align-items: flex-start; justify-content: center; text-align: center;
+            margin: 0; 
+            padding: 30px 15px; 
+            min-height: 100vh; 
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--text-main);
+            display: flex; 
+            align-items: flex-start; 
+            justify-content: center;
+            text-align: center;
         }
 
+        /* Slide Loading Animation */
         #appLoader {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #ffffff; z-index: 99999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh;
+            background: #ffffff; 
+            z-index: 99999;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
             transition: transform 0.7s cubic-bezier(0.8, 0, 0.2, 1);
         }
-        .slide-up { transform: translateY(-100%); }
-        .spinner {
-            width: 50px; height: 50px; border: 5px solid #e2e8f0; border-top: 5px solid var(--primary);
-            border-radius: 50%; animation: spin 1s linear infinite;
+        .slide-up { 
+            transform: translateY(-100%); 
         }
-        .loading-text-anim { margin-top: 20px; font-weight: 800; font-size: 18px; color: var(--primary); letter-spacing: 1px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #e2e8f0; 
+            border-top: 5px solid var(--primary);
+            border-radius: 50%; 
+            animation: spin 1s linear infinite;
+        }
+        .loading-text-anim { 
+            margin-top: 20px; 
+            font-weight: 800; 
+            font-size: 18px; 
+            color: var(--primary); 
+            letter-spacing: 1px; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
 
-        .wave-bg-1, .wave-bg-2 { position: fixed; bottom: 0; left: 0; width: 200vw; height: 250px; background-repeat: repeat-x; background-size: 1440px 250px; }
+        /* Original Beautiful Indigo SVG Waves */
+        .wave-bg-1, .wave-bg-2 {
+            position: fixed; bottom: 0; left: 0; width: 200vw; height: 250px;
+            background-repeat: repeat-x; background-size: 1440px 250px;
+        }
         .wave-bg-1 {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.12' d='M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,133.3C672,139,768,181,864,197.3C960,213,1056,203,1152,176C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
             animation: wave 12s linear infinite; z-index: -2;
@@ -57,87 +101,383 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.08' d='M0,256L48,229.3C96,203,192,149,288,149.3C384,149,480,203,576,213.3C672,224,768,192,864,186.7C960,181,1056,203,1152,208C1248,213,1344,203,1392,197.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
             animation: wave 18s linear infinite reverse; z-index: -1;
         }
-        @keyframes wave { 0% { transform: translateX(0); } 100% { transform: translateX(-1440px); } }
+        @keyframes wave { 
+            0% { transform: translateX(0); } 
+            100% { transform: translateX(-1440px); } 
+        }
 
+        /* Glass Panel */
         .glass-panel { 
-            background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 35px 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.06); width: 100%; max-width: 850px; 
-            backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8); z-index: 10;
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 20px; 
+            padding: 35px 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06); 
+            width: 100%; 
+            max-width: 850px; 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255,255,255,0.8); 
+            z-index: 10;
         }
 
-        .ui-locked { pointer-events: none; opacity: 0.65; }
+        .ui-locked { 
+            pointer-events: none; 
+            opacity: 0.65; 
+        }
 
-        .tab-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; width: 100%; flex-wrap: wrap; }
+        /* Tabs */
+        .tab-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+            width: 100%; 
+            flex-wrap: wrap; 
+        }
         .btn-tab { 
-            border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; background: #e2e8f0; color: var(--text-muted); 
-            transition: 0.3s; flex: 1; max-width: 200px; font-size: 14px; min-width: 140px; white-space: nowrap;
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            background: #e2e8f0; 
+            color: var(--text-muted); 
+            transition: 0.3s; 
+            flex: 1; 
+            max-width: 200px; 
+            font-size: 14px; 
+            text-transform: capitalize;
+            min-width: 140px; 
+            white-space: nowrap;
         }
-        .btn-tab:hover:not(.active) { background: #cbd5e1; color: var(--text-main); transform: translateY(-2px); }
-        #btnNormal.active { background: var(--text-main); color: #fff; }
-        #btnManager.active { background: var(--primary); color: #fff; }
+        .btn-tab:hover:not(.active) { 
+            background: #cbd5e1; 
+            color: var(--text-main); 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+        #btnNormal.active { 
+            background: var(--text-main); 
+            color: #fff; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+        #btnManager.active { 
+            background: var(--primary); 
+            color: #fff; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); 
+        }
 
-        .ts-control { border-radius: 12px !important; padding: 14px !important; border: 2px solid #e2e8f0 !important; background: #fff !important; cursor: pointer; text-align: center !important; }
-        .ts-control.focus { border-color: var(--primary) !important; }
-        .ts-control .item, .ts-control input { display: block !important; width: 100% !important; text-align: center !important; font-weight: 700; font-size: 15px; color: var(--text-main) !important; }
-        .ts-dropdown { border-radius: 12px !important; border: 1px solid #e2e8f0; padding: 5px; text-align: center !important; }
-        .ts-dropdown .option { padding: 12px; font-weight: 700; text-align: center !important; border-radius: 8px; margin-bottom: 2px; color: var(--text-main) !important; }
-        .ts-dropdown .option:hover, .ts-dropdown .active { background-color: #e0e7ff !important; color: var(--primary) !important; }
+        /* Centered TomSelect */
+        .ts-control { 
+            border-radius: 12px !important; 
+            padding: 14px !important; 
+            border: 2px solid #e2e8f0 !important; 
+            background: #fff !important; 
+            cursor: pointer; 
+            text-align: center !important; 
+            transition: 0.3s; 
+        }
+        .ts-control.focus { 
+            border-color: var(--primary) !important; 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important; 
+        }
+        .ts-control .item, .ts-control input { 
+            display: block !important; 
+            width: 100% !important; 
+            text-align: center !important; 
+            font-weight: 700; 
+            font-size: 15px; 
+            color: var(--text-main) !important; 
+        }
+        .ts-dropdown { 
+            border-radius: 12px !important; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            padding: 5px; 
+            text-align: center !important; 
+        }
+        .ts-dropdown .option { 
+            padding: 12px; 
+            font-weight: 700; 
+            text-align: center !important; 
+            border-radius: 8px; 
+            margin-bottom: 2px; 
+            color: var(--text-main) !important; 
+        }
+        .ts-dropdown .option:hover, .ts-dropdown .active { 
+            background-color: #e0e7ff !important; 
+            color: var(--primary) !important; 
+        }
 
-        #resultArea { display: none; margin-top: 35px; flex-direction: column; align-items: center; }
-        .counter-bar { background: var(--text-main); color: #fff; padding: 12px 30px; border-radius: 50px; font-weight: 800; margin-bottom: 25px; font-size: 16px; text-align: center; }
-        .counter-bar span { background: #fff; color: var(--text-main); padding: 2px 14px; border-radius: 12px; margin-left: 10px; font-size: 15px; }
+        #resultArea { 
+            display: none; 
+            margin-top: 35px; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .counter-bar { 
+            background: var(--text-main); 
+            color: #fff; 
+            padding: 12px 30px; 
+            border-radius: 50px; 
+            font-weight: 800; 
+            margin-bottom: 25px; 
+            font-size: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .counter-bar span { 
+            background: #fff; 
+            color: var(--text-main); 
+            padding: 2px 14px; 
+            border-radius: 12px; 
+            margin-left: 10px; 
+            font-size: 15px; 
+        }
 
-        .action-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; width: 100%; }
-        .btn-action { border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; transition: all 0.3s; flex: 1; min-width: 200px; }
-        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .action-buttons { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 12px; 
+            margin-bottom: 25px; 
+            width: 100%; 
+        }
+        .btn-action { 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 10px; 
+            font-weight: 700; 
+            font-size: 14px; 
+            transition: all 0.3s; 
+            cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            flex: 1; 
+            min-width: 200px;
+        }
+        .btn-action:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15); 
+        }
         .btn-pdf { background: var(--text-main); color: #fff; }
         .btn-sheet { background: #10b981; color: #fff; }
         
-        .table-holder { background: #fff; border-radius: 12px; overflow-x: auto; width: 100%; border: 1px solid #e2e8f0; -webkit-overflow-scrolling: touch; }
-        .table { margin-bottom: 0; min-width: 450px; }
-        .table thead th { background: #f8fafc; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; padding: 16px; font-size: 13px; font-weight: 800; border-top: none; text-align: center; }
-        .table tbody tr { transition: background-color 0.2s; border-bottom: 1px solid #f1f5f9; }
-        .table tbody tr:hover { background-color: #f8fafc !important; cursor: default; }
-        .table td { padding: 18px; font-weight: 700; font-size: 14px; border: none; vertical-align: middle; text-align: center; color: var(--text-main); }
+        /* Table Design with Touch Scroll */
+        .table-holder { 
+            background: #fff; 
+            border-radius: 12px; 
+            overflow-x: auto; 
+            width: 100%; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+            -webkit-overflow-scrolling: touch; 
+        }
         
-        .btn-page { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; color: var(--text-main); transition: 0.2s; cursor: pointer; }
-        .btn-page:hover:not(:disabled) { background: var(--primary); color: #fff; }
-        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
-
-        .badge-count { background-color: var(--text-main); color: white; padding: 6px 0; border-radius: 20px; font-size: 14px; min-width: 60px; display: inline-block; text-align: center; }
-        .na-bg { background-color: #fee2e2; color: #dc2626; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #fca5a5; display: inline-block; }
-
-        .btn-main-rep { background: var(--danger); color: #fff; border: none; padding: 10px 26px; border-radius: 8px; font-size: 13px; font-weight: 700; margin: 0 auto; display: block; }
-        .btn-main-rep:hover { background: var(--danger-hover); transform: translateY(-2px); }
+        /* Default Table min-width for Desktop/Tablets */
+        .table { 
+            margin-bottom: 0; 
+            min-width: 450px; 
+        }
+        .table thead th { 
+            background: #f8fafc; 
+            color: var(--text-muted); 
+            border-bottom: 2px solid #e2e8f0; 
+            padding: 16px; 
+            font-size: 13px; 
+            font-weight: 800; 
+            border-top: none; 
+            text-align: center; 
+        }
+        .table tbody tr { 
+            transition: background-color 0.2s; 
+            border-bottom: 1px solid #f1f5f9; 
+        }
+        .table tbody tr:hover { 
+            background-color: #f8fafc !important; 
+            cursor: default; 
+        }
+        .table td { 
+            padding: 18px; 
+            font-weight: 700; 
+            font-size: 14px; 
+            border: none; 
+            vertical-align: middle; 
+            text-align: center; 
+            color: var(--text-main); 
+        }
         
-        .reason-group { display: none; gap: 8px; justify-content: center; flex-direction: column; align-items: center; }
-        .btn-reason { border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px; color: #fff; font-weight: 700; width: 100%; max-width: 150px; text-transform: capitalize; }
-        
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; width: 90%; text-align: center; pointer-events: none; }
-        .toast-msg { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 14px; display: inline-block; }
-        .empty-state { padding: 40px; color: var(--text-main); text-align: center; }
-        .empty-state h4 { font-weight: 800; color: #10b981; margin-bottom: 0; }
+        /* Pagination Button Styles */
+        .btn-page { 
+            background: #e2e8f0; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 13px; 
+            color: var(--text-main); 
+            transition: 0.2s; 
+            cursor: pointer; 
+        }
+        .btn-page:hover:not(:disabled) { 
+            background: var(--primary); 
+            color: #fff; 
+        }
+        .btn-page:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            pointer-events: none; 
+        }
 
+        .badge-count { 
+            background-color: var(--text-main); 
+            color: white; 
+            padding: 6px 0; 
+            border-radius: 20px; 
+            font-size: 14px; 
+            min-width: 60px; 
+            display: inline-block; 
+            text-align: center;
+        }
+
+        /* N/A Strict Reddish Background Logic */
+        .na-bg { 
+            background-color: #fee2e2; 
+            color: #dc2626; 
+            padding: 6px 14px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            border: 1px solid #fca5a5; 
+            display: inline-block;
+        }
+
+        /* Bright Red Report Button */
+        .btn-main-rep { 
+            background: var(--danger); 
+            color: #fff; 
+            border: none; 
+            padding: 10px 26px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            font-weight: 700; 
+            transition: all 0.2s; 
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); 
+            margin: 0 auto; 
+            display: block; 
+        }
+        .btn-main-rep:hover { 
+            background: var(--danger-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 14px rgba(239, 68, 68, 0.4); 
+        }
+        
+        .reason-group { 
+            display: none; 
+            gap: 8px; 
+            justify-content: center; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .btn-reason { 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            font-size: 12px; 
+            color: #fff; 
+            font-weight: 700; 
+            width: 100%; 
+            max-width: 150px; 
+            transition: 0.2s; 
+            text-transform: capitalize; 
+            text-align: center; 
+        }
+        .btn-reason:hover { 
+            filter: brightness(1.1); 
+            transform: translateY(-1px); 
+        }
+        
+        #toast-container { 
+            position: fixed; 
+            bottom: 30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 9999; 
+            display: none; 
+            text-transform: capitalize; 
+            width: 90%; 
+            text-align: center; 
+            pointer-events: none; 
+        }
+        .toast-msg { 
+            background: var(--text-main); 
+            color: #fff; 
+            padding: 12px 24px; 
+            border-radius: 50px; 
+            font-weight: 700; 
+            font-size: 14px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            display: inline-block; 
+        }
+        
+        .empty-state { 
+            padding: 40px; 
+            color: var(--text-main); 
+            text-align: center; 
+        }
+        .empty-state h4 { 
+            font-weight: 800; 
+            color: #10b981; 
+            margin-bottom: 0; 
+        }
+
+        /* FIX: Mobile-Friendly Adjustments for Perfect Fitting */
         @media (max-width: 768px) {
-            body { padding: 15px 5px; }
-            .glass-panel { padding: 25px 10px; }
-            .btn-action { width: 100%; min-width: 100%; }
-            .counter-bar { width: 100%; font-size: 15px; padding: 12px; }
-            .tab-container { gap: 8px; }
-            .table { min-width: 100%; }
-            .table td, .table th { padding: 8px 4px; font-size: 12px; word-break: break-word; }
-            .btn-main-rep { padding: 8px 12px; width: 100%; font-size: 12px; }
-            .btn-reason { padding: 8px 10px; font-size: 11px; }
+            body { 
+                padding: 15px 5px; 
+            }
+            .glass-panel { 
+                padding: 25px 10px; 
+            }
+            .btn-action { 
+                width: 100%; 
+                min-width: 100%; 
+            }
+            .counter-bar { 
+                width: 100%; 
+                font-size: 15px; 
+                padding: 12px; 
+            }
+            .tab-container { 
+                gap: 8px; 
+            }
+            /* Remove strict table width and compress padding for smaller screens */
+            .table { 
+                min-width: 100%; 
+            }
+            .table td, .table th { 
+                padding: 8px 4px; 
+                font-size: 12px; 
+                word-break: break-word; 
+            }
+            /* Shrink buttons to fit inside the action column */
+            .btn-main-rep { 
+                padding: 8px 12px; 
+                width: 100%; 
+                font-size: 12px; 
+            }
+            .btn-reason { 
+                padding: 8px 10px; 
+                font-size: 11px; 
+            }
         }
     </style>
 </head>
 <body>
+
     <div id="appLoader">
         <div class="spinner"></div>
         <div class="loading-text-anim">Loading Dashboard...</div>
     </div>
     
-    <div class="wave-bg-1"></div><div class="wave-bg-2"></div>
+    <div class="wave-bg-1"></div>
+    <div class="wave-bg-2"></div>
 
     <div class="glass-panel" id="mainPanel">
         <h2 class="fw-bold mb-4" style="color: var(--text-main);">Picker Pendency Dashboard</h2>
@@ -148,19 +488,27 @@
         </div>
         
         <div class="row g-3 justify-content-center mb-2">
-            <div class="col-12 col-md-5"><select id="citySelect" onchange="onCityChange()"></select></div>
-            <div class="col-12 col-md-5" id="storeWrapper"><select id="storeSelect" onchange="render()"></select></div>
+            <div class="col-12 col-md-5">
+                <select id="citySelect" onchange="onCityChange()"></select>
+            </div>
+            <div class="col-12 col-md-5" id="storeWrapper">
+                <select id="storeSelect" onchange="render()"></select>
+            </div>
         </div>
 
         <div id="resultArea">
             <div class="counter-bar">Total Pendency <span id="countBadge">0</span></div>
+            
             <div class="action-buttons">
                 <button class="btn-action btn-pdf" onclick="exportData('pdf')">Download Pendency</button>
                 <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open As Google Sheet</button>
             </div>
             
             <div class="table-holder">
-                <table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+                <table class="table">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
 
             <div id="paginationBar" style="display: none; justify-content: center; gap: 15px; margin-top: 20px; width: 100%;">
@@ -170,176 +518,325 @@
             </div>
         </div>
     </div>
+
     <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
     <script>
-        // THE NEW GOOGLE APP SCRIPT URL 
+        // --- API CONFIGURATION ---
+        // Your Google Apps Script API URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwmJ11LLo-76FLOYrNAPSxrQsAltR-oEDxWCuwaBZ75NdhjxdLyLGEFKOrSudKLSww77g/exec";
 
-        let db = [], filtered = [], managerMode = false, reportedIds = new Set();
-        let citySelectInstance, storeSelectInstance;
+        let db = [];
+        let filtered = [];
+        let managerMode = false;
+        let reportedIds = new Set();
+        let citySelectInstance;
+        let storeSelectInstance;
         let isProcessing = false; 
+
+        // Pagination Variables
         let currentPage = 1;
         const PAGE_SIZE = 50;
         const loginTxt = "(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
 
         // --- GLOBAL ERROR LOGGING UTILITIES ---
+        // Sends unexpected crashes directly to Google Sheet
         function remoteLogError(msg, stack, details) {
+            const payload = {
+                action: "log_error",
+                message: String(msg || "Unknown UI Error"),
+                stack: String(stack || "N/A"),
+                details: String(details || "GitHub Frontend")
+            };
             fetch(SCRIPT_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ action: "log_error", message: String(msg || "UI Error"), stack: String(stack || "N/A"), details: String(details || "GitHub Frontend") })
-            }).catch(e => console.error("Logger failed:", e)); 
+                body: JSON.stringify(payload)
+            }).catch(e => console.error("Logger failed to reach server:", e)); 
         }
 
-        window.onerror = function(msg, src, lineno, colno, err) { remoteLogError(msg, err ? err.stack : `Line: ${lineno}`, `Source: ${src}`); };
-        window.addEventListener('unhandledrejection', e => { remoteLogError(e.reason, e.reason ? e.reason.stack : "N/A", "Promise Rejection"); });
+        // Global Catchers for completely unhandled browser crashes
+        window.onerror = function(message, source, lineno, colno, error) {
+            remoteLogError(message, error ? error.stack : `Line: ${lineno}`, `Source: ${source}`);
+        };
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            remoteLogError(event.reason, event.reason ? event.reason.stack : "N/A", "Unhandled Promise Rejection");
+        });
+
+        // Modifying Network Error to trigger remote logging automatically
+        const onNetworkError = (err, contextInfo) => {
+            setUILock(false);
+            const loader = document.getElementById('appLoader');
+            if (loader) {
+                loader.classList.add('slide-up');
+                setTimeout(() => { 
+                    loader.style.display = 'none'; 
+                }, 700);
+            }
+            showToast("Network Error: " + (err.message || "Could not reach server."), true);
+            
+            // Send to Google Sheet Log Error
+            remoteLogError(err.message || "Fetch Error", err.stack, contextInfo || "API Request");
+        };
 
         const checkNA = (str) => {
             let val = String(str).trim().toUpperCase();
-            if (!val || val === "N/A" || val === "#N/A" || val === "#NA") return `<span class="na-bg">N/A</span>`;
+            if (!val || val === "N/A" || val === "#N/A" || val === "#NA") {
+                return `<span class="na-bg">N/A</span>`;
+            }
             return str;
         };
 
         function showToast(msg, isError = false) {
-            const container = document.getElementById('toast-container'), txt = document.getElementById('toastText');
-            txt.innerText = msg; txt.style.background = isError ? "var(--danger)" : "var(--text-main)";
-            container.style.display = 'block'; setTimeout(() => { container.style.display = 'none'; }, 3500);
+            const container = document.getElementById('toast-container');
+            const txt = document.getElementById('toastText');
+            
+            txt.innerText = msg;
+            txt.style.background = isError ? "var(--danger)" : "var(--text-main)";
+            
+            container.style.display = 'block';
+            setTimeout(() => { 
+                container.style.display = 'none'; 
+            }, 3500);
         }
 
         function setUILock(lock) {
             isProcessing = lock;
             const panel = document.getElementById('mainPanel');
-            if (lock) panel.classList.add('ui-locked'); else panel.classList.remove('ui-locked');
+            if (lock) {
+                panel.classList.add('ui-locked');
+            } else {
+                panel.classList.remove('ui-locked');
+            }
         }
 
-        const onNetworkError = (err, contextInfo) => {
-            setUILock(false);
-            const loader = document.getElementById('appLoader');
-            if (loader) { loader.classList.add('slide-up'); setTimeout(() => { loader.style.display = 'none'; }, 700); }
-            showToast("Network Error: " + (err.message || "Could not reach server."), true);
-            remoteLogError(err.message, err.stack, contextInfo);
-        };
-
+        // --- FETCH DATA ON LOAD ---
         window.onload = () => {
-            citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
-            storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
+            citySelectInstance = new TomSelect("#citySelect", { 
+                placeholder: "Select City", 
+                create: false, 
+                sortField: { field: "text", direction: "asc" } 
+            });
+            
+            storeSelectInstance = new TomSelect("#storeSelect", { 
+                placeholder: "Select Dark Store", 
+                create: false, 
+                sortField: { field: "text", direction: "asc" } 
+            });
             
             fetch(`${SCRIPT_URL}?action=getData`)
-                .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+                .then(response => {
+                    if (!response.ok) throw new Error("HTTP Status " + response.status);
+                    return response.json();
+                })
                 .then(d => {
                     const loader = document.getElementById('appLoader');
-                    loader.classList.add('slide-up'); setTimeout(() => { loader.style.display = 'none'; }, 700);
+                    loader.classList.add('slide-up');
+                    setTimeout(() => { 
+                        loader.style.display = 'none'; 
+                    }, 700);
 
-                    if (d && d.error) { showToast("Load Failed", true); remoteLogError(d.error, "N/A", "Initial Data Fetch Error"); return; }
+                    if (d && d.error) {
+                        showToast("Failed To Load Data: " + d.error, true);
+                        remoteLogError(d.error, "N/A", "Initial Data Load - Server returned error obj");
+                        return;
+                    }
                     
                     db = d || [];
                     let cities = [...new Set(db.map(i => i.city))].sort();
+                    
                     citySelectInstance.clearOptions();
                     cities.forEach(c => citySelectInstance.addOption({value: c, text: c}));
                 })
-                .catch(err => onNetworkError(err, "Initial Data Fetch"));
+                .catch(err => onNetworkError(err, "Initial Data Load Fetch"));
         };
 
         function setMode(m) {
             if(isProcessing) return; 
             managerMode = !!m;
+            
             document.getElementById('btnNormal').classList.toggle('active', !m);
             document.getElementById('btnManager').classList.toggle('active', m);
             document.getElementById('storeWrapper').style.display = m ? 'none' : 'block';
             document.getElementById('resultArea').style.display = 'none';
             
-            citySelectInstance.clear(); storeSelectInstance.clearOptions(); storeSelectInstance.clear();
+            citySelectInstance.clear();
+            storeSelectInstance.clearOptions();
+            storeSelectInstance.clear();
         }
 
         function onCityChange() {
             if(isProcessing) return;
-            let c = citySelectInstance.getValue(); currentPage = 1; 
-            if (!c) return document.getElementById('resultArea').style.display = 'none';
             
-            if (managerMode) render();
-            else {
+            let c = citySelectInstance.getValue();
+            currentPage = 1; 
+            
+            if (!c) {
+                document.getElementById('resultArea').style.display = 'none';
+                return;
+            }
+            
+            if (managerMode) {
+                render();
+            } else {
                 let stores = [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort();
-                storeSelectInstance.clearOptions(); storeSelectInstance.clear();
+                storeSelectInstance.clearOptions();
+                storeSelectInstance.clear();
                 stores.forEach(s => storeSelectInstance.addOption({value: s, text: s}));
             }
         }
 
-        function changePage(dir) { currentPage += dir; render(); }
+        function changePage(dir) {
+            currentPage += dir;
+            render();
+        }
 
         function render() {
-            let c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-            if (!c || (!managerMode && !s)) return document.getElementById('resultArea').style.display = 'none';
+            let c = citySelectInstance.getValue();
+            let s = storeSelectInstance.getValue();
+            
+            if (!c || (!managerMode && !s)) {
+                document.getElementById('resultArea').style.display = 'none';
+                return;
+            }
 
             filtered = db.filter(i => i.city === c && (managerMode || i.darkStore === s) && !reportedIds.has(String(i.casperId)));
+            
             document.getElementById('countBadge').innerText = filtered.length;
             document.getElementById('resultArea').style.display = 'flex';
             
-            let tHead = document.getElementById('tableHead'), tBody = document.getElementById('tableBody'), pBar = document.getElementById('paginationBar');
+            let tHead = document.getElementById('tableHead');
+            let tBody = document.getElementById('tableBody');
+            let pBar = document.getElementById('paginationBar');
 
             if (filtered.length === 0) {
                 tHead.innerHTML = '';
-                tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}" class="empty-state"><h4>No Pending Pickers</h4><p class="mt-2 mb-0">All Clear For This Selection</p></td></tr>`;
-                pBar.style.display = 'none'; return;
+                let colSpan = managerMode ? 2 : 3;
+                tBody.innerHTML = `<tr><td colspan="${colSpan}" class="empty-state"><h4>No Pending Pickers</h4><p class="mt-2 mb-0">All Clear For This Selection</p></td></tr>`;
+                pBar.style.display = 'none';
+                return;
             }
 
             if (managerMode) {
-                pBar.style.display = 'none'; let sum = {};
-                filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1 });
+                pBar.style.display = 'none';
+                let sum = {};
+                filtered.forEach(i => { 
+                    sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1 
+                });
+                
                 tHead.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-                tBody.innerHTML = Object.entries(sum).sort().map(([n, v]) => `<tr><td style="text-transform: capitalize;">${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
+                tBody.innerHTML = Object.entries(sum).sort().map(([n, v]) => `
+                    <tr>
+                        <td style="text-transform: capitalize;">${checkNA(n)}</td>
+                        <td><span class="badge-count">${v}</span></td>
+                    </tr>
+                `).join('');
             } else {
                 pBar.style.display = 'flex';
-                let totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+                let totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+                if (totalPages === 0) totalPages = 1;
+                
                 document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
                 document.getElementById('btnPrev').disabled = (currentPage === 1);
                 document.getElementById('btnNext').disabled = (currentPage === totalPages);
 
                 let start = (currentPage - 1) * PAGE_SIZE;
+                let paginatedData = filtered.slice(start, start + PAGE_SIZE);
+
                 tHead.innerHTML = '<tr><th style="width:40%">Picker Name</th><th style="width:30%">Casper ID</th><th style="width:30%">Action</th></tr>';
-                tBody.innerHTML = filtered.slice(start, start + PAGE_SIZE).map(i => `
+                tBody.innerHTML = paginatedData.map(i => `
                     <tr>
                         <td style="text-transform: capitalize;">${checkNA(i.name)}</td>
                         <td style="text-transform:none;">${checkNA(i.casperId)}</td>
                         <td>
                             <div id="box-${i.casperId}">
                                 <button class="btn-main-rep" onclick="showOpt('${i.casperId}')">Report</button>
-                                <div class="reason-group" id="opt-${i.casperId}"><button class="btn-reason" style="background:var(--danger)" onclick="initiateSubmit('${i.casperId}')">Exit / Left</button></div>
+                                <div class="reason-group" id="opt-${i.casperId}">
+                                    <button class="btn-reason" style="background:var(--danger)" onclick="initiateSubmit('${i.casperId}')">Exit / Left</button>
+                                </div>
                             </div>
                         </td>
-                    </tr>`).join('');
+                    </tr>
+                `).join('');
             }
         }
 
-        function showOpt(id) { document.getElementById('opt-' + id).style.display = 'flex'; document.querySelector('#box-' + id + ' .btn-main-rep').style.display = 'none'; }
+        function showOpt(id) {
+            document.getElementById('opt-' + id).style.display = 'flex';
+            document.querySelector('#box-' + id + ' .btn-main-rep').style.display = 'none';
+        }
 
+        // --- SUBMIT REPORT VIA FETCH POST ---
         function initiateSubmit(id) {
             let p = filtered.find(x => String(x.casperId) === String(id));
             if (!p) return;
+            
             let backupDb = [...db];
+            
+            // Optimistic Update
             db = db.filter(i => String(i.casperId) !== String(id));
             reportedIds.add(String(p.casperId));
-            render(); showToast("Processing update...");
             
+            render(); 
+            showToast("Processing update...");
+            
+            const payload = {
+                action: "report",
+                n: p.name,
+                id: p.casperId,
+                ds: p.darkStore,
+                c: p.city,
+                r: 'Exit'
+            };
+
             fetch(SCRIPT_URL, {
-                method: "POST", headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city, r: 'Exit' })
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
             })
-            .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
             .then(res => {
-                if(res.status === "Success") showToast("Report Submitted Successfully");
-                else { db = backupDb; reportedIds.delete(String(p.casperId)); render(); showToast("Report Failed. See log.", true); remoteLogError(res.error, "N/A", "Backend rejected report"); }
+                if (!res.ok) throw new Error("HTTP Status " + res.status);
+                return res.json();
             })
-            .catch(err => { db = backupDb; reportedIds.delete(String(p.casperId)); render(); onNetworkError(err, "Report Submission"); });
+            .then(res => {
+                if(res.status === "Success") {
+                    showToast("Report Submitted Successfully");
+                } else {
+                    db = backupDb;
+                    reportedIds.delete(String(p.casperId));
+                    render(); 
+                    showToast("Report Failed. See log.", true);
+                    remoteLogError(res.error, "N/A", "Backend rejected report submission");
+                }
+            })
+            .catch(err => {
+                db = backupDb;
+                reportedIds.delete(String(p.casperId));
+                render();
+                onNetworkError(err, "Report Submission Fetch");
+            });
         }
 
         function exportData(t) {
             if(isProcessing) return;
-            if (filtered.length === 0) return showToast("No Data To Export", true);
+            
+            if (filtered.length === 0) {
+                return showToast("No Data To Export", true);
+            }
+            
             setUILock(true);
+            
             try {
-                let c = citySelectInstance.getValue(), s = storeSelectInstance.getValue(), f = (managerMode ? c : s) + " Pendency", h = managerMode ? c + " Summary" : s + " Pendency";
-                const { jsPDF } = window.jspdf, doc = new jsPDF(), w = doc.internal.pageSize.getWidth();
+                let c = citySelectInstance.getValue(); 
+                let s = storeSelectInstance.getValue();
+                let f = (managerMode ? c : s) + " Pendency"; 
+                let h = managerMode ? c + " Summary" : s + " Pendency";
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const w = doc.internal.pageSize.getWidth();
+                
                 let st = { halign: 'center', textColor: 0, lineColor: [0, 0, 0], lineWidth: .2, fontStyle: 'bold' };
                 let hst = { fillColor: [253, 253, 150], textColor: 0, lineColor: [0, 0, 0], lineWidth: .2 };
                 
@@ -347,41 +844,88 @@
                 doc.setFontSize(9).text(loginTxt, w / 2, 22, { align: "center" });
                 
                 if (managerMode) {
-                    let sd = Object.entries(filtered.reduce((a, b) => { a[b.clusterManager] = (a[b.clusterManager] || 0) + 1; return a }, {})).map(([k, v]) => [k, v]).sort();
+                    let sd = Object.entries(filtered.reduce((a, b) => { 
+                        a[b.clusterManager] = (a[b.clusterManager] || 0) + 1; return a 
+                    }, {})).map(([k, v]) => [k, v]).sort();
+                    
                     doc.autoTable({ head: [['CLUSTER MANAGER', 'PENDENCY']], body: sd, startY: 28, theme: 'grid', styles: st, headStyles: hst });
-                    doc.addPage(); doc.setFontSize(14).text("Entire Pendency", w / 2, 15, { align: "center" }); doc.setFontSize(9).text(loginTxt, w / 2, 21, { align: "center" });
+                    doc.addPage(); 
+                    
+                    doc.setFontSize(14).text("Entire Pendency", w / 2, 15, { align: "center" }); 
+                    doc.setFontSize(9).text(loginTxt, w / 2, 21, { align: "center" });
+                    
                     let dd = filtered.sort((a, b) => a.clusterManager.localeCompare(b.clusterManager)).map(i => [i.clusterManager, i.darkStore, i.name, i.casperId]);
                     doc.autoTable({ head: [['CM', 'STORE', 'PICKER', 'ID']], body: dd, startY: 28, theme: 'grid', styles: { ...st, fontSize: 8 }, headStyles: hst });
-                } else doc.autoTable({ head: [['PICKER NAME', 'CASPER ID']], body: filtered.map(i => [i.name, i.casperId]), startY: 30, theme: 'grid', styles: st, headStyles: hst });
+                } else {
+                    doc.autoTable({ head: [['PICKER NAME', 'CASPER ID']], body: filtered.map(i => [i.name, i.casperId]), startY: 30, theme: 'grid', styles: st, headStyles: hst });
+                }
                 
-                doc.save(f + ".pdf"); setUILock(false); showToast("PDF Downloaded");
+                doc.save(f + ".pdf"); 
+                setUILock(false); 
+                showToast("PDF Downloaded");
             } catch (err) {
-                setUILock(false); showToast("Failed to generate PDF", true); remoteLogError(err.message, err.stack, "PDF Export");
+                setUILock(false);
+                showToast("Failed to generate PDF", true);
+                remoteLogError(err.message, err.stack, "PDF Generation Error");
             }
         }
 
+        // --- EXPORT TO GSHEET VIA FETCH POST ---
         function exportToGSheet() {
             if(isProcessing) return;
-            if (filtered.length === 0) return showToast("No Data To Export", true);
-            let b = document.getElementById('btnGSheet'), c = citySelectInstance.getValue();
-            b.innerText = "Generating Sheet..."; setUILock(true); 
             
-            let f = c + " - Picker Pendency Export", sumData = [['Cluster Manager', 'Total Pendency']];
-            sumData.push(...Object.entries(filtered.reduce((a, b) => { a[b.clusterManager] = (a[b.clusterManager] || 0) + 1; return a }, {})).sort());
+            if (filtered.length === 0) {
+                return showToast("No Data To Export", true);
+            }
+
+            let b = document.getElementById('btnGSheet');
+            let c = citySelectInstance.getValue();
+            
+            b.innerText = "Generating Sheet...";
+            setUILock(true); 
+            
+            let f = c + " - Picker Pendency Export";
+            let sumData = [['Cluster Manager', 'Total Pendency']];
+            
+            sumData.push(...Object.entries(filtered.reduce((a, b) => { 
+                a[b.clusterManager] = (a[b.clusterManager] || 0) + 1; return a 
+            }, {})).sort());
+
             let detData = [['Cluster Manager', 'Store', 'Name', 'Casper ID']];
             detData.push(...filtered.map(i => [i.clusterManager, i.darkStore, i.name, i.casperId]));
             
+            const payload = {
+                action: "export",
+                f: f,
+                summaryData: sumData,
+                detailData: detData
+            };
+
             fetch(SCRIPT_URL, {
-                method: "POST", headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ action: "export", f: f, summaryData: sumData, detailData: detData })
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
             })
-            .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+            .then(res => {
+                if (!res.ok) throw new Error("HTTP Status " + res.status);
+                return res.json();
+            })
             .then(data => {
-                b.innerText = "Open As Google Sheet"; setUILock(false); 
-                if (data && data.url && !data.url.startsWith("Error")) { showToast("Sheet Generated"); window.open(data.url, '_blank'); }
-                else { showToast("Failed To Create Sheet. See Log.", true); remoteLogError(data.error || data.url, "N/A", "GSheet Export Rejected"); }
+                b.innerText = "Open As Google Sheet"; 
+                setUILock(false); 
+                
+                if (data && data.url && !data.url.startsWith("Error")) {
+                    showToast("Sheet Generated");
+                    window.open(data.url, '_blank');
+                } else {
+                    showToast("Failed To Create Sheet. See Log.", true);
+                    remoteLogError(data.error || data.url, "N/A", "Backend rejected GSheet Export");
+                }
             })
-            .catch(err => { b.innerText = "Open As Google Sheet"; onNetworkError(err, "GSheet Export Fetch"); });
+            .catch(err => {
+                b.innerText = "Open As Google Sheet"; 
+                onNetworkError(err, "GSheet Export Fetch");
+            });
         }
     </script>
 </body>
