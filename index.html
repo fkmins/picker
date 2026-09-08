@@ -146,23 +146,13 @@
 
         @media (max-width:768px) {
 
-            body { padding:15px 5px; }
+            body{padding:15px 5px;} .glass-panel{padding:25px 10px;} .btn-action{width:100%;min-width:100%;}
 
-            .glass-panel { padding:25px 10px; }
+            .counter-bar{width:100%;font-size:15px;padding:12px;} .tab-container{gap:8px;} .table{min-width:100%;}
 
-            .btn-action { width:100%; min-width:100%; }
+            .table td,.table th{padding:8px 4px;font-size:12px;word-break:break-word;}
 
-            .counter-bar { width:100%; font-size:15px; padding:12px; }
-
-            .tab-container { gap:8px; }
-
-            .table { min-width:100%; }
-
-            .table td,.table th { padding:8px 4px; font-size:12px; word-break:break-word; }
-
-            .btn-main-rep { padding:8px 12px; width:100%; font-size:12px; }
-
-            .btn-reason { padding:8px 10px; font-size:11px; }
+            .btn-main-rep{padding:8px 12px;width:100%;font-size:12px;} .btn-reason{padding:8px 10px;font-size:11px;}
 
         }
 
@@ -216,7 +206,7 @@
 
             <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Previous</button>
 
-            <span id="pageInfo" style="font-weight:800; font-size:14px; display:flex; align-items:center; color:var(--text-main);">Page 1 of 1</span>
+            <span id="pageInfo" style="font-weight:800;font-size:14px;display:flex;align-items:center;color:var(--text-main);">Page 1 of 1</span>
 
             <button class="btn-page" id="btnNext" onclick="changePage(1)">Next</button>
 
@@ -230,37 +220,43 @@
 
 <script>
 
-    let db = [], filtered = [], managerMode = false, reportedIds = new Set();
+    // !! UPDATE THIS IF YOU REDEPLOY GAS !!
+
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoX6ic4XRBNhZN0dMjxWbnUOivc3hOcMlhadOoyaoF9b6-Sc2R7efWQj24f4adIDh0/exec";
+
+
+
+    let db=[], filtered=[], managerMode=false, reportedIds=new Set();
 
     let citySelectInstance, storeSelectInstance;
 
-    let isProcessing = false, currentPage = 1, toastTimer = null;
+    let isProcessing=false, currentPage=1, toastTimer=null;
 
-    const PAGE_SIZE = 50;
+    const PAGE_SIZE=50;
 
-    const loginTxt = "(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
+    const loginTxt="(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
 
 
 
-    function remoteLogError(msg, stack, details) {
+    function remoteLogError(msg,stack,details){
 
-        try { google.script.run.logErrorToServer("GAS Frontend UI", String(msg||"Error"), String(stack||"N/A"), String(details||"N/A")); } catch(e) {}
+        fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"log_error",message:String(msg||"Error"),stack:String(stack||"N/A"),details:String(details||"GitHub")})}).catch(()=>{});
 
     }
 
-    window.onerror = (msg,src,lineno,colno,err) => remoteLogError(msg, err?err.stack:`Line:${lineno}`, `Source:${src}`);
+    window.onerror=(msg,src,lineno,colno,err)=>remoteLogError(msg,err?err.stack:`Line:${lineno}`,`Source:${src}`);
 
-    window.addEventListener('unhandledrejection', e => remoteLogError(e.reason, e.reason&&e.reason.stack, "Unhandled Promise"));
+    window.addEventListener('unhandledrejection',e=>remoteLogError(e.reason,e.reason&&e.reason.stack,"Promise Rejection"));
 
 
 
-    const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const escHtml=(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-    const checkNA = (str) => {
+    const checkNA=(str)=>{
 
-        const val = String(str).trim().toUpperCase();
+        const val=String(str).trim().toUpperCase();
 
-        if (!val||val==="N/A"||val==="#N/A"||val==="#NA") return `<span class="na-bg">N/A</span>`;
+        if(!val||val==="N/A"||val==="#N/A"||val==="#NA")return`<span class="na-bg">N/A</span>`;
 
         return escHtml(str);
 
@@ -268,97 +264,119 @@
 
 
 
-    function showToast(msg, isError=false) {
+    function showToast(msg,isError=false){
 
-        const c=document.getElementById('toast-container'), t=document.getElementById('toastText');
+        const c=document.getElementById('toast-container'),t=document.getElementById('toastText');
 
-        t.innerText=msg; t.style.background=isError?"var(--danger)":"var(--text-main)";
+        t.innerText=msg;t.style.background=isError?"var(--danger)":"var(--text-main)";
 
-        c.style.display='block'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>{c.style.display='none';},3500);
+        c.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{c.style.display='none';},3500);
 
     }
 
-    function setUILock(lock) { isProcessing=lock; document.getElementById('mainPanel').classList.toggle('ui-locked',lock); }
+    function setUILock(lock){isProcessing=lock;document.getElementById('mainPanel').classList.toggle('ui-locked',lock);}
 
-    function hideLoader() {
+    function hideLoader(){
 
         const l=document.getElementById('appLoader');
 
-        if(l&&!l.classList.contains('slide-up')){ l.classList.add('slide-up'); setTimeout(()=>{l.style.display='none';},700); }
+        if(l&&!l.classList.contains('slide-up')){l.classList.add('slide-up');setTimeout(()=>{l.style.display='none';},700);}
 
     }
 
-    const onNetworkError = (err) => { setUILock(false); hideLoader(); showToast("Network Error: "+(err.message||"Could not reach server."),true); remoteLogError(err.message,err.stack,"GAS Network Error"); };
+    const onNetworkError=(err,ctx)=>{setUILock(false);hideLoader();showToast("Network Error: "+(err.message||"Could not reach server."),true);remoteLogError(err.message,err.stack,ctx||"GitHub");};
 
 
 
-    window.onload = () => {
+    function apiPost(body){
 
-        citySelectInstance = new TomSelect("#citySelect",{placeholder:"Select City",create:false,sortField:{field:"text",direction:"asc"}});
+        return fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)})
 
-        storeSelectInstance = new TomSelect("#storeSelect",{placeholder:"Select Dark Store",create:false,sortField:{field:"text",direction:"asc"}});
+            .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});
 
-        google.script.run.withSuccessHandler(d=>{
+    }
 
-            hideLoader();
 
-            if(d&&d.error){showToast("Failed To Load Data: "+d.error,true);return;}
 
-            db=Array.isArray(d)?d:[];
+    window.onload=()=>{
 
-            const cities=[...new Set(db.map(i=>i.city))].sort();
+        citySelectInstance=new TomSelect("#citySelect",{placeholder:"Select City",create:false,sortField:{field:"text",direction:"asc"}});
 
-            citySelectInstance.clearOptions();
+        storeSelectInstance=new TomSelect("#storeSelect",{placeholder:"Select Dark Store",create:false,sortField:{field:"text",direction:"asc"}});
 
-            cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+        fetch(`${SCRIPT_URL}?action=getData`)
 
-        }).withFailureHandler(onNetworkError).getSheetData();
+            .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+
+            .then(d=>{
+
+                hideLoader();
+
+                if(d&&d.error){showToast("Load Failed: "+d.error,true);remoteLogError(d.error,"N/A","Initial Data Fetch");return;}
+
+                db=Array.isArray(d)?d:[];
+
+                const cities=[...new Set(db.map(i=>i.city))].sort();
+
+                citySelectInstance.clearOptions();
+
+                cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+
+            })
+
+            .catch(err=>onNetworkError(err,"Initial Data Fetch"));
 
     };
 
 
 
-    function refreshData() {
+    function refreshData(){
 
         if(isProcessing)return;
 
         const btn=document.getElementById('btnRefresh');
 
-        btn.classList.add('spinning'); btn.disabled=true;
+        btn.classList.add('spinning');btn.disabled=true;
 
         db=[];filtered=[];reportedIds=new Set();currentPage=1;
 
         document.getElementById('resultArea').style.display='none';
 
-        citySelectInstance.clear(); storeSelectInstance.clearOptions(); storeSelectInstance.clear();
+        citySelectInstance.clear();storeSelectInstance.clearOptions();storeSelectInstance.clear();
 
-        google.script.run.withSuccessHandler(d=>{
+        fetch(`${SCRIPT_URL}?action=getData`)
 
-            btn.classList.remove('spinning');btn.disabled=false;
+            .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
 
-            if(d&&d.error){showToast("Refresh Failed: "+d.error,true);return;}
+            .then(d=>{
 
-            db=Array.isArray(d)?d:[];
+                btn.classList.remove('spinning');btn.disabled=false;
 
-            const cities=[...new Set(db.map(i=>i.city))].sort();
+                if(d&&d.error){showToast("Refresh Failed: "+d.error,true);return;}
 
-            citySelectInstance.clearOptions();
+                db=Array.isArray(d)?d:[];
 
-            cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+                const cities=[...new Set(db.map(i=>i.city))].sort();
 
-            showToast("Data Refreshed ✓");
+                citySelectInstance.clearOptions();
 
-        }).withFailureHandler(err=>{btn.classList.remove('spinning');btn.disabled=false;onNetworkError(err);}).getSheetData();
+                cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+
+                showToast("Data Refreshed ✓");
+
+            })
+
+            .catch(err=>{btn.classList.remove('spinning');btn.disabled=false;onNetworkError(err,"Refresh");});
 
     }
 
 
 
-    function setMode(m) {
+    function setMode(m){
 
         if(isProcessing)return;
 
-        managerMode=!!m; currentPage=1;
+        managerMode=!!m;currentPage=1;
 
         document.getElementById('btnNormal').classList.toggle('active',!m);
 
@@ -368,17 +386,17 @@
 
         document.getElementById('resultArea').style.display='none';
 
-        citySelectInstance.clear(); storeSelectInstance.clearOptions(); storeSelectInstance.clear();
+        citySelectInstance.clear();storeSelectInstance.clearOptions();storeSelectInstance.clear();
 
     }
 
 
 
-    function onCityChange() {
+    function onCityChange(){
 
         if(isProcessing)return;
 
-        const c=citySelectInstance.getValue(); currentPage=1;
+        const c=citySelectInstance.getValue();currentPage=1;
 
         if(!c){document.getElementById('resultArea').style.display='none';return;}
 
@@ -440,9 +458,7 @@
 
             pBar.style.display='none';
 
-            const sum={};
-
-            filtered.forEach(i=>{sum[i.clusterManager]=(sum[i.clusterManager]||0)+1;});
+            const sum={};filtered.forEach(i=>{sum[i.clusterManager]=(sum[i.clusterManager]||0)+1;});
 
             tHead.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
 
@@ -516,21 +532,19 @@
 
         reportedIds.add(String(p.casperId));
 
-        render(); showToast("Processing update...");
+        render();showToast("Processing update...");
 
-        google.script.run
+        apiPost({action:"report",n:p.name,id:p.casperId,ds:p.darkStore,c:p.city,r:'Exit'})
 
-            .withSuccessHandler(res=>{
+            .then(res=>{
 
-                if(res==="Success")showToast("Report Submitted Successfully ✓");
+                if(res.status==="Success")showToast("Report Submitted Successfully ✓");
 
-                else{db=backupDb;reportedIds.delete(String(p.casperId));render();showToast("Report Failed: "+res,true);}
+                else{db=backupDb;reportedIds.delete(String(p.casperId));render();showToast("Report Failed.",true);remoteLogError(res.error,"N/A","Backend rejected");}
 
             })
 
-            .withFailureHandler(err=>{db=backupDb;reportedIds.delete(String(p.casperId));render();onNetworkError(err);})
-
-            .reportPicker(p.name,p.casperId,p.darkStore,p.city,'Exit');
+            .catch(err=>{db=backupDb;reportedIds.delete(String(p.casperId));render();onNetworkError(err,"Report Submission");});
 
     }
 
@@ -580,7 +594,7 @@
 
             }
 
-            doc.save(f+".pdf"); setUILock(false); showToast("PDF Downloaded ✓");
+            doc.save(f+".pdf");setUILock(false);showToast("PDF Downloaded ✓");
 
         }catch(err){setUILock(false);showToast("Failed to generate PDF",true);remoteLogError(err.message,err.stack,"PDF Export");}
 
@@ -594,7 +608,7 @@
 
         const btn=document.getElementById('btnGSheet'),c=citySelectInstance.getValue();
 
-        btn.innerText="Generating Sheet..."; setUILock(true);
+        btn.innerText="Generating Sheet...";setUILock(true);
 
         const f=c+" - Picker Pendency Export";
 
@@ -602,13 +616,19 @@
 
         const detData=[['Cluster Manager','Store','Name','Casper ID'],...filtered.map(i=>[i.clusterManager,i.darkStore,i.name,i.casperId])];
 
-        google.script.run
+        apiPost({action:"export",f,summaryData:sumData,detailData:detData})
 
-            .withSuccessHandler(url=>{btn.innerText="Open As Google Sheet";setUILock(false);if(url&&!url.startsWith("Error")){showToast("Sheet Generated ✓");window.open(url,'_blank');}else showToast("Failed To Create Sheet",true);})
+            .then(data=>{
 
-            .withFailureHandler(err=>{btn.innerText="Open As Google Sheet";onNetworkError(err);})
+                btn.innerText="Open As Google Sheet";setUILock(false);
 
-            .createExportSheet(f,sumData,detData);
+                if(data&&data.url&&!data.url.startsWith("Error")){showToast("Sheet Generated ✓");window.open(data.url,'_blank');}
+
+                else{showToast("Failed To Create Sheet",true);remoteLogError(data.error||data.url,"N/A","GSheet Export");}
+
+            })
+
+            .catch(err=>{btn.innerText="Open As Google Sheet";onNetworkError(err,"GSheet Export");});
 
     }
 
