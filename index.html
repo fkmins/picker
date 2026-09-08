@@ -1,486 +1,639 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+
+<html lang="en">
+
 <head>
+
     <meta charset="utf-8">
+
     <title>Picker Pendency Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
     <meta name="theme-color" content="#4f46e5">
+
     <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
 
-    <!-- CDNs: Bootstrap 5.3, TomSelect, Lucide Icons, jsPDF -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/js/tom-select.complete.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <style>
-        :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
-            --bg-gradient-light: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
-            --bg-gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --glass-bg-light: rgba(255, 255, 255, 0.9);
-            --glass-bg-dark: rgba(30, 41, 59, 0.85);
-            --glass-border-light: rgba(255, 255, 255, 0.6);
-            --glass-border-dark: rgba(255, 255, 255, 0.1);
+
+        ::-webkit-scrollbar { display: none !important; }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; box-sizing: border-box; }
+
+        :root { --primary:#4f46e5; --danger:#ef4444; --danger-hover:#dc2626; --success:#10b981; --text-main:#1e293b; --text-muted:#64748b; }
+
+        body { background:linear-gradient(135deg,#e0e7ff 0%,#f8fafc 100%); margin:0; padding:30px 15px; min-height:100vh; font-family:'Segoe UI',system-ui,sans-serif; color:var(--text-main); display:flex; align-items:flex-start; justify-content:center; text-align:center; }
+
+        #appLoader { position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fff; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:transform 0.7s cubic-bezier(0.8,0,0.2,1); }
+
+        .slide-up { transform:translateY(-100%); }
+
+        .spinner { width:50px; height:50px; border:5px solid #e2e8f0; border-top:5px solid var(--primary); border-radius:50%; animation:spin 1s linear infinite; }
+
+        .loading-text-anim { margin-top:20px; font-weight:800; font-size:18px; color:var(--primary); letter-spacing:1px; }
+
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        .wave-bg-1,.wave-bg-2 { position:fixed; bottom:0; left:0; width:200vw; height:250px; background-repeat:repeat-x; background-size:1440px 250px; will-change:transform; }
+
+        .wave-bg-1 { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.12' d='M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,133.3C672,139,768,181,864,197.3C960,213,1056,203,1152,176C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E"); animation:wave 12s linear infinite; z-index:-2; }
+
+        .wave-bg-2 { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.08' d='M0,256L48,229.3C96,203,192,149,288,149.3C384,149,480,203,576,213.3C672,224,768,192,864,186.7C960,181,1056,203,1152,208C1248,213,1344,203,1392,197.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E"); animation:wave 18s linear infinite reverse; z-index:-1; }
+
+        @keyframes wave { to { transform:translateX(-1440px); } }
+
+        .glass-panel { background:rgba(255,255,255,0.95); border-radius:20px; padding:35px 25px; box-shadow:0 15px 35px rgba(0,0,0,0.06); width:100%; max-width:850px; backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.8); z-index:10; }
+
+        .ui-locked { pointer-events:none; opacity:0.65; }
+
+        .tab-container { display:flex; justify-content:center; gap:15px; margin-bottom:25px; width:100%; flex-wrap:wrap; }
+
+        .btn-tab { border:none; padding:12px 20px; border-radius:12px; font-weight:700; background:#e2e8f0; color:var(--text-muted); transition:0.3s; flex:1; max-width:200px; font-size:14px; min-width:140px; white-space:nowrap; cursor:pointer; }
+
+        .btn-tab:hover:not(.active) { background:#cbd5e1; color:var(--text-main); transform:translateY(-2px); }
+
+        #btnNormal.active { background:var(--text-main); color:#fff; }
+
+        #btnManager.active { background:var(--primary); color:#fff; }
+
+        .btn-refresh { border:none; padding:10px 18px; border-radius:12px; font-weight:700; background:#e2e8f0; color:var(--text-muted); font-size:14px; cursor:pointer; transition:0.3s; white-space:nowrap; }
+
+        .btn-refresh:hover { background:#cbd5e1; color:var(--text-main); transform:translateY(-2px); }
+
+        .btn-refresh.spinning .refresh-icon { display:inline-block; animation:spin 1s linear infinite; }
+
+        .ts-control { border-radius:12px !important; padding:14px !important; border:2px solid #e2e8f0 !important; background:#fff !important; cursor:pointer; text-align:center !important; transition:0.3s; }
+
+        .ts-control.focus { border-color:var(--primary) !important; box-shadow:0 0 0 3px rgba(79,70,229,0.15) !important; }
+
+        .ts-control .item,.ts-control input { display:block !important; width:100% !important; text-align:center !important; font-weight:700; font-size:15px; color:var(--text-main) !important; }
+
+        .ts-dropdown { border-radius:12px !important; border:1px solid #e2e8f0; padding:5px; text-align:center !important; }
+
+        .ts-dropdown .option { padding:12px; font-weight:700; text-align:center !important; border-radius:8px; margin-bottom:2px; color:var(--text-main) !important; }
+
+        .ts-dropdown .option:hover,.ts-dropdown .active { background-color:#e0e7ff !important; color:var(--primary) !important; }
+
+        #resultArea { display:none; margin-top:35px; flex-direction:column; align-items:center; }
+
+        .counter-bar { background:var(--text-main); color:#fff; padding:12px 30px; border-radius:50px; font-weight:800; margin-bottom:25px; font-size:16px; text-align:center; }
+
+        .counter-bar span { background:#fff; color:var(--text-main); padding:2px 14px; border-radius:12px; margin-left:10px; font-size:15px; }
+
+        .action-buttons { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-bottom:25px; width:100%; }
+
+        .btn-action { border:none; padding:12px 24px; border-radius:10px; font-weight:700; font-size:14px; transition:all 0.3s; flex:1; min-width:200px; cursor:pointer; }
+
+        .btn-action:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.15); }
+
+        .btn-pdf { background:var(--text-main); color:#fff; }
+
+        .btn-sheet { background:var(--success); color:#fff; }
+
+        .table-holder { background:#fff; border-radius:12px; overflow-x:auto; width:100%; border:1px solid #e2e8f0; -webkit-overflow-scrolling:touch; }
+
+        .table { margin-bottom:0; min-width:450px; }
+
+        .table thead th { background:#f8fafc; color:var(--text-muted); border-bottom:2px solid #e2e8f0; padding:16px; font-size:13px; font-weight:800; border-top:none; text-align:center; }
+
+        .table tbody tr { transition:background-color 0.2s; border-bottom:1px solid #f1f5f9; }
+
+        .table tbody tr:hover { background-color:#f8fafc !important; }
+
+        .table td { padding:18px; font-weight:700; font-size:14px; border:none; vertical-align:middle; text-align:center; color:var(--text-main); }
+
+        .btn-page { background:#e2e8f0; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; color:var(--text-main); transition:0.2s; cursor:pointer; }
+
+        .btn-page:hover:not(:disabled) { background:var(--primary); color:#fff; }
+
+        .btn-page:disabled { opacity:0.5; cursor:not-allowed; pointer-events:none; }
+
+        .badge-count { background-color:var(--text-main); color:#fff; padding:6px 0; border-radius:20px; font-size:14px; min-width:60px; display:inline-block; text-align:center; }
+
+        .na-bg { background-color:#fee2e2; color:#dc2626; padding:6px 14px; border-radius:8px; font-weight:800; border:1px solid #fca5a5; display:inline-block; }
+
+        .btn-main-rep { background:var(--danger); color:#fff; border:none; padding:10px 26px; border-radius:8px; font-size:13px; font-weight:700; margin:0 auto; display:block; transition:0.2s; cursor:pointer; }
+
+        .btn-main-rep:hover { background:var(--danger-hover); transform:translateY(-2px); }
+
+        .reason-group { display:none; gap:8px; justify-content:center; flex-direction:column; align-items:center; }
+
+        .btn-reason { border:none; padding:8px 15px; border-radius:8px; font-size:12px; color:#fff; font-weight:700; width:100%; max-width:150px; text-transform:capitalize; transition:0.2s; cursor:pointer; }
+
+        .btn-reason:hover { filter:brightness(1.1); transform:translateY(-1px); }
+
+        #toast-container { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:9999; display:none; width:90%; text-align:center; pointer-events:none; }
+
+        .toast-msg { background:var(--text-main); color:#fff; padding:12px 24px; border-radius:50px; font-weight:700; font-size:14px; box-shadow:0 10px 25px rgba(0,0,0,0.2); display:inline-block; }
+
+        .empty-state { padding:40px; color:var(--text-main); text-align:center; }
+
+        .empty-state h4 { font-weight:800; color:var(--success); margin-bottom:0; }
+
+        @media (max-width:768px) {
+
+            body{padding:15px 5px;} .glass-panel{padding:25px 10px;} .btn-action{width:100%;min-width:100%;}
+
+            .counter-bar{width:100%;font-size:15px;padding:12px;} .tab-container{gap:8px;} .table{min-width:100%;}
+
+            .table td,.table th{padding:8px 4px;font-size:12px;word-break:break-word;}
+
+            .btn-main-rep{padding:8px 12px;width:100%;font-size:12px;} .btn-reason{padding:8px 10px;font-size:11px;}
+
         }
 
-        ::-webkit-scrollbar { display: none; }
-        * { scrollbar-width: none; box-sizing: border-box; }
-
-        body {
-            background: var(--bg-gradient-light);
-            min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            padding: 30px 15px;
-            transition: background 0.3s ease;
-        }
-
-        [data-bs-theme="dark"] body {
-            background: var(--bg-gradient-dark);
-            color: #f8fafc;
-        }
-
-        .glass-panel {
-            background: var(--glass-bg-light);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            max-width: 1000px;
-            margin: 0 auto;
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border-light);
-            transition: all 0.3s ease;
-        }
-
-        [data-bs-theme="dark"] .glass-panel {
-            background: var(--glass-bg-dark);
-            border-color: var(--glass-border-dark);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .kpi-card {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 14px;
-            padding: 16px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
-
-        [data-bs-theme="dark"] .kpi-card {
-            background: rgba(15, 23, 42, 0.5);
-            border-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; }
-        .kpi-value { font-size: 24px; font-weight: 800; color: var(--primary-color); margin-top: 4px; }
-
-        .btn-tab {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 700;
-            background: #e2e8f0;
-            color: #64748b;
-            transition: 0.2s;
-        }
-        [data-bs-theme="dark"] .btn-tab { background: #334155; color: #94a3b8; }
-        .btn-tab.active { background: var(--primary-color) !important; color: #fff !important; }
-
-        .table-holder {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-        [data-bs-theme="dark"] .table-holder { border-color: rgba(255, 255, 255, 0.08); }
-
-        #appLoader {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #fff;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-        [data-bs-theme="dark"] #appLoader { background: #0f172a; color: #fff; }
-
-        .toast-container-custom {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-        }
     </style>
+
 </head>
+
 <body>
 
-<div id="appLoader">
-    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
-    <div class="mt-3 fw-bold color-primary">Loading Dashboard...</div>
+<div id="appLoader"><div class="spinner"></div><div class="loading-text-anim">Loading Dashboard...</div></div>
+
+<div class="wave-bg-1"></div><div class="wave-bg-2"></div>
+
+<div class="glass-panel" id="mainPanel">
+
+    <h2 class="fw-bold mb-4" style="color:var(--text-main);">Picker Pendency Dashboard</h2>
+
+    <div class="tab-container">
+
+        <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">Dark Store Wise</button>
+
+        <button id="btnManager" class="btn-tab" onclick="setMode(1)">Cluster Manager</button>
+
+        <button class="btn-refresh" id="btnRefresh" onclick="refreshData()"><span class="refresh-icon">↻</span> Refresh</button>
+
+    </div>
+
+    <div class="row g-3 justify-content-center mb-2">
+
+        <div class="col-12 col-md-5"><select id="citySelect" autocomplete="off" onchange="onCityChange()"></select></div>
+
+        <div class="col-12 col-md-5" id="storeWrapper"><select id="storeSelect" autocomplete="off" onchange="currentPage=1; render()"></select></div>
+
+    </div>
+
+    <div id="resultArea">
+
+        <div class="counter-bar">Total Pendency <span id="countBadge">0</span></div>
+
+        <div class="action-buttons">
+
+            <button class="btn-action btn-pdf" onclick="exportData()">Download Pendency</button>
+
+            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open As Google Sheet</button>
+
+        </div>
+
+        <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+
+        <div id="paginationBar" style="display:none; justify-content:center; gap:15px; margin-top:20px; width:100%;">
+
+            <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Previous</button>
+
+            <span id="pageInfo" style="font-weight:800;font-size:14px;display:flex;align-items:center;color:var(--text-main);">Page 1 of 1</span>
+
+            <button class="btn-page" id="btnNext" onclick="changePage(1)">Next</button>
+
+        </div>
+
+    </div>
+
 </div>
 
-<div class="glass-panel">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold mb-0">Picker Pendency Dashboard</h3>
-            <small class="text-muted" id="backendBadge">Connecting API...</small>
-        </div>
-        <button class="btn btn-outline-secondary btn-sm" onclick="toggleTheme()" id="themeBtn">
-            <i data-lucide="moon" class="me-1"></i> Dark Mode
-        </button>
-    </div>
-
-    <!-- Navigation & Refresh -->
-    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-        <div class="d-flex gap-2">
-            <button id="btnNormal" class="btn-tab active" onclick="setMode(false)">Dark Store Wise</button>
-            <button id="btnManager" class="btn-tab" onclick="setMode(true)">Cluster Manager</button>
-        </div>
-        <button class="btn btn-light btn-sm fw-bold border" onclick="refreshData()" id="btnRefresh">
-            <i data-lucide="refresh-cw" class="me-1" id="refreshIcon"></i> Refresh Data
-        </button>
-    </div>
-
-    <!-- Dropdowns -->
-    <div class="row g-2 mb-3">
-        <div class="col-12 col-md-6">
-            <select id="citySelect" autocomplete="off" onchange="onCityChange()"></select>
-        </div>
-        <div class="col-12 col-md-6" id="storeWrapper">
-            <select id="storeSelect" autocomplete="off" onchange="currentPage=1; render()"></select>
-        </div>
-    </div>
-
-    <!-- KPI Summary Row -->
-    <div class="row g-2 mb-4 d-none" id="kpiRow">
-        <div class="col-4">
-            <div class="kpi-card">
-                <div class="kpi-title">Total Pendency</div>
-                <div class="kpi-value" id="kpiTotal">0</div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="kpi-card">
-                <div class="kpi-title">Active Stores</div>
-                <div class="kpi-value" id="kpiStores">0</div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="kpi-card">
-                <div class="kpi-title">Managers</div>
-                <div class="kpi-value" id="kpiManagers">0</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Search & Actions -->
-    <div id="resultArea" style="display: none;">
-        <div class="row g-2 mb-3 w-100 align-items-center">
-            <div class="col-12 col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text"><i data-lucide="search" style="width:16px;"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search picker name or Casper ID..." oninput="onSearchInput()">
-                </div>
-            </div>
-            <div class="col-12 col-md-6 d-flex gap-2 justify-content-md-end">
-                <button class="btn btn-dark btn-sm fw-bold" onclick="exportData('pdf')"><i data-lucide="file-text" class="me-1"></i> PDF</button>
-                <button class="btn btn-outline-success btn-sm fw-bold" onclick="exportData('csv')"><i data-lucide="download" class="me-1"></i> CSV</button>
-                <button class="btn btn-success btn-sm fw-bold" onclick="exportToGSheet()"><i data-lucide="sheet" class="me-1"></i> Google Sheet</button>
-            </div>
-        </div>
-
-        <!-- Data Table -->
-        <div class="table-holder w-100 mb-3">
-            <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="table-light" id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div id="paginationBar" class="d-flex justify-content-between align-items-center w-100 px-2">
-            <button class="btn btn-sm btn-outline-secondary fw-bold" id="btnPrev" onclick="changePage(-1)">Previous</button>
-            <span id="pageInfo" class="fw-bold small">Page 1 of 1</span>
-            <button class="btn btn-sm btn-outline-secondary fw-bold" id="btnNext" onclick="changePage(1)">Next</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Confirmation -->
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Confirm Report</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="modalBodyText">
-                Are you sure you want to mark this picker as Exit/Left?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger btn-sm" id="confirmReportBtn">Confirm Exit</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="toast-container-custom">
-    <div id="customToast" class="toast align-items-center text-bg-dark border-0" role="alert">
-        <div class="d-flex">
-            <div class="toast-body fw-bold" id="toastText"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
 <script>
-    // Config: Paste your deployed Web App URL here for GitHub Pages hosting
-    const CONFIG = {
-        GAS_WEB_APP_URL: "https://script.google.com/macros/s/AKfycbzoe5rWM5JvvF4Qcwsn75mjvySFtv2ITLtIVca5ufZ73i5k7Zd9VicdP3n_cZs4js60GQ/exec",
-        PAGE_SIZE: 50,
-        LOGIN_TXT: "(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)"
-    };
 
-    let db = [], filtered = [], displayData = [], managerMode = false, reportedIds = new Set();
-    let citySelectInstance, storeSelectInstance, confirmModalObj, toastObj;
-    let currentPage = 1, activePickerToReport = null;
+    // !! UPDATE THIS IF YOU REDEPLOY GAS !!
 
-    const isGAS = typeof google !== 'undefined' && google.script && google.script.run;
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoX6ic4XRBNhZN0dMjxWbnUOivc3hOcMlhadOoyaoF9b6-Sc2R7efWQj24f4adIDh0/exec";
 
-    window.onload = () => {
-        lucide.createIcons();
-        confirmModalObj = new bootstrap.Modal(document.getElementById('confirmModal'));
-        toastObj = new bootstrap.Toast(document.getElementById('customToast'));
 
-        document.getElementById('backendBadge').innerText = isGAS ? "Environment: Google Apps Script" : "Environment: GitHub Pages (REST API)";
 
-        citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false });
-        storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false });
+    let db=[], filtered=[], managerMode=false, reportedIds=new Set();
 
-        fetchDashboardData();
-    };
+    let citySelectInstance, storeSelectInstance;
 
-    function showToast(msg, isError = false) {
-        const toastEl = document.getElementById('customToast');
-        toastEl.className = `toast align-items-center border-0 ${isError ? 'text-bg-danger' : 'text-bg-dark'}`;
-        document.getElementById('toastText').innerText = msg;
-        toastObj.show();
+    let isProcessing=false, currentPage=1, toastTimer=null;
+
+    const PAGE_SIZE=50;
+
+    const loginTxt="(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
+
+
+
+    function remoteLogError(msg,stack,details){
+
+        fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"log_error",message:String(msg||"Error"),stack:String(stack||"N/A"),details:String(details||"GitHub")})}).catch(()=>{});
+
     }
 
-    function toggleTheme() {
-        const html = document.documentElement;
-        const current = html.getAttribute('data-bs-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-bs-theme', next);
-        document.getElementById('themeBtn').innerHTML = next === 'dark' 
-            ? `<i data-lucide="sun" class="me-1"></i> Light Mode` 
-            : `<i data-lucide="moon" class="me-1"></i> Dark Mode`;
-        lucide.createIcons();
+    window.onerror=(msg,src,lineno,colno,err)=>remoteLogError(msg,err?err.stack:`Line:${lineno}`,`Source:${src}`);
+
+    window.addEventListener('unhandledrejection',e=>remoteLogError(e.reason,e.reason&&e.reason.stack,"Promise Rejection"));
+
+
+
+    const escHtml=(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    const checkNA=(str)=>{
+
+        const val=String(str).trim().toUpperCase();
+
+        if(!val||val==="N/A"||val==="#N/A"||val==="#NA")return`<span class="na-bg">N/A</span>`;
+
+        return escHtml(str);
+
+    };
+
+
+
+    function showToast(msg,isError=false){
+
+        const c=document.getElementById('toast-container'),t=document.getElementById('toastText');
+
+        t.innerText=msg;t.style.background=isError?"var(--danger)":"var(--text-main)";
+
+        c.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{c.style.display='none';},3500);
+
     }
 
-    function fetchDashboardData() {
-        if (isGAS) {
-            google.script.run
-                .withSuccessHandler(onDataLoaded)
-                .withFailureHandler(err => { hideLoader(); showToast("Error: " + err.message, true); })
-                .getSheetData();
-        } else {
-            if (!CONFIG.GAS_WEB_APP_URL || CONFIG.GAS_WEB_APP_URL.includes("YOUR_DEPLOYED")) {
+    function setUILock(lock){isProcessing=lock;document.getElementById('mainPanel').classList.toggle('ui-locked',lock);}
+
+    function hideLoader(){
+
+        const l=document.getElementById('appLoader');
+
+        if(l&&!l.classList.contains('slide-up')){l.classList.add('slide-up');setTimeout(()=>{l.style.display='none';},700);}
+
+    }
+
+    const onNetworkError=(err,ctx)=>{setUILock(false);hideLoader();showToast("Network Error: "+(err.message||"Could not reach server."),true);remoteLogError(err.message,err.stack,ctx||"GitHub");};
+
+
+
+    function apiPost(body){
+
+        return fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)})
+
+            .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});
+
+    }
+
+
+
+    window.onload=()=>{
+
+        citySelectInstance=new TomSelect("#citySelect",{placeholder:"Select City",create:false,sortField:{field:"text",direction:"asc"}});
+
+        storeSelectInstance=new TomSelect("#storeSelect",{placeholder:"Select Dark Store",create:false,sortField:{field:"text",direction:"asc"}});
+
+        fetch(`${SCRIPT_URL}?action=getData`)
+
+            .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+
+            .then(d=>{
+
                 hideLoader();
-                showToast("Please configure CONFIG.GAS_WEB_APP_URL in script code.", true);
-                return;
-            }
-            fetch(`${CONFIG.GAS_WEB_APP_URL}?action=getData`)
-                .then(res => res.json())
-                .then(onDataLoaded)
-                .catch(err => { hideLoader(); showToast("Fetch Error: " + err.message, true); });
+
+                if(d&&d.error){showToast("Load Failed: "+d.error,true);remoteLogError(d.error,"N/A","Initial Data Fetch");return;}
+
+                db=Array.isArray(d)?d:[];
+
+                const cities=[...new Set(db.map(i=>i.city))].sort();
+
+                citySelectInstance.clearOptions();
+
+                cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+
+            })
+
+            .catch(err=>onNetworkError(err,"Initial Data Fetch"));
+
+    };
+
+
+
+    function refreshData(){
+
+        if(isProcessing)return;
+
+        const btn=document.getElementById('btnRefresh');
+
+        btn.classList.add('spinning');btn.disabled=true;
+
+        db=[];filtered=[];reportedIds=new Set();currentPage=1;
+
+        document.getElementById('resultArea').style.display='none';
+
+        citySelectInstance.clear();storeSelectInstance.clearOptions();storeSelectInstance.clear();
+
+        fetch(`${SCRIPT_URL}?action=getData`)
+
+            .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+
+            .then(d=>{
+
+                btn.classList.remove('spinning');btn.disabled=false;
+
+                if(d&&d.error){showToast("Refresh Failed: "+d.error,true);return;}
+
+                db=Array.isArray(d)?d:[];
+
+                const cities=[...new Set(db.map(i=>i.city))].sort();
+
+                citySelectInstance.clearOptions();
+
+                cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+
+                showToast("Data Refreshed ✓");
+
+            })
+
+            .catch(err=>{btn.classList.remove('spinning');btn.disabled=false;onNetworkError(err,"Refresh");});
+
+    }
+
+
+
+    function setMode(m){
+
+        if(isProcessing)return;
+
+        managerMode=!!m;currentPage=1;
+
+        document.getElementById('btnNormal').classList.toggle('active',!m);
+
+        document.getElementById('btnManager').classList.toggle('active',m);
+
+        document.getElementById('storeWrapper').style.display=m?'none':'block';
+
+        document.getElementById('resultArea').style.display='none';
+
+        citySelectInstance.clear();storeSelectInstance.clearOptions();storeSelectInstance.clear();
+
+    }
+
+
+
+    function onCityChange(){
+
+        if(isProcessing)return;
+
+        const c=citySelectInstance.getValue();currentPage=1;
+
+        if(!c){document.getElementById('resultArea').style.display='none';return;}
+
+        if(managerMode){render();}
+
+        else{
+
+            const stores=[...new Set(db.filter(i=>i.city===c).map(i=>i.darkStore))].sort();
+
+            storeSelectInstance.clearOptions();storeSelectInstance.clear();
+
+            stores.forEach(s=>storeSelectInstance.addOption({value:s,text:s}));
+
+            document.getElementById('resultArea').style.display='none';
+
         }
+
     }
 
-    function onDataLoaded(data) {
-        hideLoader();
-        if (data && data.error) { showToast("Error: " + data.error, true); return; }
-        db = Array.isArray(data) ? data : [];
-        const cities = [...new Set(db.map(i => i.city))].sort();
-        citySelectInstance.clearOptions();
-        cities.forEach(c => citySelectInstance.addOption({ value: c, text: c }));
-    }
 
-    function refreshData() {
-        const icon = document.getElementById('refreshIcon');
-        icon.classList.add('spin-anim');
-        fetchDashboardData();
-        setTimeout(() => icon.classList.remove('spin-anim'), 1000);
-    }
 
-    function setMode(isManager) {
-        managerMode = isManager;
-        currentPage = 1;
-        document.getElementById('btnNormal').classList.toggle('active', !isManager);
-        document.getElementById('btnManager').classList.toggle('active', isManager);
-        document.getElementById('storeWrapper').style.display = isManager ? 'none' : 'block';
-        render();
-    }
+    function changePage(dir){currentPage+=dir;renderTable();}
 
-    function onCityChange() {
-        const c = citySelectInstance.getValue();
-        currentPage = 1;
-        if (!c) { document.getElementById('resultArea').style.display = 'none'; return; }
 
-        if (!managerMode) {
-            const stores = [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort();
-            storeSelectInstance.clearOptions();
-            storeSelectInstance.clear();
-            stores.forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
-        }
-        render();
-    }
 
-    function render() {
-        const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-        if (!c || (!managerMode && !s)) {
-            document.getElementById('resultArea').style.display = 'none';
-            document.getElementById('kpiRow').classList.add('d-none');
-            return;
-        }
+    function render(){
 
-        filtered = db.filter(i => i.city === c && (managerMode || i.darkStore === s) && !reportedIds.has(String(i.casperId)));
-        
-        // Update KPI
-        document.getElementById('kpiRow').classList.remove('d-none');
-        document.getElementById('kpiTotal').innerText = filtered.length;
-        document.getElementById('kpiStores').innerText = new Set(filtered.map(i => i.darkStore)).size;
-        document.getElementById('kpiManagers').innerText = new Set(filtered.map(i => i.clusterManager)).size;
+        const c=citySelectInstance.getValue(),s=storeSelectInstance.getValue();
 
-        document.getElementById('resultArea').style.display = 'block';
-        onSearchInput();
-    }
+        if(!c||(!managerMode&&!s)){document.getElementById('resultArea').style.display='none';return;}
 
-    function onSearchInput() {
-        const query = document.getElementById('searchInput').value.toLowerCase().trim();
-        displayData = filtered.filter(i => 
-            String(i.name || '').toLowerCase().includes(query) || 
-            String(i.casperId || '').toLowerCase().includes(query)
-        );
+        filtered=db.filter(i=>i.city===c&&(managerMode||i.darkStore===s)&&!reportedIds.has(String(i.casperId)));
+
+        document.getElementById('countBadge').innerText=filtered.length;
+
+        document.getElementById('resultArea').style.display='flex';
+
         renderTable();
+
     }
 
-    function renderTable() {
-        const tHead = document.getElementById('tableHead'), tBody = document.getElementById('tableBody'), pBar = document.getElementById('paginationBar');
-        if (displayData.length === 0) {
-            tHead.innerHTML = '';
-            tBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-muted fw-bold">No Records Found</td></tr>`;
-            pBar.style.display = 'none';
-            return;
+
+
+    function renderTable(){
+
+        const tHead=document.getElementById('tableHead'),tBody=document.getElementById('tableBody'),pBar=document.getElementById('paginationBar');
+
+        if(filtered.length===0){
+
+            tHead.innerHTML='';
+
+            tBody.innerHTML=`<tr><td colspan="${managerMode?2:3}" class="empty-state"><h4>No Pending Pickers</h4><p class="mt-2 mb-0">All Clear For This Selection</p></td></tr>`;
+
+            pBar.style.display='none';return;
+
         }
 
-        if (managerMode) {
-            pBar.style.display = 'none';
-            const sum = {};
-            displayData.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
-            tHead.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-            tBody.innerHTML = Object.entries(sum).sort((a,b) => a[0].localeCompare(b[0])).map(([n,v]) => `
-                <tr><td>${n || 'N/A'}</td><td><span class="badge bg-primary fs-6">${v}</span></td></tr>
-            `).join('');
-        } else {
-            pBar.style.display = 'flex';
-            const totalPages = Math.max(1, Math.ceil(displayData.length / CONFIG.PAGE_SIZE));
-            currentPage = Math.min(currentPage, totalPages);
-            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('btnPrev').disabled = (currentPage === 1);
-            document.getElementById('btnNext').disabled = (currentPage === totalPages);
+        if(managerMode){
 
-            const start = (currentPage - 1) * CONFIG.PAGE_SIZE;
-            tHead.innerHTML = '<tr><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
-            tBody.innerHTML = displayData.slice(start, start + CONFIG.PAGE_SIZE).map(i => `
+            pBar.style.display='none';
+
+            const sum={};filtered.forEach(i=>{sum[i.clusterManager]=(sum[i.clusterManager]||0)+1;});
+
+            tHead.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
+
+            tBody.innerHTML=Object.entries(sum).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v])=>`<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
+
+        } else {
+
+            const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+
+            currentPage=Math.min(currentPage,totalPages);
+
+            document.getElementById('pageInfo').innerText=`Page ${currentPage} of ${totalPages}`;
+
+            document.getElementById('btnPrev').disabled=(currentPage===1);
+
+            document.getElementById('btnNext').disabled=(currentPage===totalPages);
+
+            pBar.style.display='flex';
+
+            const start=(currentPage-1)*PAGE_SIZE;
+
+            tHead.innerHTML='<tr><th style="width:40%">Picker Name</th><th style="width:30%">Casper ID</th><th style="width:30%">Action</th></tr>';
+
+            tBody.innerHTML=filtered.slice(start,start+PAGE_SIZE).map(i=>`
+
                 <tr>
-                    <td class="fw-bold">${i.name || 'N/A'}</td>
-                    <td><code>${i.casperId || 'N/A'}</code></td>
-                    <td>
-                        <button class="btn btn-outline-danger btn-sm fw-bold" onclick="promptReport('${i.casperId}')">
-                            Report Exit
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+
+                    <td>${checkNA(i.name)}</td>
+
+                    <td style="text-transform:none;">${checkNA(i.casperId)}</td>
+
+                    <td><div id="box-${escHtml(i.casperId)}">
+
+                        <button class="btn-main-rep" onclick="showOpt('${escHtml(i.casperId)}')">Report</button>
+
+                        <div class="reason-group" id="opt-${escHtml(i.casperId)}">
+
+                            <button class="btn-reason" style="background:var(--danger)" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button>
+
+                        </div>
+
+                    </div></td>
+
+                </tr>`).join('');
+
         }
+
     }
 
-    function changePage(dir) { currentPage += dir; renderTable(); }
 
-    function promptReport(id) {
-        const p = filtered.find(x => String(x.casperId) === String(id));
-        if (!p) return;
-        activePickerToReport = p;
-        document.getElementById('modalBodyText').innerText = `Are you sure you want to report ${p.name} (ID: ${p.casperId}) as Exit/Left?`;
-        document.getElementById('confirmReportBtn').onclick = submitReport;
-        confirmModalObj.show();
+
+    function showOpt(id){
+
+        document.getElementById('opt-'+id).style.display='flex';
+
+        document.querySelector('#box-'+CSS.escape(id)+' .btn-main-rep').style.display='none';
+
     }
 
-    function submitReport() {
-        confirmModalObj.hide();
-        if (!activePickerToReport) return;
-        const p = activePickerToReport;
+
+
+    function initiateSubmit(id){
+
+        const p=filtered.find(x=>String(x.casperId)===String(id));
+
+        if(!p)return;
+
+        const backupDb=[...db];
+
+        db=db.filter(i=>String(i.casperId)!==String(id));
+
         reportedIds.add(String(p.casperId));
-        render();
-        showToast("Submitting report...");
 
-        if (isGAS) {
-            google.script.run.withSuccessHandler(res => showToast(res === "Success" ? "Reported Successfully ✓" : "Failed: " + res, res !== "Success"))
-                .reportPicker(p.name, p.casperId, p.darkStore, p.city, 'Exit');
-        } else {
-            fetch(CONFIG.GAS_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'reportPicker', name: p.name, casperId: p.casperId, darkStore: p.darkStore, city: p.city, reason: 'Exit' })
-            }).then(r => r.text()).then(() => showToast("Reported Successfully ✓")).catch(err => showToast("Failed: " + err.message, true));
-        }
+        render();showToast("Processing update...");
+
+        apiPost({action:"report",n:p.name,id:p.casperId,ds:p.darkStore,c:p.city,r:'Exit'})
+
+            .then(res=>{
+
+                if(res.status==="Success")showToast("Report Submitted Successfully ✓");
+
+                else{db=backupDb;reportedIds.delete(String(p.casperId));render();showToast("Report Failed.",true);remoteLogError(res.error,"N/A","Backend rejected");}
+
+            })
+
+            .catch(err=>{db=backupDb;reportedIds.delete(String(p.casperId));render();onNetworkError(err,"Report Submission");});
+
     }
 
-    function exportData(type) {
-        if (displayData.length === 0) { showToast("No Data to Export", true); return; }
-        if (type === 'csv') {
-            const csvContent = "data:text/csv;charset=utf-8," + [["Name", "Casper ID", "Dark Store", "City", "Cluster Manager"].join(",")].concat(displayData.map(e => `"${e.name}","${e.casperId}","${e.darkStore}","${e.city}","${e.clusterManager}"`)).join("\n");
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", `Pendency_Export_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("CSV Downloaded ✓");
-        } else if (type === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("Picker Pendency Report", 14, 15);
-            doc.autoTable({
-                head: [['Name', 'Casper ID', 'Store', 'City']],
-                body: displayData.map(i => [i.name, i.casperId, i.darkStore, i.city]),
-                startY: 20
-            });
-            doc.save("Pendency_Report.pdf");
-            showToast("PDF Downloaded ✓");
-        }
+
+
+    function exportData(){
+
+        if(isProcessing||filtered.length===0){if(filtered.length===0)showToast("No Data To Export",true);return;}
+
+        setUILock(true);
+
+        try{
+
+            const c=citySelectInstance.getValue(),s=storeSelectInstance.getValue();
+
+            const f=(managerMode?c:s)+" Pendency",h=(managerMode?c+" Summary":s+" Pendency").replace(/\b\w/g,l=>l.toUpperCase());
+
+            const {jsPDF}=window.jspdf,doc=new jsPDF(),w=doc.internal.pageSize.getWidth();
+
+            const st={halign:'center',textColor:0,lineColor:[0,0,0],lineWidth:.2,fontStyle:'bold'};
+
+            const hst={fillColor:[253,253,150],textColor:0,lineColor:[0,0,0],lineWidth:.2};
+
+            doc.setFontSize(16).text(h,w/2,15,{align:"center"});
+
+            doc.setFontSize(9).text(loginTxt,w/2,22,{align:"center"});
+
+            if(managerMode){
+
+                const sortedFiltered=[...filtered].sort((a,b)=>a.clusterManager.localeCompare(b.clusterManager));
+
+                const sd=Object.entries(filtered.reduce((acc,item)=>{acc[item.clusterManager]=(acc[item.clusterManager]||0)+1;return acc;},{})).sort((a,b)=>a[0].localeCompare(b[0]));
+
+                doc.autoTable({head:[['CLUSTER MANAGER','PENDENCY']],body:sd,startY:28,theme:'grid',styles:st,headStyles:hst});
+
+                doc.addPage();
+
+                doc.setFontSize(14).text("Entire Pendency",w/2,15,{align:"center"});
+
+                doc.setFontSize(9).text(loginTxt,w/2,21,{align:"center"});
+
+                doc.autoTable({head:[['CM','STORE','PICKER','ID']],body:sortedFiltered.map(i=>[i.clusterManager,i.darkStore,i.name,i.casperId]),startY:28,theme:'grid',styles:{...st,fontSize:8},headStyles:hst});
+
+            } else {
+
+                doc.autoTable({head:[['PICKER NAME','CASPER ID']],body:filtered.map(i=>[i.name,i.casperId]),startY:30,theme:'grid',styles:st,headStyles:hst});
+
+            }
+
+            doc.save(f+".pdf");setUILock(false);showToast("PDF Downloaded ✓");
+
+        }catch(err){setUILock(false);showToast("Failed to generate PDF",true);remoteLogError(err.message,err.stack,"PDF Export");}
+
     }
 
-    function exportToGSheet() {
-        showToast("Opening Google Sheet Export...");
+
+
+    function exportToGSheet(){
+
+        if(isProcessing||filtered.length===0){if(filtered.length===0)showToast("No Data To Export",true);return;}
+
+        const btn=document.getElementById('btnGSheet'),c=citySelectInstance.getValue();
+
+        btn.innerText="Generating Sheet...";setUILock(true);
+
+        const f=c+" - Picker Pendency Export";
+
+        const sumData=[['Cluster Manager','Total Pendency'],...Object.entries(filtered.reduce((acc,item)=>{acc[item.clusterManager]=(acc[item.clusterManager]||0)+1;return acc;},{})).sort((a,b)=>a[0].localeCompare(b[0]))];
+
+        const detData=[['Cluster Manager','Store','Name','Casper ID'],...filtered.map(i=>[i.clusterManager,i.darkStore,i.name,i.casperId])];
+
+        apiPost({action:"export",f,summaryData:sumData,detailData:detData})
+
+            .then(data=>{
+
+                btn.innerText="Open As Google Sheet";setUILock(false);
+
+                if(data&&data.url&&!data.url.startsWith("Error")){showToast("Sheet Generated ✓");window.open(data.url,'_blank');}
+
+                else{showToast("Failed To Create Sheet",true);remoteLogError(data.error||data.url,"N/A","GSheet Export");}
+
+            })
+
+            .catch(err=>{btn.innerText="Open As Google Sheet";onNetworkError(err,"GSheet Export");});
+
     }
 
-    function hideLoader() {
-        const l = document.getElementById('appLoader');
-        if (l) { l.style.opacity = '0'; setTimeout(() => l.style.display = 'none', 500); }
-    }
 </script>
+
 </body>
+
 </html>
