@@ -4,12 +4,9 @@
     <meta charset="utf-8">
     <title>Picker Pendency Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#4f46e5">
-    <link rel="icon" type="image/png" href="https://catbox.moe/pictures/qts/">
+    <link rel="icon" type="image/jpeg" href="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg">
     
-    <!-- External Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -21,559 +18,153 @@
         * { scrollbar-width: none !important; -ms-overflow-style: none !important; box-sizing: border-box; }
         
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --primary-soft: #e0e7ff;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --success: #10b981;
-            --success-hover: #059669;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --bg-card: #ffffff;
-            --border-color: #e2e8f0;
+            --primary: #4f46e5; --primary-hover: #4338ca; --primary-soft: #e0e7ff;
+            --danger: #ef4444; --danger-hover: #dc2626; --success: #10b981; --success-hover: #059669;
+            --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0;
         }
 
         body {
             background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 50%, #e0e7ff 100%);
-            margin: 0;
-            padding: 30px 15px;
-            min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: var(--text-main);
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
+            margin: 0; padding: 30px 15px; min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text-main);
+            display: flex; align-items: flex-start; justify-content: center;
         }
 
-        /* Fullscreen App Loader */
         #appLoader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: #ffffff;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1);
-        }
-        .slide-up { transform: translateY(-100%); }
-        .spinner-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s;
         }
         .spinner {
-            width: 72px; height: 72px;
-            border: 5px solid #e2e8f0;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-        }
-        .loader-logo {
-            position: absolute;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
+            width: 70px; height: 70px; border: 5px solid #e2e8f0; border-top: 5px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite;
         }
         .loading-text-anim {
-            margin-top: 20px;
-            font-weight: 800;
-            font-size: 17px;
-            color: var(--primary);
-            letter-spacing: 0.5px;
+            margin-top: 25px; font-weight: 800; font-size: 18px; color: var(--primary);
+            animation: bounceText 1.5s infinite; text-align: center;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounceText { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(-8px); opacity: 0.6; } }
 
-        /* Background Animated Waves */
-        .wave-bg-1, .wave-bg-2 {
-            position: fixed;
-            bottom: 0; left: 0;
-            width: 200vw; height: 260px;
-            background-repeat: repeat-x;
-            background-size: 1440px 260px;
-            will-change: transform;
-            pointer-events: none;
+        .side-popup {
+            position: fixed; right: 20px; top: 20px; z-index: 1000;
+            animation: slideInRight 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden;
+            border: 2px solid #fff;
         }
-        .wave-bg-1 {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.12' d='M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,133.3C672,139,768,181,864,197.3C960,213,1056,203,1152,176C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
-            animation: wave 14s linear infinite;
-            z-index: -2;
-        }
-        .wave-bg-2 {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.07' d='M0,256L48,229.3C96,203,192,149,288,149.3C384,149,480,203,576,213.3C672,224,768,192,864,186.7C960,181,1056,203,1152,208C1248,213,1344,203,1392,197.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
-            animation: wave 20s linear infinite reverse;
-            z-index: -1;
-        }
-        @keyframes wave { to { transform: translateX(-1440px); } }
+        .side-popup img { width: 70px; height: 70px; object-fit: cover; display: block; }
+        @keyframes slideInRight { 0% { transform: translateX(150px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
 
-        /* Main Glassmorphism Layout Card */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.94);
-            border-radius: 24px;
-            padding: 35px 30px;
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
-            width: 100%;
-            max-width: 900px;
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            z-index: 10;
-            transition: opacity 0.3s ease;
+            background: rgba(255, 255, 255, 0.94); border-radius: 24px; padding: 35px 30px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); width: 100%; max-width: 900px;
+            border: 1px solid rgba(255, 255, 255, 0.8); z-index: 10;
         }
         .ui-locked { pointer-events: none; opacity: 0.6; }
 
-        /* Header Header & Branding Badge */
-        .brand-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .brand-logo {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            object-fit: cover;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-        }
-        .dash-title {
-            color: var(--text-main);
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin: 0;
-            font-size: 26px;
-        }
+        .brand-header { text-align: center; margin-bottom: 24px; }
+        .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; }
 
-        /* Navigation Mode Tabs */
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 25px;
-            width: 100%;
-            flex-wrap: wrap;
-        }
+        .tab-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-tab {
-            border: none;
-            padding: 12px 22px;
-            border-radius: 14px;
-            font-weight: 700;
-            background: #f1f5f9;
-            color: var(--text-muted);
-            transition: all 0.25s ease;
-            flex: 1;
-            max-width: 220px;
-            font-size: 14px;
-            min-width: 140px;
-            white-space: nowrap;
-            cursor: pointer;
+            border: none; padding: 12px 22px; border-radius: 14px; font-weight: 700; background: #f1f5f9;
+            color: var(--text-muted); transition: all 0.25s ease; flex: 1; max-width: 220px; cursor: pointer;
         }
-        .btn-tab:hover:not(.active) {
-            background: #e2e8f0;
-            color: var(--text-main);
-            transform: translateY(-2px);
-        }
+        .btn-tab:hover:not(.active) { background: #e2e8f0; color: var(--text-main); }
         #btnNormal.active { background: var(--text-main); color: #ffffff; }
         #btnManager.active { background: var(--primary); color: #ffffff; }
 
-        .btn-refresh {
-            border: none;
-            padding: 10px 18px;
-            border-radius: 14px;
-            font-weight: 700;
-            background: #f1f5f9;
-            color: var(--text-muted);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            white-space: nowrap;
-        }
-        .btn-refresh:hover { background: #e2e8f0; color: var(--text-main); transform: translateY(-2px); }
-        .btn-refresh.spinning .refresh-icon { display: inline-block; animation: spin 0.8s linear infinite; }
+        .ts-control { border-radius: 14px !important; padding: 12px 16px !important; border: 2px solid var(--border-color) !important; text-align: center !important; font-weight: 700; }
+        .ts-dropdown .option { font-weight: 700; text-align: center !important; }
 
-        /* Custom Dropdown Styling (TomSelect Overrides) */
-        .ts-control {
-            border-radius: 14px !important;
-            padding: 12px 16px !important;
-            border: 2px solid var(--border-color) !important;
-            background: #ffffff !important;
-            cursor: pointer;
-            text-align: center !important;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .ts-control.focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
-        }
-        .ts-control .item, .ts-control input {
-            display: block !important;
-            width: 100% !important;
-            text-align: center !important;
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--text-main) !important;
-        }
-        .ts-dropdown {
-            border-radius: 14px !important;
-            border: 1px solid var(--border-color);
-            padding: 6px;
-            text-align: center !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .ts-dropdown .option {
-            padding: 12px;
-            font-weight: 700;
-            text-align: center !important;
-            border-radius: 10px;
-            margin-bottom: 2px;
-            color: var(--text-main) !important;
-        }
-        .ts-dropdown .option:hover, .ts-dropdown .active {
-            background-color: var(--primary-soft) !important;
-            color: var(--primary) !important;
-        }
+        #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
+        .metric-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; text-align: center; }
+        .metric-card .val { font-size: 26px; font-weight: 800; color: var(--primary); }
+        .metric-card .lbl { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
 
-        /* Results & Metrics Dashboard */
-        #resultArea {
-            display: none;
-            margin-top: 30px;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* KPI Metric Banner Cards */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            width: 100%;
-            margin-bottom: 25px;
-        }
-        .metric-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        .metric-card .val {
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--primary);
-            line-height: 1.2;
-        }
-        .metric-card .lbl {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        /* Dynamic Table Filter Input */
-        .search-box-wrapper {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .search-box {
-            width: 100%;
-            border-radius: 12px;
-            padding: 12px 18px;
-            border: 2px solid var(--border-color);
-            font-weight: 600;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .search-box:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
-        }
-
-        /* Export Action Buttons Bar */
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 25px;
-            width: 100%;
-        }
-        .btn-action {
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 14px;
-            transition: all 0.25s ease;
-            flex: 1;
-            min-width: 160px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-        }
+        .search-box { width: 100%; border-radius: 12px; padding: 12px 18px; border: 2px solid var(--border-color); font-weight: 600; text-align: center; margin-bottom: 20px; outline: none; }
+        .action-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; width: 100%; }
+        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; }
         .btn-pdf { background: var(--text-main); color: #ffffff; }
         .btn-sheet { background: var(--success); color: #ffffff; }
-        .btn-sheet:hover { background: var(--success-hover); }
         .btn-csv { background: var(--primary); color: #ffffff; }
-        .btn-csv:hover { background: var(--primary-hover); }
 
-        /* Data Table Styling */
-        .table-holder {
-            background: #ffffff;
-            border-radius: 16px;
-            overflow-x: auto;
-            width: 100%;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-        .table {
-            margin-bottom: 0;
-            min-width: 480px;
-        }
-        .table thead th {
-            background: #f8fafc;
-            color: var(--text-muted);
-            border-bottom: 2px solid var(--border-color);
-            padding: 16px;
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-top: none;
-            text-align: center;
-        }
-        .table tbody tr {
-            transition: background-color 0.2s, transform 0.2s, opacity 0.3s;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .table tbody tr:hover { background-color: #f8fafc !important; }
-        .table td {
-            padding: 16px;
-            font-weight: 700;
-            font-size: 14px;
-            border: none;
-            vertical-align: middle;
-            text-align: center;
-            color: var(--text-main);
-        }
+        .table-holder { background: #ffffff; border-radius: 16px; overflow-x: auto; width: 100%; border: 1px solid var(--border-color); }
+        .table { margin-bottom: 0; min-width: 480px; text-align: center; }
+        .table thead th { background: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 16px; }
+        .table td { padding: 16px; font-weight: 700; font-size: 14px; vertical-align: middle; }
+        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; display: block; margin: 0 auto; cursor: pointer; }
 
-        /* Row Exit Anim */
-        .row-dismissing {
-            opacity: 0;
-            transform: translateX(30px);
-        }
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
+        .toast-msg { background: var(--text-main); color: #ffffff; padding: 14px 28px; border-radius: 50px; font-weight: 700; }
+        
+        .badge-count { background: var(--text-main); color: #fff; padding: 6px 14px; border-radius: 20px; }
+        .na-bg { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
 
-        /* Pagination & Badges */
-        .btn-page {
-            background: #f1f5f9;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--text-main);
-            transition: 0.2s;
-            cursor: pointer;
-        }
-        .btn-page:hover:not(:disabled) { background: var(--primary); color: #ffffff; }
-        .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        .badge-count {
-            background-color: var(--text-main);
-            color: #ffffff;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 14px;
-            min-width: 50px;
-            display: inline-block;
-            text-align: center;
-        }
-        .na-bg {
-            background-color: #fee2e2;
-            color: #dc2626;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 12px;
-            border: 1px solid #fca5a5;
-            display: inline-block;
-        }
-
-        /* Action Buttons Inside Table */
-        .btn-main-rep {
-            background: var(--danger);
-            color: #ffffff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            margin: 0 auto;
-            display: block;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .btn-main-rep:hover {
-            background: var(--danger-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
-        }
-
-        /* Toast Notifications */
-        #toast-container {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            display: none;
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
-            pointer-events: none;
-        }
-        .toast-msg {
-            background: var(--text-main);
-            color: #ffffff;
-            padding: 14px 28px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 14px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-            display: inline-block;
-        }
-
-        /* Empty State Graphic */
-        .empty-state { padding: 45px 20px; text-align: center; }
-        .empty-state h4 { font-weight: 800; color: var(--success); margin-bottom: 6px; }
-
-        /* Responsive Mobile Layout Adaptations */
         @media (max-width: 768px) {
-            body { padding: 15px 8px; }
             .glass-panel { padding: 25px 15px; border-radius: 18px; }
-            .dash-title { font-size: 20px; }
-            .brand-logo { width: 34px; height: 34px; }
-            .action-buttons { flex-direction: column; }
-            .btn-action { width: 100%; min-width: 100%; }
-            .tab-container { gap: 8px; }
-            .table { min-width: 100%; }
-            .table td, .table th { padding: 10px 6px; font-size: 12px; word-break: break-word; }
-            .btn-main-rep { padding: 8px 12px; width: 100%; font-size: 12px; }
+            .btn-action { min-width: 100%; }
+            .side-popup img { width: 50px; height: 50px; }
         }
     </style>
 </head>
 
 <body>
 
-<!-- Initial Application Preloader -->
 <div id="appLoader">
-    <div class="spinner-container">
-        <div class="spinner"></div>
-        <img src="https://catbox.moe/pictures" class="loader-logo" alt="Logo">
-    </div>
+    <div class="spinner"></div>
     <div class="loading-text-anim">Loading Dashboard...</div>
 </div>
 
-<!-- Background Dynamic Waves -->
-<div class="wave-bg-1"></div>
-<div class="wave-bg-2"></div>
+<div id="sidePopup" class="side-popup">
+    <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" alt="Side Logo">
+</div>
 
-<!-- Central Application Container -->
 <div class="glass-panel" id="mainPanel">
-    <div class="brand-header">
-        <img src="https://catbox.moe/pictures/qts/7ckzd1.png" class="brand-logo" alt="App Logo">
-        <h2 class="dash-title">Picker Pendency Dashboard</h2>
-    </div>
+    <div class="brand-header"><h2 class="dash-title">Picker Pendency Dashboard</h2></div>
 
-    <!-- Mode Selector Tabs -->
     <div class="tab-container">
         <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">Dark Store Wise</button>
         <button id="btnManager" class="btn-tab" onclick="setMode(1)">Cluster Manager</button>
-        <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">
-            <span class="refresh-icon">↻</span> Refresh
-        </button>
     </div>
 
-    <!-- Dropdown Selector Controls -->
     <div class="row g-3 justify-content-center mb-3">
-        <div class="col-12 col-md-5">
-            <select id="citySelect" autocomplete="off" onchange="onCityChange()"></select>
-        </div>
-        <div class="col-12 col-md-5" id="storeWrapper">
-            <select id="storeSelect" autocomplete="off" onchange="currentPage=1; render()"></select>
-        </div>
+        <div class="col-12 col-md-5"><select id="citySelect" autocomplete="off" onchange="onCityChange()"></select></div>
+        <div class="col-12 col-md-5" id="storeWrapper"><select id="storeSelect" autocomplete="off" onchange="currentPage=1; render()"></select></div>
     </div>
 
-    <!-- Data Dashboard & Results Section -->
     <div id="resultArea">
-        <!-- KPI Metric Tiles -->
         <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="val" id="countBadge">0</div>
-                <div class="lbl">Pending Pickers</div>
-            </div>
-            <div class="metric-card">
-                <div class="val" id="totalReportedBadge">0</div>
-                <div class="lbl">Reported Exits</div>
-            </div>
+            <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
+            <div class="metric-card"><div class="val" id="totalReportedBadge">0</div><div class="lbl">Reported Exits</div></div>
         </div>
 
-        <!-- Dynamic In-Table Search -->
-        <div class="search-box-wrapper" id="searchWrapper">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by Picker Name or Casper ID..." oninput="onSearchInput()">
-        </div>
+        <div id="searchWrapper" style="width: 100%;"><input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by Name or Casper ID..." oninput="onSearchInput()"></div>
 
-        <!-- Export Action Controls -->
         <div class="action-buttons">
-            <button class="btn-action btn-pdf" onclick="exportData()">
-                📄 Download PDF
-            </button>
-            <button class="btn-action btn-csv" onclick="exportToCSV()">
-                📊 Download CSV
-            </button>
-            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">
-                🌐 Open as Google Sheet
-            </button>
+            <button class="btn-action btn-pdf" onclick="exportData()">📄 Download PDF</button>
+            <button class="btn-action btn-csv" onclick="exportToCSV()">📊 Download CSV</button>
+            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">🌐 Open as Google Sheet</button>
         </div>
 
-        <!-- Data Table Display -->
         <div class="table-holder">
             <table class="table">
                 <thead id="tableHead"></thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-
-        <!-- Pagination Bar Controls -->
+        
         <div id="paginationBar" style="display:none; justify-content:center; align-items:center; gap:15px; margin-top:20px; width:100%;">
-            <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Previous</button>
-            <span id="pageInfo" style="font-weight:800; font-size:14px; color:var(--text-main);">Page 1 of 1</span>
-            <button class="btn-page" id="btnNext" onclick="changePage(1)">Next</button>
+            <button class="btn-tab" id="btnPrev" onclick="changePage(-1)" style="min-width:auto; padding:8px 16px;">Previous</button>
+            <span id="pageInfo" style="font-weight:700;">Page 1</span>
+            <button class="btn-tab" id="btnNext" onclick="changePage(1)" style="min-width:auto; padding:8px 16px;">Next</button>
         </div>
     </div>
 </div>
 
-<!-- Floating Toast Notification -->
 <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
 <script>
-    // Configured Web App Deployment Endpoint
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2RP0gg4xrfVbBv1x8QPuxk_yspZqY9T9xkcuiUDh6S0jKA2wWdKsgHgPD0oGDRLURSA/exec";
 
     let db = [], filtered = [], managerMode = false, reportedIds = new Set();
@@ -581,171 +172,71 @@
     let isProcessing = false, currentPage = 1, toastTimer = null;
     let searchQuery = "";
     const PAGE_SIZE = 50;
-    const loginTxt = "(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
 
-    // Global Error Telemetry
     function remoteLogError(msg, stack, details) {
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({ action: "log_error", message: String(msg || "Error"), stack: String(stack || "N/A"), details: String(details || "GitHub FrontEnd") })
-        }).catch(() => {});
+        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "log_error", message: String(msg), stack: String(stack), details: String(details) }) }).catch(() => {});
     }
-    window.onerror = (msg, src, lineno, colno, err) => remoteLogError(msg, err ? err.stack : `Line:${lineno}`, `Source:${src}`);
-    window.addEventListener('unhandledrejection', e => remoteLogError(e.reason, e.reason && e.reason.stack, "Promise Rejection"));
 
-    // Utility Helpers
-    const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const checkNA = (str) => {
-        const val = String(str).trim().toUpperCase();
-        if (!val || val === "N/A" || val === "#N/A" || val === "#NA") return `<span class="na-bg">N/A</span>`;
-        return escHtml(str);
-    };
+    const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const checkNA = str => { const v = String(str).trim().toUpperCase(); return (!v || v === "N/A") ? `<span class="na-bg">N/A</span>` : escHtml(str); };
 
     function showToast(msg, isError = false) {
         const c = document.getElementById('toast-container'), t = document.getElementById('toastText');
-        t.innerText = msg;
-        t.style.background = isError ? "var(--danger)" : "var(--text-main)";
-        c.style.display = 'block';
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
+        t.innerText = msg; t.style.background = isError ? "var(--danger)" : "var(--text-main)";
+        c.style.display = 'block'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
     }
 
-    function setUILock(lock) {
-        isProcessing = lock;
-        document.getElementById('mainPanel').classList.toggle('ui-locked', lock);
-    }
+    function setUILock(lock) { isProcessing = lock; document.getElementById('mainPanel').classList.toggle('ui-locked', lock); }
+    function hideLoader() { const l = document.getElementById('appLoader'); if(l) { l.style.opacity = '0'; setTimeout(() => l.style.display = 'none', 500); } }
 
-    function hideLoader() {
-        const l = document.getElementById('appLoader');
-        if (l && !l.classList.contains('slide-up')) {
-            l.classList.add('slide-up');
-            setTimeout(() => { l.style.display = 'none'; }, 600);
-        }
-    }
-
-    const onNetworkError = (err, ctx) => {
-        setUILock(false);
-        hideLoader();
-        showToast("Network Error: " + (err.message || "Could not reach server."), true);
-        remoteLogError(err.message, err.stack, ctx || "FrontEnd Network");
-    };
-
-    function apiPost(body) {
-        return fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(body)
-        }).then(r => {
-            if (!r.ok) throw new Error("HTTP " + r.status);
-            return r.json();
-        });
-    }
-
-    // Initialization On Load
     window.onload = () => {
         citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
         storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
 
         fetch(`${SCRIPT_URL}?action=getData`)
-            .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+            .then(r => r.json())
             .then(d => {
                 hideLoader();
-                if (d && d.error) {
-                    showToast("Load Failed: " + d.error, true);
-                    remoteLogError(d.error, "N/A", "Initial Data Fetch");
-                    return;
-                }
+                if (d && d.error) { showToast(d.error, true); return; }
                 db = Array.isArray(d) ? d : [];
-                const cities = [...new Set(db.map(i => i.city))].sort();
-                citySelectInstance.clearOptions();
-                cities.forEach(c => citySelectInstance.addOption({ value: c, text: c }));
+                [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
             })
-            .catch(err => onNetworkError(err, "Initial Data Fetch"));
+            .catch(err => { hideLoader(); showToast("Network Error", true); });
     };
 
-    // Data Refresh Controller
-    function refreshData() {
-        if (isProcessing) return;
-        const btn = document.getElementById('btnRefresh');
-        btn.classList.add('spinning'); btn.disabled = true;
-        db = []; filtered = []; reportedIds = new Set(); currentPage = 1; searchQuery = "";
-        document.getElementById('searchInput').value = "";
-        document.getElementById('resultArea').style.display = 'none';
-        citySelectInstance.clear(); storeSelectInstance.clearOptions(); storeSelectInstance.clear();
-
-        fetch(`${SCRIPT_URL}?action=getData`)
-            .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-            .then(d => {
-                btn.classList.remove('spinning'); btn.disabled = false;
-                if (d && d.error) { showToast("Refresh Failed: " + d.error, true); return; }
-                db = Array.isArray(d) ? d : [];
-                const cities = [...new Set(db.map(i => i.city))].sort();
-                citySelectInstance.clearOptions();
-                cities.forEach(c => citySelectInstance.addOption({ value: c, text: c }));
-                showToast("Data Refreshed ✓");
-            })
-            .catch(err => {
-                btn.classList.remove('spinning'); btn.disabled = false;
-                onNetworkError(err, "Refresh");
-            });
-    }
-
-    // Tab Navigation Switcher
     function setMode(m) {
         if (isProcessing) return;
-        managerMode = !!m; currentPage = 1; searchQuery = "";
-        document.getElementById('searchInput').value = "";
-        document.getElementById('btnNormal').classList.toggle('active', !m);
-        document.getElementById('btnManager').classList.toggle('active', m);
+        managerMode = !!m; currentPage = 1; searchQuery = ""; document.getElementById('searchInput').value = "";
+        document.getElementById('btnNormal').classList.toggle('active', !m); document.getElementById('btnManager').classList.toggle('active', m);
         document.getElementById('storeWrapper').style.display = m ? 'none' : 'block';
         document.getElementById('searchWrapper').style.display = m ? 'none' : 'block';
         document.getElementById('resultArea').style.display = 'none';
         citySelectInstance.clear(); storeSelectInstance.clearOptions(); storeSelectInstance.clear();
     }
 
-    // City Selection Handler
     function onCityChange() {
         if (isProcessing) return;
         const c = citySelectInstance.getValue(); currentPage = 1;
         if (!c) { document.getElementById('resultArea').style.display = 'none'; return; }
-        if (managerMode) { render(); }
-        else {
-            const stores = [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort();
+        if (managerMode) { render(); } else {
             storeSelectInstance.clearOptions(); storeSelectInstance.clear();
-            stores.forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
+            [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort().forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
             document.getElementById('resultArea').style.display = 'none';
         }
     }
 
-    // In-Table Search Input Event
-    function onSearchInput() {
-        searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-        currentPage = 1;
-        render();
-    }
-
+    function onSearchInput() { searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); currentPage = 1; render(); }
     function changePage(dir) { currentPage += dir; renderTable(); }
 
-    // Primary Render Logic
     function render() {
         const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-        if (!c || (!managerMode && !s)) {
-            document.getElementById('resultArea').style.display = 'none';
-            return;
-        }
+        if (!c || (!managerMode && !s)) { document.getElementById('resultArea').style.display = 'none'; return; }
 
         filtered = db.filter(i => {
-            const matchCity = i.city === c;
-            const matchStore = managerMode || i.darkStore === s;
-            const notReported = !reportedIds.has(String(i.casperId));
-            let matchSearch = true;
-            if (searchQuery && !managerMode) {
-                const nameStr = String(i.name || '').toLowerCase();
-                const idStr = String(i.casperId || '').toLowerCase();
-                matchSearch = nameStr.includes(searchQuery) || idStr.includes(searchQuery);
-            }
-            return matchCity && matchStore && notReported && matchSearch;
+            const mC = i.city === c, mS = managerMode || i.darkStore === s, nR = !reportedIds.has(String(i.casperId));
+            let mQ = true;
+            if (searchQuery && !managerMode) mQ = String(i.name).toLowerCase().includes(searchQuery) || String(i.casperId).toLowerCase().includes(searchQuery);
+            return mC && mS && nR && mQ;
         });
 
         document.getElementById('countBadge').innerText = filtered.length;
@@ -754,198 +245,82 @@
         renderTable();
     }
 
-    // Table Rendering Engine
     function renderTable() {
         const tHead = document.getElementById('tableHead'), tBody = document.getElementById('tableBody'), pBar = document.getElementById('paginationBar');
-        
         if (filtered.length === 0) {
-            tHead.innerHTML = '';
-            tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}" class="empty-state"><h4>No Pending Pickers Found</h4><p class="mt-1 text-muted mb-0">All clear or no matching records found.</p></td></tr>`;
-            pBar.style.display = 'none';
-            return;
+            tHead.innerHTML = ''; tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}"><b>No Records Found</b></td></tr>`;
+            pBar.style.display = 'none'; return;
         }
 
         if (managerMode) {
             pBar.style.display = 'none';
-            const sum = {};
-            filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
+            const sum = {}; filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
             tHead.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-            tBody.innerHTML = Object.entries(sum).sort((a, b) => a[0].localeCompare(b[0])).map(([n, v]) => `
-                <tr>
-                    <td>${checkNA(n)}</td>
-                    <td><span class="badge-count">${v}</span></td>
-                </tr>
-            `).join('');
+            tBody.innerHTML = Object.entries(sum).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v]) => `<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
         } else {
-            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-            currentPage = Math.min(currentPage, totalPages);
-            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('btnPrev').disabled = (currentPage === 1);
-            document.getElementById('btnNext').disabled = (currentPage === totalPages);
+            const tot = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            currentPage = Math.min(currentPage, tot);
+            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${tot}`;
+            document.getElementById('btnPrev').disabled = (currentPage === 1); document.getElementById('btnNext').disabled = (currentPage === tot);
             pBar.style.display = 'flex';
 
-            const start = (currentPage - 1) * PAGE_SIZE;
-            tHead.innerHTML = '<tr><th style="width:40%">Picker Name</th><th style="width:30%">Casper ID</th><th style="width:30%">Action</th></tr>';
-            
-            tBody.innerHTML = filtered.slice(start, start + PAGE_SIZE).map(i => `
+            const st = (currentPage - 1) * PAGE_SIZE;
+            tHead.innerHTML = '<tr><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
+            tBody.innerHTML = filtered.slice(st, st + PAGE_SIZE).map(i => `
                 <tr id="row-${escHtml(i.casperId)}">
-                    <td>${checkNA(i.name)}</td>
-                    <td style="text-transform:none;">${checkNA(i.casperId)}</td>
-                    <td>
-                        <button class="btn-main-rep" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button>
-                    </td>
-                </tr>
-            `).join('');
+                    <td>${checkNA(i.name)}</td><td>${checkNA(i.casperId)}</td>
+                    <td><button class="btn-main-rep" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button></td>
+                </tr>`).join('');
         }
     }
 
-    // Report Exit Action Submission
     function initiateSubmit(id) {
         const p = filtered.find(x => String(x.casperId) === String(id));
         if (!p) return;
+        const backup = [...db]; db = db.filter(i => String(i.casperId) !== String(id)); reportedIds.add(String(p.casperId));
+        render(); showToast("Processing exit...");
 
-        const rowEl = document.getElementById('row-' + CSS.escape(id));
-        if (rowEl) rowEl.classList.add('row-dismissing');
-
-        setTimeout(() => {
-            const backupDb = [...db];
-            db = db.filter(i => String(i.casperId) !== String(id));
-            reportedIds.add(String(p.casperId));
-            render();
-            showToast("Processing exit report...");
-
-            apiPost({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city, r: 'Exit' })
-                .then(res => {
-                    if (res.status === "Success") {
-                        showToast("Report Submitted Successfully ✓");
-                    } else {
-                        db = backupDb;
-                        reportedIds.delete(String(p.casperId));
-                        render();
-                        showToast("Report Failed.", true);
-                        remoteLogError(res.error, "N/A", "Backend rejected exit report");
-                    }
-                })
-                .catch(err => {
-                    db = backupDb;
-                    reportedIds.delete(String(p.casperId));
-                    render();
-                    onNetworkError(err, "Report Submission");
-                });
-        }, 250);
+        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city }) })
+            .then(r => r.json()).then(res => {
+                if (res.status === "Success") showToast("Submitted ✓");
+                else { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Failed.", true); }
+            }).catch(err => { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Error", true); });
     }
 
-    // PDF Export Function
     function exportData() {
-        if (isProcessing || filtered.length === 0) {
-            if (filtered.length === 0) showToast("No Data To Export", true);
-            return;
-        }
-        setUILock(true);
-        try {
-            const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-            const fileName = (managerMode ? c : s) + " Pendency";
-            const headerTitle = (managerMode ? c + " Summary" : s + " Pendency").replace(/\b\w/g, l => l.toUpperCase());
-            const { jsPDF } = window.jspdf, doc = new jsPDF(), w = doc.internal.pageSize.getWidth();
-            const tableStyle = { halign: 'center', textColor: 0, lineColor: [0, 0, 0], lineWidth: 0.2, fontStyle: 'bold' };
-            const headStyle = { fillColor: [253, 253, 150], textColor: 0, lineColor: [0, 0, 0], lineWidth: 0.2 };
-
-            doc.setFontSize(16).text(headerTitle, w / 2, 15, { align: "center" });
-            doc.setFontSize(9).text(loginTxt, w / 2, 22, { align: "center" });
-
-            if (managerMode) {
-                const sortedFiltered = [...filtered].sort((a, b) => a.clusterManager.localeCompare(b.clusterManager));
-                const summaryData = Object.entries(filtered.reduce((acc, item) => {
-                    acc[item.clusterManager] = (acc[item.clusterManager] || 0) + 1;
-                    return acc;
-                }, {})).sort((a, b) => a[0].localeCompare(b[0]));
-
-                doc.autoTable({ head: [['CLUSTER MANAGER', 'PENDENCY']], body: summaryData, startY: 28, theme: 'grid', styles: tableStyle, headStyles: headStyle });
-                doc.addPage();
-                doc.setFontSize(14).text("Entire Pendency", w / 2, 15, { align: "center" });
-                doc.setFontSize(9).text(loginTxt, w / 2, 21, { align: "center" });
-                doc.autoTable({ head: [['CM', 'STORE', 'PICKER', 'ID']], body: sortedFiltered.map(i => [i.clusterManager, i.darkStore, i.name, i.casperId]), startY: 28, theme: 'grid', styles: { ...tableStyle, fontSize: 8 }, headStyles: headStyle });
-            } else {
-                doc.autoTable({ head: [['PICKER NAME', 'CASPER ID']], body: filtered.map(i => [i.name, i.casperId]), startY: 30, theme: 'grid', styles: tableStyle, headStyles: headStyle });
-            }
-
-            doc.save(fileName + ".pdf");
-            setUILock(false);
-            showToast("PDF Downloaded ✓");
-        } catch (err) {
-            setUILock(false);
-            showToast("Failed to generate PDF", true);
-            remoteLogError(err.message, err.stack, "PDF Export");
-        }
-    }
-
-    // Instant Client-Side CSV Export
-    function exportToCSV() {
-        if (isProcessing || filtered.length === 0) {
-            if (filtered.length === 0) showToast("No Data To Export", true);
-            return;
-        }
-        const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-        let csvContent = "data:text/csv;charset=utf-8,";
-
-        if (managerMode) {
-            csvContent += "Cluster Manager,Store,Picker Name,Casper ID\n";
-            filtered.forEach(i => {
-                csvContent += `"${i.clusterManager || ''}","${i.darkStore || ''}","${i.name || ''}","${i.casperId || ''}"\n`;
-            });
+        if(filtered.length===0) return; setUILock(true);
+        const { jsPDF } = window.jspdf, doc = new jsPDF(), w = doc.internal.pageSize.getWidth();
+        const hd = { fillColor: [253,253,150], textColor: 0, fontStyle: 'bold' }, b = { halign: 'center' };
+        
+        doc.setFontSize(16).text(managerMode ? "Summary" : "Pendency", w/2, 15, {align:"center"});
+        if(managerMode) {
+            const sm = {}; filtered.forEach(i => sm[i.clusterManager] = (sm[i.clusterManager]||0)+1);
+            doc.autoTable({ head: [['CM', 'Count']], body: Object.entries(sm), startY: 25, headStyles: hd, styles: b });
         } else {
-            csvContent += "Picker Name,Casper ID\n";
-            filtered.forEach(i => {
-                csvContent += `"${i.name || ''}","${i.casperId || ''}"\n`;
-            });
+            doc.autoTable({ head: [['Name', 'ID']], body: filtered.map(i=>[i.name, i.casperId]), startY: 25, headStyles: hd, styles: b });
         }
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `${managerMode ? c : s}_Pendency_Export.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("CSV Downloaded ✓");
+        doc.save("Export.pdf"); setUILock(false);
     }
 
-    // Google Sheets Export Integration
+    function exportToCSV() {
+        if(filtered.length===0) return;
+        let c = managerMode ? "Cluster Manager,Store,Picker Name,Casper ID\n" : "Picker Name,Casper ID\n";
+        filtered.forEach(i => { c += managerMode ? `"${i.clusterManager}","${i.darkStore}","${i.name}","${i.casperId}"\n` : `"${i.name}","${i.casperId}"\n`; });
+        const l = document.createElement("a"); l.href = encodeURI("data:text/csv;charset=utf-8," + c); l.download = "Export.csv"; l.click();
+    }
+
     function exportToGSheet() {
-        if (isProcessing || filtered.length === 0) {
-            if (filtered.length === 0) showToast("No Data To Export", true);
-            return;
-        }
-        const btn = document.getElementById('btnGSheet'), c = citySelectInstance.getValue();
-        btn.innerText = "Generating Sheet...";
-        setUILock(true);
-
-        const fileTitle = c + " - Picker Pendency Export";
-        const sumData = [['Cluster Manager', 'Total Pendency'], ...Object.entries(filtered.reduce((acc, item) => {
-            acc[item.clusterManager] = (acc[item.clusterManager] || 0) + 1;
-            return acc;
-        }, {})).sort((a, b) => a[0].localeCompare(b[0]))];
-
-        const detData = [['Cluster Manager', 'Store', 'Name', 'Casper ID'], ...filtered.map(i => [i.clusterManager, i.darkStore, i.name, i.casperId])];
-
-        apiPost({ action: "export", f: fileTitle, summaryData: sumData, detailData: detData })
-            .then(data => {
-                btn.innerText = "Open as Google Sheet";
-                setUILock(false);
-                if (data && data.url && !data.url.startsWith("Error")) {
-                    showToast("Sheet Generated ✓");
-                    window.open(data.url, '_blank');
-                } else {
-                    showToast("Failed To Create Sheet", true);
-                    remoteLogError(data.error || data.url, "N/A", "GSheet Export");
-                }
-            })
-            .catch(err => {
-                btn.innerText = "Open as Google Sheet";
-                onNetworkError(err, "GSheet Export");
-            });
+        if(filtered.length===0) return;
+        document.getElementById('btnGSheet').innerText = "Generating..."; setUILock(true);
+        const sm = [['CM', 'Total']]; filtered.forEach(i => sm.push([i.clusterManager, 1]));
+        const dt = [['CM', 'Store', 'Name', 'ID'], ...filtered.map(i=>[i.clusterManager, i.darkStore, i.name, i.casperId])];
+        
+        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "export", f: "Pendency Export", summaryData: sm, detailData: dt }) })
+            .then(r => r.json()).then(d => {
+                document.getElementById('btnGSheet').innerText = "Open as Google Sheet"; setUILock(false);
+                if(d.url) window.open(d.url, '_blank'); else showToast("Failed", true);
+            }).catch(e => { document.getElementById('btnGSheet').innerText = "Open as Google Sheet"; setUILock(false); });
     }
 </script>
-
 </body>
 </html>
