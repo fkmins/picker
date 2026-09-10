@@ -5,39 +5,65 @@
     <title>Picker Pendency Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#4f46e5">
-    <!-- Restored Favicon -->
     <link rel="icon" type="image/jpeg" href="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    
+    <!-- Scripts deferred for faster page loading -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <style>
         ::-webkit-scrollbar { display: none !important; }
         * { scrollbar-width: none !important; -ms-overflow-style: none !important; box-sizing: border-box; }
         
         :root {
-            --primary: #4f46e5; --primary-hover: #4338ca; --primary-soft: #e0e7ff;
-            --danger: #ef4444; --danger-hover: #dc2626; --success: #10b981; --success-hover: #059669;
-            --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0;
+            --primary: #4f46e5; --primary-hover: #4338ca; 
+            --danger: #ef4444; --danger-hover: #dc2626; 
+            --success: #10b981; --success-hover: #059669;
+            --bg-body: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 50%, #e0e7ff 100%);
+            --bg-panel: rgba(255, 255, 255, 0.94);
+            --text-main: #0f172a; --text-muted: #64748b; 
+            --border-color: rgba(226, 232, 240, 0.8);
+            --card-bg: #ffffff;
+            --table-header: #f8fafc;
+            --table-hover: #f1f5f9;
+        }
+
+        /* Smart Feature: Dark Mode Variables */
+        body.dark-mode {
+            --bg-body: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            --bg-panel: rgba(30, 41, 59, 0.85);
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --card-bg: #1e293b;
+            --table-header: #0f172a;
+            --table-hover: #334155;
+            color: var(--text-main);
         }
 
         body {
-            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 50%, #e0e7ff 100%);
-            margin: 0; padding: 30px 15px; min-height: 100vh;
+            background: var(--bg-body); margin: 0; padding: 30px 15px; min-height: 100vh;
             font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text-main);
             display: flex; align-items: flex-start; justify-content: center;
+            transition: background 0.4s ease, color 0.4s ease;
         }
 
-        /* Improved Loader Animation */
+        /* Hardware Accelerated Snow Canvas */
+        #snowCanvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 1; opacity: 0.8;
+        }
+
+        /* Improved Loader */
         #appLoader {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 99999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-body); z-index: 99999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s;
         }
         .spinner {
-            width: 60px; height: 60px; border: 6px solid #e2e8f0; border-top: 6px solid var(--primary);
+            width: 60px; height: 60px; border: 6px solid var(--border-color); border-top: 6px solid var(--primary);
             border-radius: 50%; animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
         }
         .loading-text-anim {
@@ -47,75 +73,110 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes pulseText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } }
 
-        /* Slide-in Image Popup based on your request */
+        /* Smoothed Side Image Popup */
         .side-popup {
-            position: fixed; right: 20px; top: 20px; z-index: 1000;
-            animation: slideInRight 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden;
-            border: 2px solid #fff; pointer-events: none;
+            position: fixed; right: 20px; bottom: 20px; z-index: 1000;
+            animation: slideInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 50%; overflow: hidden;
+            border: 3px solid #fff; pointer-events: none; background: #fff;
         }
-        .side-popup img { width: 70px; height: 70px; object-fit: cover; display: block; }
-        @keyframes slideInRight { 0% { transform: translateX(150px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+        .side-popup img { width: 65px; height: 65px; object-fit: cover; display: block; }
+        @keyframes slideInUp { 0% { transform: translateY(150px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 
+        /* Main Glass Panel */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.94); border-radius: 24px; padding: 35px 30px;
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); width: 100%; max-width: 900px;
-            border: 1px solid rgba(255, 255, 255, 0.8); z-index: 10;
+            background: var(--bg-panel); border-radius: 24px; padding: 35px 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px;
+            border: 1px solid var(--border-color); z-index: 10; position: relative;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
         }
         
-        /* UI Block class */
-        .ui-locked { pointer-events: none; opacity: 0.6; cursor: not-allowed; }
+        .ui-locked { pointer-events: none; opacity: 0.6; cursor: wait; }
 
-        .brand-header { text-align: center; margin-bottom: 24px; }
-        .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; }
+        /* Header Area with Brand Integration */
+        .header-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .brand-header { display: flex; align-items: center; gap: 15px; }
+        .brand-logo { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -0.5px; }
+        
+        /* Dark Mode Toggle */
+        .theme-btn {
+            background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main);
+            border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 18px;
+        }
+        .theme-btn:hover { transform: translateY(-2px); }
 
         .tab-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-tab {
-            border: none; padding: 12px 22px; border-radius: 14px; font-weight: 700; background: #f1f5f9;
+            border: 1px solid var(--border-color); padding: 12px 22px; border-radius: 14px; font-weight: 700; background: var(--card-bg);
             color: var(--text-muted); transition: all 0.25s ease; flex: 1; max-width: 220px; cursor: pointer;
         }
-        .btn-tab:hover:not(.active) { background: #e2e8f0; color: var(--text-main); }
-        .btn-tab.active { background: var(--primary); color: #ffffff; }
+        .btn-tab:hover:not(.active) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .btn-tab.active { background: var(--primary); color: #ffffff; border-color: var(--primary); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3); }
 
-        .ts-control { border-radius: 14px !important; padding: 12px 16px !important; border: 2px solid var(--border-color) !important; text-align: center !important; font-weight: 700; }
+        .ts-control { border-radius: 14px !important; padding: 12px 16px !important; border: 2px solid var(--border-color) !important; text-align: center !important; font-weight: 700; background: var(--card-bg) !important; color: var(--text-main) !important; transition: border-color 0.2s; }
+        .ts-control:focus { border-color: var(--primary) !important; }
+        .ts-dropdown { background: var(--card-bg) !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; border-radius: 10px !important; }
+        .ts-dropdown .option { color: var(--text-main); }
         
-        #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; }
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
-        .metric-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; text-align: center; }
-        .metric-card .val { font-size: 26px; font-weight: 800; color: var(--primary); }
-        .metric-card .lbl { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+        #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
 
-        .search-box { width: 100%; border-radius: 12px; padding: 12px 18px; border: 2px solid var(--border-color); font-weight: 600; text-align: center; margin-bottom: 20px; outline: none; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
+        .metric-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .metric-card:hover { transform: translateY(-3px); }
+        .metric-card .val { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; }
+        .metric-card .lbl { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+
+        .search-wrapper { position: relative; width: 100%; margin-bottom: 20px; }
+        .search-box { width: 100%; border-radius: 14px; padding: 14px 20px 14px 45px; border: 2px solid var(--border-color); font-weight: 600; text-align: left; outline: none; background: var(--card-bg); color: var(--text-main); transition: border-color 0.2s; }
+        .search-box:focus { border-color: var(--primary); }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+        .shortcut-hint { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: var(--border-color); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted); pointer-events: none; }
+
         .action-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; width: 100%; }
-        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; transition: transform 0.1s; }
+        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
         .btn-action:active { transform: scale(0.97); }
-        .btn-pdf { background: var(--text-main); color: #ffffff; }
+        .btn-pdf { background: #334155; color: #ffffff; }
         .btn-sheet { background: var(--success); color: #ffffff; }
         .btn-csv { background: var(--primary); color: #ffffff; }
 
-        .table-holder { background: #ffffff; border-radius: 16px; overflow-x: auto; width: 100%; border: 1px solid var(--border-color); }
-        .table { margin-bottom: 0; min-width: 480px; text-align: center; }
-        .table thead th { background: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 16px; }
-        .table td { padding: 16px; font-weight: 700; font-size: 14px; vertical-align: middle; }
+        /* Sticky Table Implementation */
+        .table-holder { background: var(--card-bg); border-radius: 16px; overflow-x: auto; width: 100%; border: 1px solid var(--border-color); max-height: 500px; overflow-y: auto; }
+        .table { margin-bottom: 0; min-width: 480px; text-align: center; color: var(--text-main); }
+        .table thead th { background: var(--table-header); color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 16px; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border-color); }
+        .table td { padding: 16px; font-weight: 600; font-size: 14px; vertical-align: middle; border-bottom: 1px solid var(--border-color); transition: background 0.2s; }
+        .table tbody tr:hover td { background: var(--table-hover); }
         
-        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+        .btn-main-rep:hover { background: var(--danger-hover); transform: translateY(-1px); }
         .btn-main-rep:active { transform: scale(0.95); }
 
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; transition: opacity 0.3s; }
-        .toast-msg { background: var(--text-main); color: #ffffff; padding: 14px 28px; border-radius: 50px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
+        .toast-msg { background: var(--text-main); color: var(--card-bg); padding: 14px 28px; border-radius: 50px; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes toastPop { 0%{transform:scale(0.8); opacity:0;} 100%{transform:scale(1); opacity:1;} }
         
-        .badge-count { background: var(--text-main); color: #fff; padding: 6px 14px; border-radius: 20px; }
-        .na-bg { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
+        .badge-count { background: var(--primary); color: #fff; padding: 6px 14px; border-radius: 20px; display: inline-block; }
+        .na-bg { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.2); }
 
         @media (max-width: 768px) {
             .glass-panel { padding: 25px 15px; border-radius: 18px; }
-            .side-popup { right: 10px; top: 10px; }
+            .dash-title { font-size: 22px; }
+            .side-popup { right: 10px; bottom: 10px; }
             .side-popup img { width: 50px; height: 50px; }
+            .header-wrapper { flex-direction: column; gap: 15px; }
+            .theme-btn { position: absolute; top: 20px; right: 20px; }
         }
     </style>
 </head>
 
 <body>
+
+<!-- Snowfall Canvas (Hardware Accelerated) -->
+<canvas id="snowCanvas"></canvas>
 
 <div id="appLoader">
     <div class="spinner"></div>
@@ -127,11 +188,18 @@
 </div>
 
 <div class="glass-panel" id="mainPanel">
-    <div class="brand-header"><h2 class="dash-title">Picker Pendency Dashboard</h2></div>
+    
+    <div class="header-wrapper">
+        <div class="brand-header">
+            <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" class="brand-logo" alt="Logo">
+            <h2 class="dash-title">Picker Pendency Dashboard</h2>
+        </div>
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+    </div>
 
     <div class="tab-container">
-        <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">Dark Store Wise</button>
-        <button id="btnManager" class="btn-tab" onclick="setMode(1)">Cluster Manager</button>
+        <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">🏬 Dark Store Wise</button>
+        <button id="btnManager" class="btn-tab" onclick="setMode(1)">👨‍💼 Cluster Manager</button>
     </div>
 
     <div class="row g-3 justify-content-center mb-3">
@@ -145,14 +213,16 @@
             <div class="metric-card"><div class="val" id="totalReportedBadge">0</div><div class="lbl">Reported Exits</div></div>
         </div>
 
-        <div id="searchWrapper" style="width: 100%;">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by Name or Casper ID..." oninput="onSearchInput()">
+        <div id="searchWrapper" class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-box" placeholder="Search Name or Casper ID..." oninput="onSearchInput()">
+            <span class="shortcut-hint">/</span>
         </div>
 
         <div class="action-buttons">
-            <button class="btn-action btn-pdf" onclick="exportData()">📄 Download PDF</button>
-            <button class="btn-action btn-csv" onclick="exportToCSV()">📊 Download CSV</button>
-            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">🌐 Open as Google Sheet</button>
+            <button class="btn-action btn-pdf" onclick="exportData()">📄 Export PDF</button>
+            <button class="btn-action btn-csv" onclick="exportToCSV()">📊 Export CSV</button>
+            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">🌐 Open as G-Sheet</button>
         </div>
 
         <div class="table-holder">
@@ -162,10 +232,10 @@
             </table>
         </div>
         
-        <div id="paginationBar" style="display:none; justify-content:center; align-items:center; gap:15px; margin-top:20px; width:100%;">
-            <button class="btn-tab" id="btnPrev" onclick="changePage(-1)" style="min-width:auto; padding:8px 16px;">Previous</button>
-            <span id="pageInfo" style="font-weight:700;">Page 1</span>
-            <button class="btn-tab" id="btnNext" onclick="changePage(1)" style="min-width:auto; padding:8px 16px;">Next</button>
+        <div id="paginationBar" style="display:none; justify-content:space-between; align-items:center; margin-top:20px; width:100%; padding: 0 10px;">
+            <button class="btn-tab" id="btnPrev" onclick="changePage(-1)" style="min-width:auto; padding:8px 16px; margin:0;">← Prev</button>
+            <span id="pageInfo" style="font-weight:700; font-size:14px; color:var(--text-muted);">Page 1</span>
+            <button class="btn-tab" id="btnNext" onclick="changePage(1)" style="min-width:auto; padding:8px 16px; margin:0;">Next →</button>
         </div>
     </div>
 </div>
@@ -178,17 +248,37 @@
 
     let db = [], filtered = [], managerMode = false, reportedIds = new Set();
     let citySelectInstance, storeSelectInstance;
-    let isProcessing = false, currentPage = 1, toastTimer = null;
+    let isProcessing = false, currentPage = 1, toastTimer = null, searchDebounceTimer = null;
     let searchQuery = "";
     const PAGE_SIZE = 50;
 
     const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const checkNA = str => { const v = String(str).trim().toUpperCase(); return (!v || v === "N/A") ? `<span class="na-bg">N/A</span>` : escHtml(str); };
 
+    // Smart Feature: Dark Mode Toggle
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        document.querySelector('.theme-btn').innerText = isDark ? '☀️' : '🌙';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    // Smart Feature: Keyboard Shortcut (Press '/' to focus search)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement.id !== 'searchInput') {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+    });
+
+    // Initialize Theme
+    if(localStorage.getItem('theme') === 'dark') toggleTheme();
+
     function showToast(msg, isError = false) {
         const c = document.getElementById('toast-container'), t = document.getElementById('toastText');
         t.innerText = msg; 
         t.style.background = isError ? "var(--danger)" : "var(--text-main)";
+        t.style.color = isError ? "#fff" : "var(--card-bg)";
         c.style.display = 'block'; 
         clearTimeout(toastTimer); 
         toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
@@ -203,31 +293,36 @@
 
     function hideLoader() { 
         const l = document.getElementById('appLoader'); 
-        if(l) { l.style.opacity = '0'; setTimeout(() => { l.style.display = 'none'; l.style.pointerEvents = 'none'; }, 400); } 
+        if(l) { 
+            l.style.opacity = '0'; 
+            setTimeout(() => { l.style.visibility = 'hidden'; }, 400); 
+        } 
     }
 
     window.onload = () => {
-        citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
-        storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
+        // Initialize TomSelect ensuring scripts are loaded
+        setTimeout(() => {
+            citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
+            storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
 
-        if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
-            hideLoader();
-            showToast("ERROR: Please update SCRIPT_URL in index.html", true);
-            return;
-        }
+            if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
+                hideLoader(); showToast("ERROR: Please update SCRIPT_URL", true); return;
+            }
 
-        fetch(`${SCRIPT_URL}?action=getData`)
-            .then(r => r.json())
-            .then(d => {
-                hideLoader();
-                if (d && d.error) { showToast("Backend Error: " + d.error, true); return; }
-                db = Array.isArray(d) ? d : [];
-                [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
-            })
-            .catch(err => { 
-                hideLoader(); 
-                showToast("Network Error: Could not load data.", true); 
-            });
+            fetch(`${SCRIPT_URL}?action=getData`)
+                .then(r => r.json())
+                .then(d => {
+                    hideLoader();
+                    if (d && d.error) { showToast("Backend Error: " + d.error, true); return; }
+                    db = Array.isArray(d) ? d : [];
+                    [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
+                })
+                .catch(err => { 
+                    hideLoader(); showToast("Network Error: Could not load data.", true); 
+                });
+            
+            initSnow(); // Start visual effect
+        }, 100);
     };
 
     function setMode(m) {
@@ -244,11 +339,8 @@
         document.getElementById('searchWrapper').style.display = m ? 'none' : 'block';
 
         const currentCity = citySelectInstance.getValue();
-        if (currentCity) {
-            if (managerMode) render(); else onCityChange();
-        } else {
-            document.getElementById('resultArea').style.display = 'none';
-        }
+        if (currentCity) { if (managerMode) render(); else onCityChange(); } 
+        else document.getElementById('resultArea').style.display = 'none';
     }
 
     function onCityChange() {
@@ -257,26 +349,25 @@
         currentPage = 1;
         if (!c) { document.getElementById('resultArea').style.display = 'none'; return; }
         
-        if (managerMode) { 
-            render(); 
-        } else {
-            storeSelectInstance.clearOptions(); 
-            storeSelectInstance.clear();
+        if (managerMode) { render(); } 
+        else {
+            storeSelectInstance.clearOptions(); storeSelectInstance.clear();
             [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort().forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
             document.getElementById('resultArea').style.display = 'none';
         }
     }
 
+    // Smart Feature: Debouncing Search to prevent UI lag on fast typing
     function onSearchInput() { 
-        searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); 
-        currentPage = 1; 
-        render(); 
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); 
+            currentPage = 1; 
+            render(); 
+        }, 250);
     }
 
-    function changePage(dir) { 
-        currentPage += dir; 
-        renderTable(); 
-    }
+    function changePage(dir) { currentPage += dir; renderTable(); }
 
     function render() {
         const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
@@ -302,15 +393,13 @@
         
         if (filtered.length === 0) {
             tHead.innerHTML = ''; 
-            tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}"><b>No Records Found</b></td></tr>`;
-            pBar.style.display = 'none'; 
-            return;
+            tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}" style="padding: 30px; color: var(--text-muted);"><b>No Records Found 📭</b></td></tr>`;
+            pBar.style.display = 'none'; return;
         }
 
         if (managerMode) {
             pBar.style.display = 'none';
-            const sum = {}; 
-            filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
+            const sum = {}; filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
             tHead.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
             tBody.innerHTML = Object.entries(sum).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v]) => `<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
         } else {
@@ -318,14 +407,16 @@
             currentPage = Math.min(currentPage, tot);
             document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${tot}`;
             document.getElementById('btnPrev').disabled = (currentPage === 1); 
+            document.getElementById('btnPrev').style.opacity = (currentPage === 1) ? 0.5 : 1;
             document.getElementById('btnNext').disabled = (currentPage === tot);
+            document.getElementById('btnNext').style.opacity = (currentPage === tot) ? 0.5 : 1;
             pBar.style.display = 'flex';
 
             const st = (currentPage - 1) * PAGE_SIZE;
             tHead.innerHTML = '<tr><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
             tBody.innerHTML = filtered.slice(st, st + PAGE_SIZE).map(i => `
                 <tr id="row-${escHtml(i.casperId)}">
-                    <td>${checkNA(i.name)}</td><td>${checkNA(i.casperId)}</td>
+                    <td>${checkNA(i.name)}</td><td><strong style="color:var(--primary)">${checkNA(i.casperId)}</strong></td>
                     <td><button class="btn-main-rep" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button></td>
                 </tr>`).join('');
         }
@@ -341,39 +432,28 @@
         reportedIds.add(String(p.casperId));
         
         render(); 
-        showToast("Processing exit...");
-        setUILock(true);
+        showToast("Processing exit..."); setUILock(true);
 
         fetch(SCRIPT_URL, { 
-            method: "POST", 
-            headers: { "Content-Type": "text/plain" }, 
+            method: "POST", headers: { "Content-Type": "text/plain" }, 
             body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city }) 
         })
         .then(r => r.json())
         .then(res => {
-            if (res.status === "Success") {
-                showToast("Exit Successfully Processed ✓");
-            } else { 
-                db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Failed to exit.", true); 
-            }
+            if (res.status === "Success") showToast("Exit Successfully Processed ✓");
+            else { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Failed to exit.", true); }
         })
-        .catch(err => { 
-            db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Network/Server Error", true); 
-        })
-        .finally(() => {
-            setUILock(false);
-        });
+        .catch(err => { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Network/Server Error", true); })
+        .finally(() => setUILock(false));
     }
 
     function exportData() {
         if (filtered.length === 0 || isProcessing) return; 
         setUILock(true);
-        
         try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
             const w = doc.internal.pageSize.getWidth();
-            const hd = { fillColor: [253,253,150], textColor: 0, fontStyle: 'bold' };
+            const hd = { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' }; // Upgraded theme colors for PDF
             const b = { halign: 'center' };
             
             doc.setFontSize(16).text(managerMode ? "CM Summary" : "Pendency Export", w/2, 15, {align:"center"});
@@ -384,12 +464,8 @@
             } else {
                 doc.autoTable({ head: [['Picker Name', 'Casper ID']], body: filtered.map(i=>[i.name, i.casperId]), startY: 25, headStyles: hd, styles: b });
             }
-            doc.save("Export.pdf"); 
-        } catch(e) {
-            showToast("Failed to generate PDF", true);
-        } finally {
-            setUILock(false);
-        }
+            doc.save("Pendency_Export.pdf"); 
+        } catch(e) { showToast("Failed to generate PDF", true); } finally { setUILock(false); }
     }
 
     function exportToCSV() {
@@ -400,46 +476,73 @@
             filtered.forEach(i => { c += managerMode ? `"${i.clusterManager}","${i.darkStore}","${i.name}","${i.casperId}"\n` : `"${i.name}","${i.casperId}"\n`; });
             const l = document.createElement("a"); 
             l.href = encodeURI("data:text/csv;charset=utf-8," + c); 
-            l.download = "Export.csv"; 
-            l.click();
-        } catch(e) {
-            showToast("Failed to generate CSV", true);
-        } finally {
-            setUILock(false);
-        }
+            l.download = "Pendency_Export.csv"; l.click();
+        } catch(e) { showToast("Failed to generate CSV", true); } finally { setUILock(false); }
     }
 
     function exportToGSheet() {
         if(filtered.length === 0 || isProcessing) return;
+        document.getElementById('btnGSheet').innerText = "Generating..."; setUILock(true);
         
-        document.getElementById('btnGSheet').innerText = "Generating..."; 
-        setUILock(true);
-        
-        const sm = [['CM', 'Total']]; 
-        filtered.forEach(i => sm.push([i.clusterManager, 1]));
+        const sm = [['CM', 'Total']]; filtered.forEach(i => sm.push([i.clusterManager, 1]));
         const dt = [['CM', 'Store', 'Name', 'ID'], ...filtered.map(i=>[i.clusterManager, i.darkStore, i.name, i.casperId])];
         
         fetch(SCRIPT_URL, { 
-            method: "POST", 
-            headers: { "Content-Type": "text/plain" }, 
+            method: "POST", headers: { "Content-Type": "text/plain" }, 
             body: JSON.stringify({ action: "export", f: "Pendency Export", summaryData: sm, detailData: dt }) 
         })
         .then(r => r.json())
         .then(d => {
-            if(d.url) {
-                window.open(d.url, '_blank');
-                showToast("Google Sheet Created ✓");
-            } else { 
-                showToast("Failed to generate sheet", true); 
+            if(d.url) { window.open(d.url, '_blank'); showToast("Google Sheet Created ✓"); } 
+            else showToast("Failed to generate sheet", true); 
+        })
+        .catch(e => showToast("Network error generating sheet", true))
+        .finally(() => { document.getElementById('btnGSheet').innerText = "🌐 Open as G-Sheet"; setUILock(false); });
+    }
+
+    // High Performance HTML5 Canvas Snow Effect
+    function initSnow() {
+        const canvas = document.getElementById("snowCanvas");
+        const ctx = canvas.getContext("2d");
+        let W = window.innerWidth, H = window.innerHeight;
+        canvas.width = W; canvas.height = H;
+
+        const mp = 40; // Max particles
+        const particles = [];
+        for (let i = 0; i < mp; i++) {
+            particles.push({
+                x: Math.random() * W, y: Math.random() * H, r: Math.random() * 3 + 1, d: Math.random() * mp
+            });
+        }
+        let angle = 0;
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.beginPath();
+            for (let i = 0; i < mp; i++) {
+                let p = particles[i];
+                ctx.moveTo(p.x, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
             }
-        })
-        .catch(e => { 
-            showToast("Network error generating sheet", true); 
-        })
-        .finally(() => {
-            document.getElementById('btnGSheet').innerText = "🌐 Open as Google Sheet"; 
-            setUILock(false);
-        });
+            ctx.fill(); update();
+        }
+        function update() {
+            angle += 0.01;
+            for (let i = 0; i < mp; i++) {
+                let p = particles[i];
+                p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
+                p.x += Math.sin(angle) * 2;
+                if (p.x > W + 5 || p.x < -5 || p.y > H) {
+                    if (i % 3 > 0) { particles[i] = { x: Math.random() * W, y: -10, r: p.r, d: p.d }; } 
+                    else {
+                        if (Math.sin(angle) > 0) particles[i] = { x: -5, y: Math.random() * H, r: p.r, d: p.d };
+                        else particles[i] = { x: W + 5, y: Math.random() * H, r: p.r, d: p.d };
+                    }
+                }
+            }
+        }
+        setInterval(draw, 33); // ~30fps
+        window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; });
     }
 </script>
 </body>
