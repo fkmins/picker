@@ -5,6 +5,7 @@
     <title>Picker Pendency Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#4f46e5">
+    <!-- Restored Favicon -->
     <link rel="icon" type="image/jpeg" href="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -30,26 +31,28 @@
             display: flex; align-items: flex-start; justify-content: center;
         }
 
+        /* Improved Loader Animation */
         #appLoader {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 99999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;
         }
         .spinner {
-            width: 70px; height: 70px; border: 5px solid #e2e8f0; border-top: 5px solid var(--primary);
-            border-radius: 50%; animation: spin 1s linear infinite;
+            width: 60px; height: 60px; border: 6px solid #e2e8f0; border-top: 6px solid var(--primary);
+            border-radius: 50%; animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
         }
         .loading-text-anim {
-            margin-top: 25px; font-weight: 800; font-size: 18px; color: var(--primary);
-            animation: bounceText 1.5s infinite; text-align: center;
+            margin-top: 20px; font-weight: 800; font-size: 18px; color: var(--primary);
+            animation: pulseText 1.5s ease-in-out infinite; text-align: center;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes bounceText { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(-8px); opacity: 0.6; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulseText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } }
 
+        /* Slide-in Image Popup based on your request */
         .side-popup {
             position: fixed; right: 20px; top: 20px; z-index: 1000;
             animation: slideInRight 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden;
-            border: 2px solid #fff;
+            border: 2px solid #fff; pointer-events: none;
         }
         .side-popup img { width: 70px; height: 70px; object-fit: cover; display: block; }
         @keyframes slideInRight { 0% { transform: translateX(150px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
@@ -59,7 +62,9 @@
             box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); width: 100%; max-width: 900px;
             border: 1px solid rgba(255, 255, 255, 0.8); z-index: 10;
         }
-        .ui-locked { pointer-events: none; opacity: 0.6; }
+        
+        /* UI Block class */
+        .ui-locked { pointer-events: none; opacity: 0.6; cursor: not-allowed; }
 
         .brand-header { text-align: center; margin-bottom: 24px; }
         .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; }
@@ -70,12 +75,10 @@
             color: var(--text-muted); transition: all 0.25s ease; flex: 1; max-width: 220px; cursor: pointer;
         }
         .btn-tab:hover:not(.active) { background: #e2e8f0; color: var(--text-main); }
-        #btnNormal.active { background: var(--text-main); color: #ffffff; }
-        #btnManager.active { background: var(--primary); color: #ffffff; }
+        .btn-tab.active { background: var(--primary); color: #ffffff; }
 
         .ts-control { border-radius: 14px !important; padding: 12px 16px !important; border: 2px solid var(--border-color) !important; text-align: center !important; font-weight: 700; }
-        .ts-dropdown .option { font-weight: 700; text-align: center !important; }
-
+        
         #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; }
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
         .metric-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; text-align: center; }
@@ -84,7 +87,8 @@
 
         .search-box { width: 100%; border-radius: 12px; padding: 12px 18px; border: 2px solid var(--border-color); font-weight: 600; text-align: center; margin-bottom: 20px; outline: none; }
         .action-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; width: 100%; }
-        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; }
+        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; transition: transform 0.1s; }
+        .btn-action:active { transform: scale(0.97); }
         .btn-pdf { background: var(--text-main); color: #ffffff; }
         .btn-sheet { background: var(--success); color: #ffffff; }
         .btn-csv { background: var(--primary); color: #ffffff; }
@@ -93,17 +97,19 @@
         .table { margin-bottom: 0; min-width: 480px; text-align: center; }
         .table thead th { background: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 16px; }
         .table td { padding: 16px; font-weight: 700; font-size: 14px; vertical-align: middle; }
-        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; display: block; margin: 0 auto; cursor: pointer; }
+        
+        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .btn-main-rep:active { transform: scale(0.95); }
 
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
-        .toast-msg { background: var(--text-main); color: #ffffff; padding: 14px 28px; border-radius: 50px; font-weight: 700; }
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; transition: opacity 0.3s; }
+        .toast-msg { background: var(--text-main); color: #ffffff; padding: 14px 28px; border-radius: 50px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         
         .badge-count { background: var(--text-main); color: #fff; padding: 6px 14px; border-radius: 20px; }
         .na-bg { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
 
         @media (max-width: 768px) {
             .glass-panel { padding: 25px 15px; border-radius: 18px; }
-            .btn-action { min-width: 100%; }
+            .side-popup { right: 10px; top: 10px; }
             .side-popup img { width: 50px; height: 50px; }
         }
     </style>
@@ -117,7 +123,7 @@
 </div>
 
 <div id="sidePopup" class="side-popup">
-    <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" alt="Side Logo">
+    <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" alt="Logo Popup">
 </div>
 
 <div class="glass-panel" id="mainPanel">
@@ -139,7 +145,9 @@
             <div class="metric-card"><div class="val" id="totalReportedBadge">0</div><div class="lbl">Reported Exits</div></div>
         </div>
 
-        <div id="searchWrapper" style="width: 100%;"><input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by Name or Casper ID..." oninput="onSearchInput()"></div>
+        <div id="searchWrapper" style="width: 100%;">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by Name or Casper ID..." oninput="onSearchInput()">
+        </div>
 
         <div class="action-buttons">
             <button class="btn-action btn-pdf" onclick="exportData()">📄 Download PDF</button>
@@ -165,6 +173,7 @@
 <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
 <script>
+    // ⚠️ REPLACE THIS URL WITH YOUR NEWLY DEPLOYED WEB APP URL ⚠️
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2RP0gg4xrfVbBv1x8QPuxk_yspZqY9T9xkcuiUDh6S0jKA2wWdKsgHgPD0oGDRLURSA/exec";
 
     let db = [], filtered = [], managerMode = false, reportedIds = new Set();
@@ -173,60 +182,101 @@
     let searchQuery = "";
     const PAGE_SIZE = 50;
 
-    function remoteLogError(msg, stack, details) {
-        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "log_error", message: String(msg), stack: String(stack), details: String(details) }) }).catch(() => {});
-    }
-
     const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const checkNA = str => { const v = String(str).trim().toUpperCase(); return (!v || v === "N/A") ? `<span class="na-bg">N/A</span>` : escHtml(str); };
 
     function showToast(msg, isError = false) {
         const c = document.getElementById('toast-container'), t = document.getElementById('toastText');
-        t.innerText = msg; t.style.background = isError ? "var(--danger)" : "var(--text-main)";
-        c.style.display = 'block'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
+        t.innerText = msg; 
+        t.style.background = isError ? "var(--danger)" : "var(--text-main)";
+        c.style.display = 'block'; 
+        clearTimeout(toastTimer); 
+        toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
     }
 
-    function setUILock(lock) { isProcessing = lock; document.getElementById('mainPanel').classList.toggle('ui-locked', lock); }
-    function hideLoader() { const l = document.getElementById('appLoader'); if(l) { l.style.opacity = '0'; setTimeout(() => l.style.display = 'none', 500); } }
+    function setUILock(lock) { 
+        isProcessing = lock; 
+        const pnl = document.getElementById('mainPanel');
+        if(lock) pnl.classList.add('ui-locked');
+        else pnl.classList.remove('ui-locked');
+    }
+
+    function hideLoader() { 
+        const l = document.getElementById('appLoader'); 
+        if(l) { l.style.opacity = '0'; setTimeout(() => { l.style.display = 'none'; l.style.pointerEvents = 'none'; }, 400); } 
+    }
 
     window.onload = () => {
         citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
         storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
 
+        if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
+            hideLoader();
+            showToast("ERROR: Please update SCRIPT_URL in index.html", true);
+            return;
+        }
+
         fetch(`${SCRIPT_URL}?action=getData`)
             .then(r => r.json())
             .then(d => {
                 hideLoader();
-                if (d && d.error) { showToast(d.error, true); return; }
+                if (d && d.error) { showToast("Backend Error: " + d.error, true); return; }
                 db = Array.isArray(d) ? d : [];
                 [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
             })
-            .catch(err => { hideLoader(); showToast("Network Error", true); });
+            .catch(err => { 
+                hideLoader(); 
+                showToast("Network Error: Could not load data.", true); 
+            });
     };
 
     function setMode(m) {
         if (isProcessing) return;
-        managerMode = !!m; currentPage = 1; searchQuery = ""; document.getElementById('searchInput').value = "";
-        document.getElementById('btnNormal').classList.toggle('active', !m); document.getElementById('btnManager').classList.toggle('active', m);
+        managerMode = !!m; 
+        currentPage = 1; 
+        searchQuery = ""; 
+        document.getElementById('searchInput').value = "";
+        
+        document.getElementById('btnNormal').classList.toggle('active', !m); 
+        document.getElementById('btnManager').classList.toggle('active', m);
+        
         document.getElementById('storeWrapper').style.display = m ? 'none' : 'block';
         document.getElementById('searchWrapper').style.display = m ? 'none' : 'block';
-        document.getElementById('resultArea').style.display = 'none';
-        citySelectInstance.clear(); storeSelectInstance.clearOptions(); storeSelectInstance.clear();
+
+        const currentCity = citySelectInstance.getValue();
+        if (currentCity) {
+            if (managerMode) render(); else onCityChange();
+        } else {
+            document.getElementById('resultArea').style.display = 'none';
+        }
     }
 
     function onCityChange() {
         if (isProcessing) return;
-        const c = citySelectInstance.getValue(); currentPage = 1;
+        const c = citySelectInstance.getValue(); 
+        currentPage = 1;
         if (!c) { document.getElementById('resultArea').style.display = 'none'; return; }
-        if (managerMode) { render(); } else {
-            storeSelectInstance.clearOptions(); storeSelectInstance.clear();
+        
+        if (managerMode) { 
+            render(); 
+        } else {
+            storeSelectInstance.clearOptions(); 
+            storeSelectInstance.clear();
             [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort().forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
             document.getElementById('resultArea').style.display = 'none';
         }
     }
 
-    function onSearchInput() { searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); currentPage = 1; render(); }
-    function changePage(dir) { currentPage += dir; renderTable(); }
+    function onSearchInput() { 
+        searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); 
+        currentPage = 1; 
+        render(); 
+    }
+
+    function changePage(dir) { 
+        currentPage += dir; 
+        renderTable(); 
+    }
 
     function render() {
         const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
@@ -235,7 +285,9 @@
         filtered = db.filter(i => {
             const mC = i.city === c, mS = managerMode || i.darkStore === s, nR = !reportedIds.has(String(i.casperId));
             let mQ = true;
-            if (searchQuery && !managerMode) mQ = String(i.name).toLowerCase().includes(searchQuery) || String(i.casperId).toLowerCase().includes(searchQuery);
+            if (searchQuery && !managerMode) {
+                mQ = String(i.name).toLowerCase().includes(searchQuery) || String(i.casperId).toLowerCase().includes(searchQuery);
+            }
             return mC && mS && nR && mQ;
         });
 
@@ -247,21 +299,26 @@
 
     function renderTable() {
         const tHead = document.getElementById('tableHead'), tBody = document.getElementById('tableBody'), pBar = document.getElementById('paginationBar');
+        
         if (filtered.length === 0) {
-            tHead.innerHTML = ''; tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}"><b>No Records Found</b></td></tr>`;
-            pBar.style.display = 'none'; return;
+            tHead.innerHTML = ''; 
+            tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}"><b>No Records Found</b></td></tr>`;
+            pBar.style.display = 'none'; 
+            return;
         }
 
         if (managerMode) {
             pBar.style.display = 'none';
-            const sum = {}; filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
+            const sum = {}; 
+            filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
             tHead.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
             tBody.innerHTML = Object.entries(sum).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v]) => `<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
         } else {
             const tot = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
             currentPage = Math.min(currentPage, tot);
             document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${tot}`;
-            document.getElementById('btnPrev').disabled = (currentPage === 1); document.getElementById('btnNext').disabled = (currentPage === tot);
+            document.getElementById('btnPrev').disabled = (currentPage === 1); 
+            document.getElementById('btnNext').disabled = (currentPage === tot);
             pBar.style.display = 'flex';
 
             const st = (currentPage - 1) * PAGE_SIZE;
@@ -275,51 +332,114 @@
     }
 
     function initiateSubmit(id) {
+        if (isProcessing) return;
         const p = filtered.find(x => String(x.casperId) === String(id));
         if (!p) return;
-        const backup = [...db]; db = db.filter(i => String(i.casperId) !== String(id)); reportedIds.add(String(p.casperId));
-        render(); showToast("Processing exit...");
+        
+        const backup = [...db]; 
+        db = db.filter(i => String(i.casperId) !== String(id)); 
+        reportedIds.add(String(p.casperId));
+        
+        render(); 
+        showToast("Processing exit...");
+        setUILock(true);
 
-        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city }) })
-            .then(r => r.json()).then(res => {
-                if (res.status === "Success") showToast("Submitted ✓");
-                else { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Failed.", true); }
-            }).catch(err => { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Error", true); });
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "text/plain" }, 
+            body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city }) 
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === "Success") {
+                showToast("Exit Successfully Processed ✓");
+            } else { 
+                db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Failed to exit.", true); 
+            }
+        })
+        .catch(err => { 
+            db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Network/Server Error", true); 
+        })
+        .finally(() => {
+            setUILock(false);
+        });
     }
 
     function exportData() {
-        if(filtered.length===0) return; setUILock(true);
-        const { jsPDF } = window.jspdf, doc = new jsPDF(), w = doc.internal.pageSize.getWidth();
-        const hd = { fillColor: [253,253,150], textColor: 0, fontStyle: 'bold' }, b = { halign: 'center' };
+        if (filtered.length === 0 || isProcessing) return; 
+        setUILock(true);
         
-        doc.setFontSize(16).text(managerMode ? "Summary" : "Pendency", w/2, 15, {align:"center"});
-        if(managerMode) {
-            const sm = {}; filtered.forEach(i => sm[i.clusterManager] = (sm[i.clusterManager]||0)+1);
-            doc.autoTable({ head: [['CM', 'Count']], body: Object.entries(sm), startY: 25, headStyles: hd, styles: b });
-        } else {
-            doc.autoTable({ head: [['Name', 'ID']], body: filtered.map(i=>[i.name, i.casperId]), startY: 25, headStyles: hd, styles: b });
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const w = doc.internal.pageSize.getWidth();
+            const hd = { fillColor: [253,253,150], textColor: 0, fontStyle: 'bold' };
+            const b = { halign: 'center' };
+            
+            doc.setFontSize(16).text(managerMode ? "CM Summary" : "Pendency Export", w/2, 15, {align:"center"});
+            
+            if (managerMode) {
+                const sm = {}; filtered.forEach(i => sm[i.clusterManager] = (sm[i.clusterManager]||0)+1);
+                doc.autoTable({ head: [['Cluster Manager', 'Pending Count']], body: Object.entries(sm), startY: 25, headStyles: hd, styles: b });
+            } else {
+                doc.autoTable({ head: [['Picker Name', 'Casper ID']], body: filtered.map(i=>[i.name, i.casperId]), startY: 25, headStyles: hd, styles: b });
+            }
+            doc.save("Export.pdf"); 
+        } catch(e) {
+            showToast("Failed to generate PDF", true);
+        } finally {
+            setUILock(false);
         }
-        doc.save("Export.pdf"); setUILock(false);
     }
 
     function exportToCSV() {
-        if(filtered.length===0) return;
-        let c = managerMode ? "Cluster Manager,Store,Picker Name,Casper ID\n" : "Picker Name,Casper ID\n";
-        filtered.forEach(i => { c += managerMode ? `"${i.clusterManager}","${i.darkStore}","${i.name}","${i.casperId}"\n` : `"${i.name}","${i.casperId}"\n`; });
-        const l = document.createElement("a"); l.href = encodeURI("data:text/csv;charset=utf-8," + c); l.download = "Export.csv"; l.click();
+        if(filtered.length === 0 || isProcessing) return;
+        setUILock(true);
+        try {
+            let c = managerMode ? "Cluster Manager,Store,Picker Name,Casper ID\n" : "Picker Name,Casper ID\n";
+            filtered.forEach(i => { c += managerMode ? `"${i.clusterManager}","${i.darkStore}","${i.name}","${i.casperId}"\n` : `"${i.name}","${i.casperId}"\n`; });
+            const l = document.createElement("a"); 
+            l.href = encodeURI("data:text/csv;charset=utf-8," + c); 
+            l.download = "Export.csv"; 
+            l.click();
+        } catch(e) {
+            showToast("Failed to generate CSV", true);
+        } finally {
+            setUILock(false);
+        }
     }
 
     function exportToGSheet() {
-        if(filtered.length===0) return;
-        document.getElementById('btnGSheet').innerText = "Generating..."; setUILock(true);
-        const sm = [['CM', 'Total']]; filtered.forEach(i => sm.push([i.clusterManager, 1]));
+        if(filtered.length === 0 || isProcessing) return;
+        
+        document.getElementById('btnGSheet').innerText = "Generating..."; 
+        setUILock(true);
+        
+        const sm = [['CM', 'Total']]; 
+        filtered.forEach(i => sm.push([i.clusterManager, 1]));
         const dt = [['CM', 'Store', 'Name', 'ID'], ...filtered.map(i=>[i.clusterManager, i.darkStore, i.name, i.casperId])];
         
-        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "export", f: "Pendency Export", summaryData: sm, detailData: dt }) })
-            .then(r => r.json()).then(d => {
-                document.getElementById('btnGSheet').innerText = "Open as Google Sheet"; setUILock(false);
-                if(d.url) window.open(d.url, '_blank'); else showToast("Failed", true);
-            }).catch(e => { document.getElementById('btnGSheet').innerText = "Open as Google Sheet"; setUILock(false); });
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "text/plain" }, 
+            body: JSON.stringify({ action: "export", f: "Pendency Export", summaryData: sm, detailData: dt }) 
+        })
+        .then(r => r.json())
+        .then(d => {
+            if(d.url) {
+                window.open(d.url, '_blank');
+                showToast("Google Sheet Created ✓");
+            } else { 
+                showToast("Failed to generate sheet", true); 
+            }
+        })
+        .catch(e => { 
+            showToast("Network error generating sheet", true); 
+        })
+        .finally(() => {
+            document.getElementById('btnGSheet').innerText = "🌐 Open as Google Sheet"; 
+            setUILock(false);
+        });
     }
 </script>
 </body>
