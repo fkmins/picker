@@ -1,579 +1,455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="pure-dark">
 <head>
-    <meta charset="utf-8">
-    <title>Picker Pendency Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#4f46e5">
-    <link rel="icon" type="image/jpeg" href="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-    
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Pendency Management</title>
+    <!-- Dependencies for PDF Generation without Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        ::-webkit-scrollbar { display: none !important; }
-        * { scrollbar-width: none !important; -ms-overflow-style: none !important; box-sizing: border-box; }
-        
-        :root {
-            --primary: #4f46e5; --primary-hover: #4338ca; 
-            --danger: #ef4444; --danger-hover: #dc2626; 
-            --success: #10b981; --success-hover: #059669;
-            --bg-body: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 50%, #e0e7ff 100%);
-            --bg-panel: rgba(255, 255, 255, 0.94);
-            --text-main: #0f172a; --text-muted: #64748b; 
-            --border-color: rgba(226, 232, 240, 0.8);
-            --card-bg: #ffffff;
-            --table-header: #f8fafc;
-            --table-hover: #f1f5f9;
+        /* Pure Dark & Pure Light Theme Tokens */
+        :root[data-theme="pure-dark"] {
+            --bg-color: #000000;
+            --surface-color: #111111;
+            --text-color: #ffffff;
+            --border-color: #333333;
+            --accent-color: #ffffff;
+            --accent-hover: #222222;
+            --input-bg: #1a1a1a;
+            --popup-bg: #111111;
+            --overlay-alpha: rgba(0, 0, 0, 0.85);
         }
 
-        body.dark-mode {
-            --bg-body: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            --bg-panel: rgba(30, 41, 59, 0.85);
-            --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --card-bg: #1e293b;
-            --table-header: #0f172a;
-            --table-hover: #334155;
-            color: var(--text-main);
+        :root[data-theme="pure-light"] {
+            --bg-color: #ffffff;
+            --surface-color: #f9f9f9;
+            --text-color: #000000;
+            --border-color: #dddddd;
+            --accent-color: #000000;
+            --accent-hover: #f0f0f0;
+            --input-bg: #ffffff;
+            --popup-bg: #ffffff;
+            --overlay-alpha: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Strict Global Text Alignment */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            text-align: center !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
 
         body {
-            background: var(--bg-body); margin: 0; padding: 30px 15px; min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text-main);
-            display: flex; align-items: flex-start; justify-content: center;
-            transition: background 0.4s ease, color 0.4s ease;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
         }
 
-        #snowCanvas {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 1; opacity: 0.8;
-        }
-
-        #appLoader {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-body); z-index: 99999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s;
-        }
-        .spinner {
-            width: 60px; height: 60px; border: 6px solid var(--border-color); border-top: 6px solid var(--primary);
-            border-radius: 50%; animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
-        }
-        .loading-text-anim {
-            margin-top: 20px; font-weight: 800; font-size: 18px; color: var(--primary);
-            animation: pulseText 1.5s ease-in-out infinite; text-align: center;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulseText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } }
-
-        .side-popup {
-            position: fixed; right: 20px; bottom: 20px; z-index: 1000;
-            animation: slideInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 50%; overflow: hidden;
-            border: 3px solid #fff; pointer-events: none; background: #fff;
-        }
-        .side-popup img { width: 65px; height: 65px; object-fit: cover; display: block; }
-        @keyframes slideInUp { 0% { transform: translateY(150px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-
-        .glass-panel {
-            background: var(--bg-panel); border-radius: 24px; padding: 35px 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px;
-            border: 1px solid var(--border-color); z-index: 10; position: relative;
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-        }
-        
-        .ui-locked { pointer-events: none; opacity: 0.6; cursor: wait; }
-
-        /* Header Centered Layout */
-        .header-wrapper { 
-            position: relative; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin-bottom: 28px; 
+        /* Dark/Light Wallpaper Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background-color: var(--overlay-alpha);
+            z-index: 0;
         }
-        .brand-header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px; 
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1000px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        /* Styled Dropdown Menus with Hover Effects */
+        select, input, button {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select:hover, input:hover {
+            border-color: var(--text-color);
+            background-color: var(--accent-hover);
+        }
+
+        select option {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            padding: 10px;
             text-align: center;
         }
-        .brand-logo { width: 42px; height: 42px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -0.5px; }
-        
-        .theme-btn {
-            position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-            background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main);
-            border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 18px;
+
+        button {
+            font-weight: 600;
         }
-        .theme-btn:hover { transform: translateY(-50%) scale(1.05); }
 
-        .tab-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn-tab {
-            border: 1px solid var(--border-color); padding: 12px 22px; border-radius: 14px; font-weight: 700; background: var(--card-bg);
-            color: var(--text-muted); transition: all 0.25s ease; flex: 1; max-width: 220px; cursor: pointer; text-align: center;
+        button:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--text-color);
         }
-        .btn-tab:hover:not(.active) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .btn-tab.active { background: var(--primary); color: #ffffff; border-color: var(--primary); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3); }
 
-        .ts-control { border-radius: 14px !important; padding: 12px 16px !important; border: 2px solid var(--border-color) !important; text-align: center !important; font-weight: 700; background: var(--card-bg) !important; color: var(--text-main) !important; transition: border-color 0.2s; }
-        .ts-control:focus { border-color: var(--primary) !important; }
-        .ts-dropdown { background: var(--card-bg) !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; border-radius: 10px !important; }
-        .ts-dropdown .option { color: var(--text-main); }
-        
-        #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+        .btn-primary {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: 1px solid var(--text-color);
+        }
 
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
-        .metric-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: transform 0.2s; }
-        .metric-card:hover { transform: translateY(-3px); }
-        .metric-card .val { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; }
-        .metric-card .lbl { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
 
-        .search-wrapper { position: relative; width: 100%; margin-bottom: 20px; }
-        .search-box { width: 100%; border-radius: 14px; padding: 14px 20px 14px 45px; border: 2px solid var(--border-color); font-weight: 600; text-align: left; outline: none; background: var(--card-bg); color: var(--text-main); transition: border-color 0.2s; }
-        .search-box:focus { border-color: var(--primary); }
-        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
-        .shortcut-hint { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: var(--border-color); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted); pointer-events: none; }
+        /* Status Toast for Network/System Alerts */
+        .status-banner {
+            display: none;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            border-radius: 4px;
+            font-size: 13px;
+        }
 
-        .action-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; width: 100%; }
-        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
-        .btn-action:active { transform: scale(0.97); }
-        .btn-pdf { background: #334155; color: #ffffff; }
-        .btn-sheet { background: var(--success); color: #ffffff; }
-        .btn-csv { background: var(--primary); color: #ffffff; }
+        /* Data Table */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
 
-        .table-holder { background: var(--card-bg); border-radius: 16px; overflow-x: auto; width: 100%; border: 1px solid var(--border-color); max-height: 500px; overflow-y: auto; }
-        .table { margin-bottom: 0; min-width: 480px; text-align: center; color: var(--text-main); }
-        .table thead th { background: var(--table-header); color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 16px; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border-color); }
-        .table td { padding: 16px; font-weight: 600; font-size: 14px; vertical-align: middle; border-bottom: 1px solid var(--border-color); transition: background 0.2s; }
-        .table tbody tr:hover td { background: var(--table-hover); }
-        
-        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
-        .btn-main-rep:hover { background: var(--danger-hover); transform: translateY(-1px); }
-        .btn-main-rep:active { transform: scale(0.95); }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
-        .toast-msg { background: var(--text-main); color: var(--card-bg); padding: 14px 28px; border-radius: 50px; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes toastPop { 0%{transform:scale(0.8); opacity:0;} 100%{transform:scale(1); opacity:1;} }
-        
-        .badge-count { background: var(--primary); color: #fff; padding: 6px 14px; border-radius: 20px; display: inline-block; }
-        .na-bg { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.2); }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 14px;
+        }
 
-        @media (max-width: 768px) {
-            .glass-panel { padding: 25px 15px; border-radius: 18px; }
-            .dash-title { font-size: 20px; }
-            .side-popup { right: 10px; bottom: 10px; }
-            .side-popup img { width: 50px; height: 50px; }
-            .theme-btn { position: absolute; top: 0; right: 0; transform: none; }
-            .brand-header { flex-direction: column; gap: 8px; }
+        th {
+            background-color: var(--input-bg);
+            font-weight: 600;
+        }
+
+        /* Bottom-Right Dismissible Pop-up Widget */
+        .bottom-right-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            background-color: var(--popup-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            max-width: 300px;
+        }
+
+        .close-popup-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 50%;
+            line-height: 1;
+        }
+
+        .close-popup-btn:hover {
+            background-color: var(--border-color);
         }
     </style>
 </head>
-
 <body>
 
-<canvas id="snowCanvas"></canvas>
+    <div class="main-container">
+        <h1>Pendency Management System</h1>
 
-<div id="appLoader">
-    <div class="spinner"></div>
-    <div class="loading-text-anim">Loading Dashboard...</div>
-</div>
+        <div id="statusBanner" class="status-banner"></div>
 
-<div id="sidePopup" class="side-popup">
-    <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" alt="Logo Popup">
-</div>
+        <div class="controls-bar">
+            <label for="storeSelect">Store Location:</label>
+            <select id="storeSelect">
+                <option value="Rishra" selected>Rishra</option>
+                <option value="Howrah">Howrah</option>
+                <option value="Dum Dum">Dum Dum</option>
+                <option value="Newtown">Newtown</option>
+            </select>
 
-<div class="glass-panel" id="mainPanel">
-    
-    <div class="header-wrapper">
-        <div class="brand-header">
-            <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" class="brand-logo" alt="Logo">
-            <h2 class="dash-title">Picker Pendency Dashboard</h2>
-        </div>
-        <button class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
-    </div>
+            <label for="themeToggle">Mode:</label>
+            <select id="themeToggle" onchange="toggleTheme(this.value)">
+                <option value="pure-dark">Pure Dark</option>
+                <option value="pure-light">Pure Light</option>
+            </select>
 
-    <div class="tab-container">
-        <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">Dark Store Wise</button>
-        <button id="btnManager" class="btn-tab" onclick="setMode(1)">Cluster Manager</button>
-    </div>
-
-    <div class="row g-3 justify-content-center mb-3">
-        <div class="col-12 col-md-5"><select id="citySelect" autocomplete="off" onchange="onCityChange()"></select></div>
-        <div class="col-12 col-md-5" id="storeWrapper"><select id="storeSelect" autocomplete="off" onchange="currentPage=1; render()"></select></div>
-    </div>
-
-    <div id="resultArea">
-        <div class="metrics-grid">
-            <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
-            <div class="metric-card"><div class="val" id="totalReportedBadge">0</div><div class="lbl">Reported Exits</div></div>
+            <button class="btn-primary" onclick="exportPDF()">Export PDF</button>
+            <button onclick="addEmptyRow()">Add New Record</button>
         </div>
 
-        <div id="searchWrapper" class="search-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" class="search-box" placeholder="Search Name or User ID..." oninput="onSearchInput()">
-            <span class="shortcut-hint">/</span>
-        </div>
-
-        <div class="action-buttons">
-            <button class="btn-action btn-pdf" onclick="exportData()">📄 Export PDF</button>
-            <button class="btn-action btn-csv" onclick="exportToCSV()">📊 Export CSV</button>
-            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">🌐 Open as G-Sheet</button>
-        </div>
-
-        <div class="table-holder">
-            <table class="table">
-                <thead id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
+        <div class="table-wrapper">
+            <table id="pendencyTable">
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Task Name</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td>101</td>
+                        <td>Inventory Audit</td>
+                        <td>Rajesh Sharma</td>
+                        <td>
+                            <select>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Exit">Exit</option>
+                            </select>
+                        </td>
+                        <td><button onclick="removeRow(this)">Delete</button></td>
+                    </tr>
+                    <tr>
+                        <td>102</td>
+                        <td>Stock Reconciliation</td>
+                        <td>Anish Kumar</td>
+                        <td>
+                            <select>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress" selected>In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Exit">Exit</option>
+                            </select>
+                        </td>
+                        <td><button onclick="removeRow(this)">Delete</button></td>
+                    </tr>
+                    <tr>
+                        <td>103</td>
+                        <td>Vendor Clearance</td>
+                        <td></td>
+                        <td>
+                            <select>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Exit" selected>Exit</option>
+                            </select>
+                        </td>
+                        <td><button onclick="removeRow(this)">Delete</button></td>
+                    </tr>
+                </tbody>
             </table>
         </div>
-        
-        <div id="paginationBar" style="display:none; justify-content:space-between; align-items:center; margin-top:20px; width:100%; padding: 0 10px;">
-            <button class="btn-tab" id="btnPrev" onclick="changePage(-1)" style="min-width:auto; padding:8px 16px; margin:0;">← Prev</button>
-            <span id="pageInfo" style="font-weight:700; font-size:14px; color:var(--text-muted);">Page 1</span>
-            <button class="btn-tab" id="btnNext" onclick="changePage(1)" style="min-width:auto; padding:8px 16px; margin:0;">Next →</button>
-        </div>
     </div>
-</div>
 
-<div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
+    <!-- Bottom-Right Pop-up Widget -->
+    <div class="bottom-right-popup" id="bottomPopup">
+        <span>System Status: Online</span>
+        <button class="close-popup-btn" onclick="closePopup()" title="Close">X</button>
+    </div>
 
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJUbN1dQroSKxBsQ8R4m7kHM-UlexvwMUWqnDO2r9sKyFmWTO8GVSNZLo_Yd3c7XfZrg/exec";
+    <script>
+        // Array of unique optimized wallpaper URLs
+        const wallpapers = [
+            "https://rukminim2.flixcart.com/fk-p-flap/3200/1560/image/891838e4b8f8742d.png",
+            "https://rukminim2.flixcart.com/fk-p-flap/3200/1560/image/52bbe626181295d8.jpg"
+        ];
 
-    let db = [], filtered = [], managerMode = false, reportedIds = new Set();
-    let citySelectInstance, storeSelectInstance;
-    let isProcessing = false, currentPage = 1, toastTimer = null, searchDebounceTimer = null;
-    let searchQuery = "";
-    const PAGE_SIZE = 50;
-
-    const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const checkNA = str => { const v = String(str).trim().toUpperCase(); return (!v || v === "N/A") ? `<span class="na-bg">N/A</span>` : escHtml(str); };
-
-    function remoteLogError(msg, stack, details) {
-        try {
-            fetch(SCRIPT_URL, {
-                method: "POST", headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ action: "log_error", message: String(msg || "Error"), stack: String(stack || "N/A"), details: String(details || "Frontend"), source: "Frontend" })
-            }).catch(() => {});
-        } catch (e) {}
-    }
-    window.onerror = (msg, src, lineno, colno, err) => remoteLogError(msg, err ? err.stack : `Line:${lineno}`, `Source:${src}`);
-    window.addEventListener('unhandledrejection', e => remoteLogError(e.reason, e.reason && e.reason.stack, "Unhandled Promise"));
-
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        document.querySelector('.theme-btn').innerText = isDark ? '☀️' : '🌙';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === '/' && document.activeElement.id !== 'searchInput') {
-            e.preventDefault();
-            document.getElementById('searchInput').focus();
+        // Initialize dynamic wallpaper on every refresh
+        function setRandomWallpaper() {
+            const randomIndex = Math.floor(Math.random() * wallpapers.length);
+            document.body.style.backgroundImage = `url('${wallpapers[randomIndex]}')`;
         }
-    });
 
-    if(localStorage.getItem('theme') === 'dark') toggleTheme();
+        // Pure Theme Switcher
+        function toggleTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+        }
 
-    function showToast(msg, isError = false) {
-        const c = document.getElementById('toast-container'), t = document.getElementById('toastText');
-        t.innerText = msg; 
-        t.style.background = isError ? "var(--danger)" : "var(--text-main)";
-        t.style.color = isError ? "#fff" : "var(--card-bg)";
-        c.style.display = 'block'; 
-        clearTimeout(toastTimer); 
-        toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
-    }
+        // Close Bottom Right Pop-up
+        function closePopup() {
+            const popup = id('bottomPopup');
+            if (popup) popup.style.display = 'none';
+        }
 
-    function setUILock(lock) { 
-        isProcessing = lock; 
-        const pnl = document.getElementById('mainPanel');
-        if(lock) pnl.classList.add('ui-locked');
-        else pnl.classList.remove('ui-locked');
-    }
+        function id(elementId) {
+            return document.getElementById(elementId);
+        }
 
-    function hideLoader() { 
-        const l = document.getElementById('appLoader'); 
-        if(l) { 
-            l.style.opacity = '0'; 
-            setTimeout(() => { l.style.visibility = 'hidden'; }, 400); 
-        } 
-    }
+        function addEmptyRow() {
+            const tbody = id('tableBody');
+            const rowCount = tbody.rows.length + 101;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${rowCount}</td>
+                <td contenteditable="true">Click to edit</td>
+                <td contenteditable="true"></td>
+                <td>
+                    <select>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Exit">Exit</option>
+                    </select>
+                </td>
+                <td><button onclick="removeRow(this)">Delete</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
 
-    function apiFetch(url, options) {
-        return fetch(url, options).then(r => {
-            if (!r.ok) throw new Error("HTTP " + r.status + (r.status === 404 ? " (deployment URL may be outdated)" : ""));
-            return r.json();
-        });
-    }
+        function removeRow(btn) {
+            const row = btn.closest('tr');
+            if (row) row.remove();
+        }
 
-    window.onload = () => {
-        setTimeout(() => {
-            citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
-            storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store / Facility", create: false, sortField: { field: "text", direction: "asc" } });
+        // Display User Status Alerts
+        function showBanner(message, duration = 4000) {
+            const banner = id('statusBanner');
+            banner.innerText = message;
+            banner.style.display = 'block';
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, duration);
+        }
 
-            if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
-                hideLoader(); showToast("ERROR: Please update SCRIPT_URL", true); return;
+        // Resilient Fetch with Exponential Backoff Retry Strategy for High Concurrency
+        async function fetchWithRetry(fn, retries = 3, delay = 1000) {
+            try {
+                return await fn();
+            } catch (error) {
+                if (retries <= 0) throw error;
+                showBanner(`Network congestion detected. Retrying... (${retries} attempts left)`);
+                await new Promise(res => setTimeout(res, delay));
+                return fetchWithRetry(fn, retries - 1, delay * 2);
             }
-
-            apiFetch(`${SCRIPT_URL}?action=getData`)
-                .then(d => {
-                    hideLoader();
-                    if (d && d.error) { showToast("Backend Error: " + d.error, true); remoteLogError(d.error, "N/A", "Initial Data Fetch"); return; }
-                    db = Array.isArray(d) ? d : [];
-                    [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
-                })
-                .catch(err => {
-                    hideLoader(); showToast("Network Error: Could not load data.", true);
-                    remoteLogError(err.message, err.stack, "Initial Data Fetch");
-                });
-            
-            initSnow();
-        }, 100);
-    };
-
-    function setMode(m) {
-        if (isProcessing) return;
-        managerMode = !!m; 
-        currentPage = 1; 
-        searchQuery = ""; 
-        document.getElementById('searchInput').value = "";
-        
-        document.getElementById('btnNormal').classList.toggle('active', !m); 
-        document.getElementById('btnManager').classList.toggle('active', m);
-        
-        document.getElementById('storeWrapper').style.display = m ? 'none' : 'block';
-        document.getElementById('searchWrapper').style.display = m ? 'none' : 'block';
-
-        const currentCity = citySelectInstance.getValue();
-        if (currentCity) { if (managerMode) render(); else onCityChange(); } 
-        else document.getElementById('resultArea').style.display = 'none';
-    }
-
-    function onCityChange() {
-        if (isProcessing) return;
-        const c = citySelectInstance.getValue(); 
-        currentPage = 1;
-        if (!c) { document.getElementById('resultArea').style.display = 'none'; return; }
-        
-        if (managerMode) { render(); } 
-        else {
-            storeSelectInstance.clearOptions(); storeSelectInstance.clear();
-            [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort().forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
-            document.getElementById('resultArea').style.display = 'none';
-        }
-    }
-
-    function onSearchInput() { 
-        clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(() => {
-            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); 
-            currentPage = 1; 
-            render(); 
-        }, 250);
-    }
-
-    function changePage(dir) { currentPage += dir; renderTable(); }
-
-    function render() {
-        const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-        if (!c || (!managerMode && !s)) { document.getElementById('resultArea').style.display = 'none'; return; }
-
-        filtered = db.filter(i => {
-            const mC = i.city === c, mS = managerMode || i.darkStore === s, nR = !reportedIds.has(String(i.casperId));
-            let mQ = true;
-            if (searchQuery && !managerMode) {
-                mQ = String(i.name).toLowerCase().includes(searchQuery) || String(i.casperId).toLowerCase().includes(searchQuery);
-            }
-            return mC && mS && nR && mQ;
-        });
-
-        document.getElementById('countBadge').innerText = filtered.length;
-        document.getElementById('totalReportedBadge').innerText = reportedIds.size;
-        document.getElementById('resultArea').style.display = 'flex';
-        renderTable();
-    }
-
-    function renderTable() {
-        const tHead = document.getElementById('tableHead'), tBody = document.getElementById('tableBody'), pBar = document.getElementById('paginationBar');
-        
-        if (filtered.length === 0) {
-            tHead.innerHTML = ''; 
-            tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}" style="padding: 30px; color: var(--text-muted);"><b>No Records Found 📭</b></td></tr>`;
-            pBar.style.display = 'none'; return;
         }
 
-        if (managerMode) {
-            pBar.style.display = 'none';
-            const sum = {}; filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
-            tHead.innerHTML = '<tr><th>Cluster Manager / CMSM</th><th>Pendency Count</th></tr>';
-            tBody.innerHTML = Object.entries(sum).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v]) => `<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
-        } else {
-            const tot = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-            currentPage = Math.min(currentPage, tot);
-            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${tot}`;
-            document.getElementById('btnPrev').disabled = (currentPage === 1); 
-            document.getElementById('btnPrev').style.opacity = (currentPage === 1) ? 0.5 : 1;
-            document.getElementById('btnNext').disabled = (currentPage === tot);
-            document.getElementById('btnNext').style.opacity = (currentPage === tot) ? 0.5 : 1;
-            pBar.style.display = 'flex';
+        // Optimized PDF Export Function (Filtering Empty Cells & Custom Store Naming)
+        async function exportPDF() {
+            showBanner("Preparing document export...");
 
-            const st = (currentPage - 1) * PAGE_SIZE;
-            tHead.innerHTML = '<tr><th>User Name</th><th>User ID</th><th>Action</th></tr>';
-            tBody.innerHTML = filtered.slice(st, st + PAGE_SIZE).map(i => `
-                <tr id="row-${escHtml(i.casperId)}">
-                    <td>${checkNA(i.name)}</td><td><strong style="color:var(--primary)">${checkNA(i.casperId)}</strong></td>
-                    <td><button class="btn-main-rep" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button></td>
-                </tr>`).join('');
-        }
-    }
+            try {
+                await fetchWithRetry(async () => {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
-    function initiateSubmit(id) {
-        if (isProcessing) return;
-        const p = filtered.find(x => String(x.casperId) === String(id));
-        if (!p) return;
-        
-        const backup = [...db]; 
-        db = db.filter(i => String(i.casperId) !== String(id)); 
-        reportedIds.add(String(p.casperId));
-        
-        render(); 
-        showToast("Processing exit..."); setUILock(true);
+                    const storeName = id('storeSelect').value || 'Store';
+                    const fileName = `${storeName.trim()}_Pendency.pdf`;
 
-        apiFetch(SCRIPT_URL, {
-            method: "POST", headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city })
-        })
-        .then(res => {
-            if (res.status === "Success") showToast("Exit Successfully Processed ✓");
-            else {
-                db = backup; reportedIds.delete(String(p.casperId)); render();
-                showToast("Failed to exit.", true);
-                remoteLogError(res.error || "Unknown", "N/A", "Backend rejected exit report");
-            }
-        })
-        .catch(err => {
-            db = backup; reportedIds.delete(String(p.casperId)); render();
-            showToast("Network/Server Error", true);
-            remoteLogError(err.message, err.stack, "Report Submission");
-        })
-        .finally(() => setUILock(false));
-    }
+                    // Configure Headers
+                    const headers = [["Item ID", "Task Name", "Assigned To", "Status"]];
+                    const rows = [];
 
-    function exportData() {
-        if (filtered.length === 0 || isProcessing) return; 
-        setUILock(true);
-        try {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            const w = doc.internal.pageSize.getWidth();
-            const hd = { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' };
-            const b = { halign: 'center' };
-            
-            doc.setFontSize(16).text(managerMode ? "CMSM Summary" : "Pendency Export", w/2, 15, {align:"center"});
-            
-            if (managerMode) {
-                const sm = {}; filtered.forEach(i => sm[i.clusterManager] = (sm[i.clusterManager]||0)+1);
-                doc.autoTable({ head: [['Cluster Manager / CMSM', 'Pending Count']], body: Object.entries(sm), startY: 25, headStyles: hd, styles: b });
-            } else {
-                doc.autoTable({ head: [['User Name', 'User ID']], body: filtered.map(i=>[i.name, i.casperId]), startY: 25, headStyles: hd, styles: b });
-            }
-            doc.save("Pendency_Export.pdf"); 
-        } catch(e) { showToast("Failed to generate PDF", true); remoteLogError(e.message, e.stack, "PDF Export"); } finally { setUILock(false); }
-    }
+                    const tbody = id('tableBody');
+                    for (let row of tbody.rows) {
+                        const itemID = row.cells[0].innerText.trim();
+                        const taskName = row.cells[1].innerText.trim();
+                        const assignedTo = row.cells[2].innerText.trim();
+                        const statusSelect = row.cells[3].querySelector('select');
+                        const status = statusSelect ? statusSelect.value : '';
 
-    function exportToCSV() {
-        if(filtered.length === 0 || isProcessing) return;
-        setUILock(true);
-        try {
-            const esc = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-            const rows = managerMode
-                ? [['Cluster Manager / CMSM','Facility Name','User Name','User ID'], ...filtered.map(i => [i.clusterManager, i.darkStore, i.name, i.casperId])]
-                : [['User Name','User ID'], ...filtered.map(i => [i.name, i.casperId])];
-            const csv = rows.map(r => r.map(esc).join(',')).join('\r\n');
-            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const l = document.createElement("a");
-            l.href = url; l.download = "Pendency_Export.csv";
-            document.body.appendChild(l); l.click(); document.body.removeChild(l);
-            URL.revokeObjectURL(url);
-        } catch(e) { showToast("Failed to generate CSV", true); remoteLogError(e.message, e.stack, "CSV Export"); } finally { setUILock(false); }
-    }
+                        // Skip generating row if core fields are entirely empty
+                        if (!itemID && !taskName && !assignedTo) {
+                            continue;
+                        }
 
-    function exportToGSheet() {
-        if(filtered.length === 0 || isProcessing) return;
-        document.getElementById('btnGSheet').innerText = "Generating..."; setUILock(true);
-
-        const smMap = {};
-        filtered.forEach(i => { smMap[i.clusterManager] = (smMap[i.clusterManager] || 0) + 1; });
-        const sm = [['Cluster Manager / CMSM', 'Total Pendency'], ...Object.entries(smMap).sort((a,b) => a[0].localeCompare(b[0]))];
-        const dt = [['CMSM', 'Facility Name', 'User Name', 'User ID'], ...filtered.map(i=>[i.clusterManager, i.darkStore, i.name, i.casperId])];
-        
-        apiFetch(SCRIPT_URL, {
-            method: "POST", headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({ action: "export", f: "Pendency Export", summaryData: sm, detailData: dt })
-        })
-        .then(d => {
-            if(d.url) { window.open(d.url, '_blank'); showToast("Google Sheet Created ✓"); } 
-            else { showToast("Failed to generate sheet", true); remoteLogError(d.error || "Unknown", "N/A", "GSheet Export"); }
-        })
-        .catch(e => { showToast("Network error generating sheet", true); remoteLogError(e.message, e.stack, "GSheet Export"); })
-        .finally(() => { document.getElementById('btnGSheet').innerText = "🌐 Open as G-Sheet"; setUILock(false); });
-    }
-
-    function initSnow() {
-        const canvas = document.getElementById("snowCanvas");
-        const ctx = canvas.getContext("2d");
-        let W = window.innerWidth, H = window.innerHeight;
-        canvas.width = W; canvas.height = H;
-
-        const mp = 40;
-        const particles = [];
-        for (let i = 0; i < mp; i++) {
-            particles.push({
-                x: Math.random() * W, y: Math.random() * H, r: Math.random() * 3 + 1, d: Math.random() * mp
-            });
-        }
-        let angle = 0;
-        function draw() {
-            ctx.clearRect(0, 0, W, H);
-            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-            ctx.beginPath();
-            for (let i = 0; i < mp; i++) {
-                let p = particles[i];
-                ctx.moveTo(p.x, p.y);
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-            }
-            ctx.fill(); update();
-        }
-        function update() {
-            angle += 0.01;
-            for (let i = 0; i < mp; i++) {
-                let p = particles[i];
-                p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
-                p.x += Math.sin(angle) * 2;
-                if (p.x > W + 5 || p.x < -5 || p.y > H) {
-                    if (i % 3 > 0) { particles[i] = { x: Math.random() * W, y: -10, r: p.r, d: p.d }; } 
-                    else {
-                        if (Math.sin(angle) > 0) particles[i] = { x: -5, y: Math.random() * H, r: p.r, d: p.d };
-                        else particles[i] = { x: W + 5, y: Math.random() * H, r: p.r, d: p.d };
+                        // Sanitize empty cells (Render clean empty string instead of blank visual artifacts)
+                        rows.push([
+                            itemID || "-",
+                            taskName || "-",
+                            assignedTo || "-",
+                            status || "-"
+                        ]);
                     }
-                }
+
+                    // Generate PDF Table via autoTable
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`${storeName} - Pendency Report`, 105, 15, { align: "center" });
+
+                    doc.autoTable({
+                        head: headers,
+                        body: rows,
+                        startY: 25,
+                        theme: 'grid',
+                        styles: {
+                            halign: 'center',
+                            fontSize: 10,
+                            cellPadding: 3
+                        },
+                        headStyles: {
+                            fillColor: [30, 30, 30],
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold'
+                        }
+                    });
+
+                    doc.save(fileName);
+                });
+
+                showBanner("PDF generated successfully!");
+            } catch (err) {
+                showBanner("Network error generating sheet. Please try again.");
+                console.error("Export Error:", err);
             }
         }
-        setInterval(draw, 33);
-        window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; });
-    }
-</script>
+
+        // Initialize script logic on DOM load
+        document.addEventListener("DOMContentLoaded", () => {
+            setRandomWallpaper();
+        });
+    </script>
 </body>
 </html>
