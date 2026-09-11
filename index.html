@@ -201,7 +201,7 @@
 
 <div id="appLoader">
     <div class="spinner"></div>
-    <div class="loading-text-anim">Loading Dashboard...</div>
+    <div class="loading-text-anim">Welcome</div>
 </div>
 
 <div id="sidePopup" class="side-popup">
@@ -216,7 +216,7 @@
             <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" class="brand-logo" alt="Logo">
             <h2 class="dash-title">Picker Pendency Dashboard</h2>
         </div>
-        <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">Dark Mode</button>
+        <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">Save your eyes</button>
     </div>
 
     <div class="tab-container">
@@ -262,7 +262,7 @@
 <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaDx6WdA3VlUwwDbyhmeJJS2gRivqoUemOrhq6GCM8rYgi3faoFPD9xJ0dRa5tEwddsA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby1h8cn0RMbYDF-v_qAE2A2s6udwuWkDgDfUvsoyJJ2N74dZ1hU10H8pPcVUGzDLQsxWw/exec";
 
     const WALLPAPERS = [
         "https://rukminim2.flixcart.com/fk-p-flap/3200/1560/image/891838e4b8f8742d.png",
@@ -355,7 +355,7 @@
         applyRandomWallpaper();
         setTimeout(() => {
             citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
-            storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store / Facility", create: false, sortField: { field: "text", direction: "asc" } });
+            storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
 
             apiFetch(`${SCRIPT_URL}?action=getData`)
                 .then(d => {
@@ -545,7 +545,7 @@
         filtered.forEach(i => { smMap[i.clusterManager] = (smMap[i.clusterManager] || 0) + 1; });
         
         const sm = [['Cluster Manager / CMSM', 'Total Pendency'], ...Object.entries(smMap).sort((a,b) => a[0].localeCompare(b[0]))];
-        const dt = [['CMSM', 'Facility Name', 'User Name', 'User ID'], ...filtered.map(i=>[i.clusterManager || "", i.darkStore || "", i.name || "", i.casperId || ""])];
+        const dt = [['CMSM', 'Dark Store Name', 'Name', 'Casper ID'], ...filtered.map(i=>[i.clusterManager || "", i.darkStore || "", i.name || "", i.casperId || ""])];
         
         let exportTitle = "Pendency Export";
         if (!managerMode && storeSelectInstance && storeSelectInstance.getValue()) {
