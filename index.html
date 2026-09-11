@@ -1,549 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Picker Pendency Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#4f46e5">
-    <link rel="icon" type="image/jpeg" href="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-    
-    <!-- Scripts deferred for faster page loading -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-
-    <style>
-        ::-webkit-scrollbar { display: none !important; }
-        * { scrollbar-width: none !important; -ms-overflow-style: none !important; box-sizing: border-box; }
-        
-        :root {
-            --primary: #4f46e5; --primary-hover: #4338ca; 
-            --danger: #ef4444; --danger-hover: #dc2626; 
-            --success: #10b981; --success-hover: #059669;
-            --bg-body: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 50%, #e0e7ff 100%);
-            --bg-panel: rgba(255, 255, 255, 0.94);
-            --text-main: #0f172a; --text-muted: #64748b; 
-            --border-color: rgba(226, 232, 240, 0.8);
-            --card-bg: #ffffff;
-            --table-header: #f8fafc;
-            --table-hover: #f1f5f9;
-        }
-
-        /* Smart Feature: Dark Mode Variables */
-        body.dark-mode {
-            --bg-body: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            --bg-panel: rgba(30, 41, 59, 0.85);
-            --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --card-bg: #1e293b;
-            --table-header: #0f172a;
-            --table-hover: #334155;
-            color: var(--text-main);
-        }
-
-        body {
-            background: var(--bg-body); margin: 0; padding: 30px 15px; min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text-main);
-            display: flex; align-items: flex-start; justify-content: center;
-            transition: background 0.4s ease, color 0.4s ease;
-        }
-
-        /* Hardware Accelerated Snow Canvas */
-        #snowCanvas {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 1; opacity: 0.8;
-        }
-
-        /* Improved Loader */
-        #appLoader {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-body); z-index: 99999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s;
-        }
-        .spinner {
-            width: 60px; height: 60px; border: 6px solid var(--border-color); border-top: 6px solid var(--primary);
-            border-radius: 50%; animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
-        }
-        .loading-text-anim {
-            margin-top: 20px; font-weight: 800; font-size: 18px; color: var(--primary);
-            animation: pulseText 1.5s ease-in-out infinite; text-align: center;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulseText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } }
-
-        /* Smoothed Side Image Popup */
-        .side-popup {
-            position: fixed; right: 20px; bottom: 20px; z-index: 1000;
-            animation: slideInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 50%; overflow: hidden;
-            border: 3px solid #fff; pointer-events: none; background: #fff;
-        }
-        .side-popup img { width: 65px; height: 65px; object-fit: cover; display: block; }
-        @keyframes slideInUp { 0% { transform: translateY(150px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-
-        /* Main Glass Panel */
-        .glass-panel {
-            background: var(--bg-panel); border-radius: 24px; padding: 35px 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px;
-            border: 1px solid var(--border-color); z-index: 10; position: relative;
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-        }
-        
-        .ui-locked { pointer-events: none; opacity: 0.6; cursor: wait; }
-
-        /* Header Area with Brand Integration */
-        .header-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-        .brand-header { display: flex; align-items: center; gap: 15px; }
-        .brand-logo { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -0.5px; }
-        
-        /* Dark Mode Toggle */
-        .theme-btn {
-            background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main);
-            border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 18px;
-        }
-        .theme-btn:hover { transform: translateY(-2px); }
-
-        .tab-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn-tab {
-            border: 1px solid var(--border-color); padding: 12px 22px; border-radius: 14px; font-weight: 700; background: var(--card-bg);
-            color: var(--text-muted); transition: all 0.25s ease; flex: 1; max-width: 220px; cursor: pointer;
-        }
-        .btn-tab:hover:not(.active) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .btn-tab.active { background: var(--primary); color: #ffffff; border-color: var(--primary); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3); }
-
-        .ts-control { border-radius: 14px !important; padding: 12px 16px !important; border: 2px solid var(--border-color) !important; text-align: center !important; font-weight: 700; background: var(--card-bg) !important; color: var(--text-main) !important; transition: border-color 0.2s; }
-        .ts-control:focus { border-color: var(--primary) !important; }
-        .ts-dropdown { background: var(--card-bg) !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; border-radius: 10px !important; }
-        .ts-dropdown .option { color: var(--text-main); }
-        
-        #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
-
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
-        .metric-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: transform 0.2s; }
-        .metric-card:hover { transform: translateY(-3px); }
-        .metric-card .val { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; }
-        .metric-card .lbl { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
-
-        .search-wrapper { position: relative; width: 100%; margin-bottom: 20px; }
-        .search-box { width: 100%; border-radius: 14px; padding: 14px 20px 14px 45px; border: 2px solid var(--border-color); font-weight: 600; text-align: left; outline: none; background: var(--card-bg); color: var(--text-main); transition: border-color 0.2s; }
-        .search-box:focus { border-color: var(--primary); }
-        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
-        .shortcut-hint { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: var(--border-color); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted); pointer-events: none; }
-
-        .action-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; width: 100%; }
-        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
-        .btn-action:active { transform: scale(0.97); }
-        .btn-pdf { background: #334155; color: #ffffff; }
-        .btn-sheet { background: var(--success); color: #ffffff; }
-        .btn-csv { background: var(--primary); color: #ffffff; }
-
-        /* Sticky Table Implementation */
-        .table-holder { background: var(--card-bg); border-radius: 16px; overflow-x: auto; width: 100%; border: 1px solid var(--border-color); max-height: 500px; overflow-y: auto; }
-        .table { margin-bottom: 0; min-width: 480px; text-align: center; color: var(--text-main); }
-        .table thead th { background: var(--table-header); color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 16px; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border-color); }
-        .table td { padding: 16px; font-weight: 600; font-size: 14px; vertical-align: middle; border-bottom: 1px solid var(--border-color); transition: background 0.2s; }
-        .table tbody tr:hover td { background: var(--table-hover); }
-        
-        .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
-        .btn-main-rep:hover { background: var(--danger-hover); transform: translateY(-1px); }
-        .btn-main-rep:active { transform: scale(0.95); }
-
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
-        .toast-msg { background: var(--text-main); color: var(--card-bg); padding: 14px 28px; border-radius: 50px; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes toastPop { 0%{transform:scale(0.8); opacity:0;} 100%{transform:scale(1); opacity:1;} }
-        
-        .badge-count { background: var(--primary); color: #fff; padding: 6px 14px; border-radius: 20px; display: inline-block; }
-        .na-bg { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.2); }
-
-        @media (max-width: 768px) {
-            .glass-panel { padding: 25px 15px; border-radius: 18px; }
-            .dash-title { font-size: 22px; }
-            .side-popup { right: 10px; bottom: 10px; }
-            .side-popup img { width: 50px; height: 50px; }
-            .header-wrapper { flex-direction: column; gap: 15px; }
-            .theme-btn { position: absolute; top: 20px; right: 20px; }
-        }
-    </style>
+<meta charset="utf-8">
+<title>Picker Pendency Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4f46e5">
+<link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<style>
+  ::-webkit-scrollbar{display:none!important}
+  *{scrollbar-width:none!important;-ms-overflow-style:none!important;box-sizing:border-box}
+  :root{
+    --primary:#4f46e5;--primary-soft:#eef2ff;--danger:#ef4444;--danger-hover:#dc2626;
+    --success:#10b981;--warn:#f59e0b;--bg-grad-1:#e0e7ff;--bg-grad-2:#f8fafc;
+    --panel-bg:rgba(255,255,255,.95);--panel-border:rgba(255,255,255,.8);
+    --text-main:#1e293b;--text-muted:#64748b;--card-bg:#fff;--table-head-bg:#f8fafc;
+    --row-hover:#f8fafc;--input-border:#e2e8f0;--chip-bg:#e2e8f0;
+  }
+  body.dark{
+    --bg-grad-1:#1e1b3a;--bg-grad-2:#0f172a;--panel-bg:rgba(30,41,59,.92);--panel-border:rgba(71,85,105,.4);
+    --text-main:#e2e8f0;--text-muted:#94a3b8;--card-bg:#1e293b;--table-head-bg:#0f172a;
+    --row-hover:#0f172a;--input-border:#334155;--chip-bg:#334155;--primary-soft:#312e81;
+  }
+  body{background:linear-gradient(135deg,var(--bg-grad-1) 0%,var(--bg-grad-2) 100%);margin:0;padding:24px 14px 70px;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;color:var(--text-main);display:flex;justify-content:center;transition:background .3s}
+  #appLoader{position:fixed;inset:0;background:var(--bg-grad-2);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .7s cubic-bezier(.8,0,.2,1)}
+  .slide-up{transform:translateY(-100%)}
+  .spinner{width:46px;height:46px;border:5px solid var(--input-border);border-top:5px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+  .loading-text-anim{margin-top:18px;font-weight:800;font-size:16px;color:var(--primary);letter-spacing:.5px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .glass-panel{background:var(--panel-bg);border-radius:20px;padding:28px 22px;box-shadow:0 15px 35px rgba(0,0,0,.08);width:100%;max-width:900px;backdrop-filter:blur(12px);border:1px solid var(--panel-border);z-index:10}
+  .ui-locked{pointer-events:none;opacity:.6}
+  .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .top-row h2{margin:0;font-weight:800;font-size:1.4rem}
+  .top-row .sub{color:var(--text-muted);font-size:12.5px;font-weight:600;margin-top:2px}
+  .icon-btn{border:none;background:var(--chip-bg);color:var(--text-main);width:38px;height:38px;border-radius:10px;font-size:16px;cursor:pointer;transition:.2s}
+  .icon-btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+  .tab-container{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .btn-tab{border:none;padding:11px 18px;border-radius:12px;font-weight:700;background:var(--chip-bg);color:var(--text-muted);transition:.25s;flex:1;min-width:130px;font-size:13.5px;cursor:pointer}
+  .btn-tab:hover:not(.active){filter:brightness(.95);transform:translateY(-1px)}
+  .btn-tab.active{background:var(--primary);color:#fff}
+  .btn-refresh{border:none;padding:10px 16px;border-radius:12px;font-weight:700;background:var(--chip-bg);color:var(--text-muted);font-size:13px;cursor:pointer;transition:.25s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .btn-refresh:hover{filter:brightness(.95);transform:translateY(-1px)}
+  .btn-refresh.spinning .refresh-icon{display:inline-block;animation:spin 1s linear infinite}
+  .refreshed-at{font-size:11px;color:var(--text-muted);text-align:right;margin-top:4px}
+  select,.field-input{width:100%;border-radius:12px;padding:13px 14px;border:2px solid var(--input-border);background:var(--card-bg);color:var(--text-main);font-weight:700;font-size:14.5px;transition:.2s}
+  select:focus,.field-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .row-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+  @media(max-width:600px){.row-fields{grid-template-columns:1fr}}
+  .store-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:16px 0}
+  .store-card{background:var(--card-bg);border:2px solid var(--input-border);border-radius:14px;padding:14px;cursor:pointer;text-align:left;transition:.2s}
+  .store-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+  .store-card.active{border-color:var(--primary);background:var(--primary-soft)}
+  .store-card .sc-name{font-weight:800;font-size:13px;color:var(--text-main);display:block;margin-bottom:6px;word-break:break-word}
+  .store-card .sc-count{font-weight:800;font-size:20px;color:var(--primary)}
+  .store-card .sc-count.zero{color:var(--success)}
+  #resultArea{display:none;margin-top:22px;flex-direction:column}
+  .stats-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .stat-chip{background:var(--text-main);color:var(--bg-grad-2);padding:10px 18px;border-radius:50px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px}
+  body.dark .stat-chip{background:var(--primary);color:#fff}
+  .stat-chip b{background:var(--card-bg);color:var(--text-main);padding:2px 12px;border-radius:12px;font-size:13.5px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar .field-input{flex:1;min-width:160px}
+  .btn-sort{border:none;padding:12px 16px;border-radius:12px;font-weight:700;background:var(--chip-bg);color:var(--text-main);font-size:13px;cursor:pointer;white-space:nowrap}
+  .action-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+  .btn-action{border:none;padding:12px 20px;border-radius:10px;font-weight:700;font-size:13.5px;transition:.25s;flex:1;min-width:150px;cursor:pointer;color:#fff}
+  .btn-action:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.18)}
+  .btn-pdf{background:var(--text-main)}
+  body.dark .btn-pdf{background:#334155}
+  .btn-sheet{background:var(--success)}
+  .btn-csv{background:var(--warn)}
+  .table-holder{background:var(--card-bg);border-radius:12px;overflow-x:auto;width:100%;border:1px solid var(--input-border);-webkit-overflow-scrolling:touch}
+  table{width:100%;border-collapse:collapse;min-width:460px}
+  thead th{background:var(--table-head-bg);color:var(--text-muted);border-bottom:2px solid var(--input-border);padding:14px;font-size:12.5px;font-weight:800;text-align:center}
+  tbody tr{border-bottom:1px solid var(--input-border);transition:background-color .15s}
+  tbody tr:hover{background-color:var(--row-hover)}
+  td{padding:15px;font-weight:700;font-size:13.5px;text-align:center;color:var(--text-main)}
+  .btn-page{background:var(--chip-bg);border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12.5px;color:var(--text-main);cursor:pointer}
+  .btn-page:disabled{opacity:.5;cursor:not-allowed}
+  .badge-count{background-color:var(--text-main);color:var(--bg-grad-2);padding:6px 0;border-radius:20px;font-size:13.5px;min-width:56px;display:inline-block}
+  .na-bg{background-color:#fee2e2;color:#dc2626;padding:5px 12px;border-radius:8px;font-weight:800;border:1px solid #fca5a5;display:inline-block}
+  .btn-main-rep{background:var(--danger);color:#fff;border:none;padding:9px 22px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .btn-main-rep:hover{background:var(--danger-hover)}
+  .reason-group{display:none;gap:6px;justify-content:center;flex-direction:column;align-items:center}
+  .btn-reason{border:none;padding:8px 14px;border-radius:8px;font-size:11.5px;color:#fff;font-weight:700;width:100%;max-width:150px;cursor:pointer}
+  #toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:none;width:92%;max-width:420px;text-align:center;pointer-events:none}
+  .toast-msg{background:var(--text-main);color:var(--bg-grad-2);padding:12px 22px;border-radius:50px;font-weight:700;font-size:13.5px;box-shadow:0 10px 25px rgba(0,0,0,.25);display:inline-block}
+  .empty-state{padding:36px 20px;text-align:center;color:var(--text-main)}
+  .empty-state h4{font-weight:800;color:var(--success);margin:8px 0 0}
+  .config-banner{background:#fef3c7;color:#92400e;border:1px solid #fbbf24;border-radius:12px;padding:14px 16px;font-size:13px;font-weight:600;margin-bottom:16px;text-align:left;display:none}
+  .skeleton{background:linear-gradient(90deg,var(--chip-bg) 25%,var(--input-border) 37%,var(--chip-bg) 63%);background-size:400% 100%;animation:sk 1.4s ease infinite;border-radius:8px;height:14px}
+  @keyframes sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
 </head>
-
 <body>
-
-<!-- Snowfall Canvas (Hardware Accelerated) -->
-<canvas id="snowCanvas"></canvas>
-
-<div id="appLoader">
-    <div class="spinner"></div>
-    <div class="loading-text-anim">Loading Dashboard...</div>
-</div>
-
-<div id="sidePopup" class="side-popup">
-    <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" alt="Logo Popup">
-</div>
+<div id="appLoader"><div class="spinner"></div><div class="loading-text-anim">Loading Dashboard...</div></div>
 
 <div class="glass-panel" id="mainPanel">
-    
-    <div class="header-wrapper">
-        <div class="brand-header">
-            <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" class="brand-logo" alt="Logo">
-            <h2 class="dash-title">Picker Pendency Dashboard</h2>
-        </div>
-        <button class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+  <div class="top-row">
+    <div>
+      <h2>Picker Pendency Dashboard</h2>
+      <div class="sub" id="dataSummary">&nbsp;</div>
+    </div>
+    <button class="icon-btn" id="darkToggle" onclick="toggleDark()" title="Toggle theme">🌙</button>
+  </div>
+
+  <div id="configBanner" class="config-banner"></div>
+
+  <div class="tab-container">
+    <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">Dark Store Wise</button>
+    <button id="btnManager" class="btn-tab" onclick="setMode(1)">Cluster Manager</button>
+    <button class="btn-refresh" id="btnRefresh" onclick="refreshData()"><span class="refresh-icon">↻</span> Refresh</button>
+  </div>
+  <div class="refreshed-at" id="refreshedAt"></div>
+
+  <div class="row-fields">
+    <select id="citySelect"></select>
+    <select id="storeSelect" style="display:none"></select>
+  </div>
+
+  <div id="storeCardsWrap"></div>
+
+  <div id="resultArea">
+    <div class="stats-strip">
+      <div class="stat-chip">Total Pendency <b id="countBadge">0</b></div>
+      <div class="stat-chip" id="filteredChip" style="display:none">Showing <b id="filteredBadge">0</b></div>
     </div>
 
-    <div class="tab-container">
-        <button id="btnNormal" class="btn-tab active" onclick="setMode(0)">🏬 Dark Store Wise</button>
-        <button id="btnManager" class="btn-tab" onclick="setMode(1)">👨‍💼 Cluster Manager</button>
+    <div class="toolbar">
+      <input class="field-input" id="searchBox" placeholder="Search by name or Casper ID..." oninput="onSearch()">
+      <button class="btn-sort" id="sortBtn" onclick="toggleSort()">Sort: Name A→Z</button>
     </div>
 
-    <div class="row g-3 justify-content-center mb-3">
-        <div class="col-12 col-md-5"><select id="citySelect" autocomplete="off" onchange="onCityChange()"></select></div>
-        <div class="col-12 col-md-5" id="storeWrapper"><select id="storeSelect" autocomplete="off" onchange="currentPage=1; render()"></select></div>
+    <div class="action-buttons">
+      <button class="btn-action btn-pdf" onclick="exportData()">Download PDF</button>
+      <button class="btn-action btn-csv" onclick="exportCSV()">Download CSV</button>
+      <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open As Google Sheet</button>
     </div>
 
-    <div id="resultArea">
-        <div class="metrics-grid">
-            <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
-            <div class="metric-card"><div class="val" id="totalReportedBadge">0</div><div class="lbl">Reported Exits</div></div>
-        </div>
+    <div class="table-holder"><table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
 
-        <div id="searchWrapper" class="search-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" class="search-box" placeholder="Search Name or Casper ID..." oninput="onSearchInput()">
-            <span class="shortcut-hint">/</span>
-        </div>
-
-        <div class="action-buttons">
-            <button class="btn-action btn-pdf" onclick="exportData()">📄 Export PDF</button>
-            <button class="btn-action btn-csv" onclick="exportToCSV()">📊 Export CSV</button>
-            <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">🌐 Open as G-Sheet</button>
-        </div>
-
-        <div class="table-holder">
-            <table class="table">
-                <thead id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-        
-        <div id="paginationBar" style="display:none; justify-content:space-between; align-items:center; margin-top:20px; width:100%; padding: 0 10px;">
-            <button class="btn-tab" id="btnPrev" onclick="changePage(-1)" style="min-width:auto; padding:8px 16px; margin:0;">← Prev</button>
-            <span id="pageInfo" style="font-weight:700; font-size:14px; color:var(--text-muted);">Page 1</span>
-            <button class="btn-tab" id="btnNext" onclick="changePage(1)" style="min-width:auto; padding:8px 16px; margin:0;">Next →</button>
-        </div>
+    <div id="paginationBar" style="display:none;justify-content:center;gap:15px;margin-top:18px;">
+      <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Previous</button>
+      <span id="pageInfo" style="font-weight:800;font-size:13px;display:flex;align-items:center;">Page 1 of 1</span>
+      <button class="btn-page" id="btnNext" onclick="changePage(1)">Next</button>
     </div>
+  </div>
 </div>
 
 <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
 <script>
-    // ⚠️ REPLACE THIS URL WITH YOUR NEWLY DEPLOYED WEB APP URL ⚠️
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2RP0gg4xrfVbBv1x8QPuxk_yspZqY9T9xkcuiUDh6S0jKA2wWdKsgHgPD0oGDRLURSA/exec";
+  // !! UPDATE THIS IF YOU REDEPLOY GAS (Deploy > Manage deployments > Edit > New version keeps the same URL; "New deployment" does NOT) !!
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoX6ic4XRBNhZN0dMjxWbnUOivc3hOcMlhadOoyaoF9b6-Sc2R7efWQj24f4adIDh0/exec";
 
-    let db = [], filtered = [], managerMode = false, reportedIds = new Set();
-    let citySelectInstance, storeSelectInstance;
-    let isProcessing = false, currentPage = 1, toastTimer = null, searchDebounceTimer = null;
-    let searchQuery = "";
-    const PAGE_SIZE = 50;
+  let db=[], filtered=[], displayed=[], managerMode=false, reportedIds=new Set();
+  let citySelectInstance, storeSelectInstance;
+  let isProcessing=false, currentPage=1, toastTimer=null, sortDir=1;
+  const PAGE_SIZE=50;
+  const loginTxt="(Download: Disprz App From Playstore | User ID: Casper ID (452346) | Password: Edl@123)";
 
-    const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const checkNA = str => { const v = String(str).trim().toUpperCase(); return (!v || v === "N/A") ? `<span class="na-bg">N/A</span>` : escHtml(str); };
-
-    // Smart Feature: Dark Mode Toggle
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        document.querySelector('.theme-btn').innerText = isDark ? '☀️' : '🌙';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  // --- theme ---
+  function toggleDark(){
+    const dark=document.body.classList.toggle('dark');
+    localStorage.setItem('picker_theme', dark?'dark':'light');
+    document.getElementById('darkToggle').textContent = dark ? '☀️' : '🌙';
+  }
+  (function initTheme(){
+    if(localStorage.getItem('picker_theme')==='dark'){
+      document.body.classList.add('dark');
+      document.addEventListener('DOMContentLoaded',()=>{document.getElementById('darkToggle').textContent='☀️';});
     }
+  })();
 
-    // Smart Feature: Keyboard Shortcut (Press '/' to focus search)
-    document.addEventListener('keydown', (e) => {
-        if (e.key === '/' && document.activeElement.id !== 'searchInput') {
-            e.preventDefault();
-            document.getElementById('searchInput').focus();
-        }
-    });
+  function remoteLogError(msg,stack,details){
+    fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"log_error",message:String(msg||"Error"),stack:String(stack||"N/A"),details:String(details||"GitHub")})}).catch(()=>{});
+  }
+  window.onerror=(msg,src,lineno,colno,err)=>remoteLogError(msg,err?err.stack:`Line:${lineno}`,`Source:${src}`);
+  window.addEventListener('unhandledrejection',e=>remoteLogError(e.reason,e.reason&&e.reason.stack,"Promise Rejection"));
 
-    // Initialize Theme
-    if(localStorage.getItem('theme') === 'dark') toggleTheme();
+  const escHtml=(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const checkNA=(str)=>{
+    const val=String(str).trim().toUpperCase();
+    if(!val||val==="N/A"||val==="#N/A"||val==="#NA")return `<span class="na-bg">N/A</span>`;
+    return escHtml(str);
+  };
 
-    function showToast(msg, isError = false) {
-        const c = document.getElementById('toast-container'), t = document.getElementById('toastText');
-        t.innerText = msg; 
-        t.style.background = isError ? "var(--danger)" : "var(--text-main)";
-        t.style.color = isError ? "#fff" : "var(--card-bg)";
-        c.style.display = 'block'; 
-        clearTimeout(toastTimer); 
-        toastTimer = setTimeout(() => { c.style.display = 'none'; }, 3500);
+  function showToast(msg,isError=false){
+    const c=document.getElementById('toast-container'),t=document.getElementById('toastText');
+    t.innerText=msg;t.style.background=isError?"var(--danger)":"var(--text-main)";
+    c.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{c.style.display='none';},3500);
+  }
+  function setUILock(lock){isProcessing=lock;document.getElementById('mainPanel').classList.toggle('ui-locked',lock);}
+  function hideLoader(){
+    const l=document.getElementById('appLoader');
+    if(l&&!l.classList.contains('slide-up')){l.classList.add('slide-up');setTimeout(()=>{l.style.display='none';},700);}
+  }
+  function stampRefreshed(){
+    document.getElementById('refreshedAt').innerText = "Last updated " + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+  function showConfigError(kind, detail){
+    const b=document.getElementById('configBanner');
+    if(kind==='stale'){
+      b.innerHTML = "⚠️ <b>Can't reach the dashboard backend (HTTP 404).</b> This almost always means the Apps Script deployment URL changed. Open the Apps Script project → Deploy → Manage deployments, confirm the active Web App URL, and update <code>SCRIPT_URL</code> in this file if it differs.";
+    } else {
+      b.innerHTML = "⚠️ <b>Network error reaching the backend.</b> " + escHtml(detail||"Check your connection or the deployment's access setting (should be \"Anyone\").");
     }
+    b.style.display='block';
+  }
+  function clearConfigError(){ document.getElementById('configBanner').style.display='none'; }
 
-    function setUILock(lock) { 
-        isProcessing = lock; 
-        const pnl = document.getElementById('mainPanel');
-        if(lock) pnl.classList.add('ui-locked');
-        else pnl.classList.remove('ui-locked');
-    }
+  const onNetworkError=(err,ctx)=>{
+    setUILock(false);hideLoader();
+    const is404 = /404/.test(err.message||'');
+    showToast("Network Error: "+(err.message||"Could not reach server."),true);
+    if(is404) showConfigError('stale'); else showConfigError('other', err.message);
+    remoteLogError(err.message,err.stack,ctx||"GitHub");
+  };
 
-    function hideLoader() { 
-        const l = document.getElementById('appLoader'); 
-        if(l) { 
-            l.style.opacity = '0'; 
-            setTimeout(() => { l.style.visibility = 'hidden'; }, 400); 
-        } 
-    }
+  function apiPost(body){
+    return fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)})
+      .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});
+  }
 
-    window.onload = () => {
-        // Initialize TomSelect ensuring scripts are loaded
-        setTimeout(() => {
-            citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
-            storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
+  window.onload=()=>{
+    citySelectInstance=simpleSelect("citySelect","Select City",onCityChange);
+    storeSelectInstance=simpleSelect("storeSelect","Select Dark Store",()=>{currentPage=1;render();});
+    loadData(true);
+  };
 
-            if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
-                hideLoader(); showToast("ERROR: Please update SCRIPT_URL", true); return;
-            }
-
-            fetch(`${SCRIPT_URL}?action=getData`)
-                .then(r => r.json())
-                .then(d => {
-                    hideLoader();
-                    if (d && d.error) { showToast("Backend Error: " + d.error, true); return; }
-                    db = Array.isArray(d) ? d : [];
-                    [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
-                })
-                .catch(err => { 
-                    hideLoader(); showToast("Network Error: Could not load data.", true); 
-                });
-            
-            initSnow(); // Start visual effect
-        }, 100);
+  // lightweight dependency-free select wrapper (keeps native <select>, styled via CSS)
+  function simpleSelect(id, placeholder, onChange){
+    const el=document.getElementById(id);
+    el.innerHTML=`<option value="">${placeholder}</option>`;
+    el.addEventListener('change', onChange);
+    return {
+      clearOptions(){ el.innerHTML=`<option value="">${placeholder}</option>`; },
+      addOption({value,text}){ const o=document.createElement('option'); o.value=value; o.textContent=text; el.appendChild(o); },
+      clear(){ el.value=""; },
+      getValue(){ return el.value; },
+      setValue(v){ el.value=v; }
     };
+  }
 
-    function setMode(m) {
-        if (isProcessing) return;
-        managerMode = !!m; 
-        currentPage = 1; 
-        searchQuery = ""; 
-        document.getElementById('searchInput').value = "";
-        
-        document.getElementById('btnNormal').classList.toggle('active', !m); 
-        document.getElementById('btnManager').classList.toggle('active', m);
-        
-        document.getElementById('storeWrapper').style.display = m ? 'none' : 'block';
-        document.getElementById('searchWrapper').style.display = m ? 'none' : 'block';
+  function loadData(isInitial){
+    fetch(`${SCRIPT_URL}?action=getData`)
+      .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+      .then(d=>{
+        if(isInitial) hideLoader();
+        clearConfigError();
+        if(d&&d.error){showToast("Load Failed: "+d.error,true);remoteLogError(d.error,"N/A","Initial Data Fetch");return;}
+        db=Array.isArray(d)?d:[];
+        const cities=[...new Set(db.map(i=>i.city))].sort();
+        citySelectInstance.clearOptions();
+        cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+        document.getElementById('dataSummary').innerText = `${db.length} pending picker${db.length===1?'':'s'} across ${cities.length} cit${cities.length===1?'y':'ies'}`;
+        stampRefreshed();
+      })
+      .catch(err=>onNetworkError(err, isInitial?"Initial Data Fetch":"Refresh"));
+  }
 
-        const currentCity = citySelectInstance.getValue();
-        if (currentCity) { if (managerMode) render(); else onCityChange(); } 
-        else document.getElementById('resultArea').style.display = 'none';
+  function refreshData(){
+    if(isProcessing)return;
+    const btn=document.getElementById('btnRefresh');
+    btn.classList.add('spinning');btn.disabled=true;
+    reportedIds=new Set();currentPage=1;
+    document.getElementById('resultArea').style.display='none';
+    document.getElementById('storeCardsWrap').innerHTML='';
+    citySelectInstance.clear();storeSelectInstance.clearOptions();storeSelectInstance.clear();
+    fetch(`${SCRIPT_URL}?action=getData`)
+      .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+      .then(d=>{
+        btn.classList.remove('spinning');btn.disabled=false;
+        clearConfigError();
+        if(d&&d.error){showToast("Refresh Failed: "+d.error,true);return;}
+        db=Array.isArray(d)?d:[];
+        const cities=[...new Set(db.map(i=>i.city))].sort();
+        citySelectInstance.clearOptions();
+        cities.forEach(c=>citySelectInstance.addOption({value:c,text:c}));
+        document.getElementById('dataSummary').innerText = `${db.length} pending picker${db.length===1?'':'s'} across ${cities.length} cit${cities.length===1?'y':'ies'}`;
+        stampRefreshed();
+        showToast("Data Refreshed ✓");
+      })
+      .catch(err=>{btn.classList.remove('spinning');btn.disabled=false;onNetworkError(err,"Refresh");});
+  }
+
+  function setMode(m){
+    if(isProcessing)return;
+    managerMode=!!m;currentPage=1;
+    document.getElementById('btnNormal').classList.toggle('active',!m);
+    document.getElementById('btnManager').classList.toggle('active',m);
+    document.getElementById('storeSelect').style.display=m?'none':'block';
+    document.getElementById('resultArea').style.display='none';
+    document.getElementById('storeCardsWrap').innerHTML='';
+    citySelectInstance.clear();storeSelectInstance.clearOptions();storeSelectInstance.clear();
+  }
+
+  function onCityChange(){
+    if(isProcessing)return;
+    const c=citySelectInstance.getValue();currentPage=1;
+    const cardsWrap=document.getElementById('storeCardsWrap');
+    if(!c){document.getElementById('resultArea').style.display='none';cardsWrap.innerHTML='';return;}
+    if(managerMode){
+      cardsWrap.innerHTML='';
+      render();
+    } else {
+      const storeCounts={};
+      db.filter(i=>i.city===c).forEach(i=>{storeCounts[i.darkStore]=(storeCounts[i.darkStore]||0)+1;});
+      const stores=Object.keys(storeCounts).sort();
+      storeSelectInstance.clearOptions();storeSelectInstance.clear();
+      stores.forEach(s=>storeSelectInstance.addOption({value:s,text:s}));
+      cardsWrap.innerHTML = `<div class="store-cards">${stores.map(s=>`
+        <button type="button" class="store-card" onclick="pickStore('${escHtml(s)}')">
+          <span class="sc-name">${escHtml(s)}</span>
+          <span class="sc-count ${storeCounts[s]===0?'zero':''}">${storeCounts[s]}</span>
+        </button>`).join('')}</div>`;
+      document.getElementById('resultArea').style.display='none';
     }
+  }
 
-    function onCityChange() {
-        if (isProcessing) return;
-        const c = citySelectInstance.getValue(); 
-        currentPage = 1;
-        if (!c) { document.getElementById('resultArea').style.display = 'none'; return; }
-        
-        if (managerMode) { render(); } 
-        else {
-            storeSelectInstance.clearOptions(); storeSelectInstance.clear();
-            [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort().forEach(s => storeSelectInstance.addOption({ value: s, text: s }));
-            document.getElementById('resultArea').style.display = 'none';
-        }
+  function pickStore(s){
+    storeSelectInstance.setValue(s);
+    currentPage=1;
+    document.querySelectorAll('.store-card').forEach(el=>el.classList.toggle('active', el.querySelector('.sc-name').textContent===s));
+    render();
+  }
+
+  function changePage(dir){currentPage+=dir;renderTable();}
+
+  function render(){
+    const c=citySelectInstance.getValue(),s=storeSelectInstance.getValue();
+    if(!c||(!managerMode&&!s)){document.getElementById('resultArea').style.display='none';return;}
+    filtered=db.filter(i=>i.city===c&&(managerMode||i.darkStore===s)&&!reportedIds.has(String(i.casperId)));
+    document.getElementById('countBadge').innerText=filtered.length;
+    document.getElementById('resultArea').style.display='flex';
+    document.getElementById('searchBox').value='';
+    applySearchSort();
+  }
+
+  function onSearch(){ currentPage=1; applySearchSort(); }
+
+  function toggleSort(){
+    sortDir*=-1;
+    document.getElementById('sortBtn').innerText = "Sort: Name " + (sortDir===1?"A→Z":"Z→A");
+    applySearchSort();
+  }
+
+  function applySearchSort(){
+    const q=document.getElementById('searchBox').value.trim().toLowerCase();
+    displayed = !q ? [...filtered] : filtered.filter(i=>
+      String(i.name).toLowerCase().includes(q) || String(i.casperId).toLowerCase().includes(q) ||
+      (managerMode && String(i.clusterManager).toLowerCase().includes(q))
+    );
+    if(!managerMode){
+      displayed.sort((a,b)=> sortDir * String(a.name).localeCompare(String(b.name)));
     }
+    const chip=document.getElementById('filteredChip');
+    if(q){ chip.style.display='flex'; document.getElementById('filteredBadge').innerText=displayed.length; }
+    else chip.style.display='none';
+    renderTable();
+  }
 
-    // Smart Feature: Debouncing Search to prevent UI lag on fast typing
-    function onSearchInput() { 
-        clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(() => {
-            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase(); 
-            currentPage = 1; 
-            render(); 
-        }, 250);
+  function renderTable(){
+    const tHead=document.getElementById('tableHead'),tBody=document.getElementById('tableBody'),pBar=document.getElementById('paginationBar');
+    if(displayed.length===0){
+      tHead.innerHTML='';
+      tBody.innerHTML=`<tr><td colspan="${managerMode?2:3}" class="empty-state"><h4>No Pending Pickers</h4><p style="margin:6px 0 0;color:var(--text-muted)">All Clear For This Selection</p></td></tr>`;
+      pBar.style.display='none';return;
     }
-
-    function changePage(dir) { currentPage += dir; renderTable(); }
-
-    function render() {
-        const c = citySelectInstance.getValue(), s = storeSelectInstance.getValue();
-        if (!c || (!managerMode && !s)) { document.getElementById('resultArea').style.display = 'none'; return; }
-
-        filtered = db.filter(i => {
-            const mC = i.city === c, mS = managerMode || i.darkStore === s, nR = !reportedIds.has(String(i.casperId));
-            let mQ = true;
-            if (searchQuery && !managerMode) {
-                mQ = String(i.name).toLowerCase().includes(searchQuery) || String(i.casperId).toLowerCase().includes(searchQuery);
-            }
-            return mC && mS && nR && mQ;
-        });
-
-        document.getElementById('countBadge').innerText = filtered.length;
-        document.getElementById('totalReportedBadge').innerText = reportedIds.size;
-        document.getElementById('resultArea').style.display = 'flex';
-        renderTable();
+    if(managerMode){
+      pBar.style.display='none';
+      const sum={};
+      displayed.forEach(i=>{sum[i.clusterManager]=(sum[i.clusterManager]||0)+1;});
+      tHead.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
+      tBody.innerHTML=Object.entries(sum).sort((a,b)=> sortDir * a[0].localeCompare(b[0])).map(([n,v])=>`<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
+    } else {
+      const totalPages=Math.max(1,Math.ceil(displayed.length/PAGE_SIZE));
+      currentPage=Math.min(currentPage,totalPages);
+      document.getElementById('pageInfo').innerText=`Page ${currentPage} of ${totalPages}`;
+      document.getElementById('btnPrev').disabled=(currentPage===1);
+      document.getElementById('btnNext').disabled=(currentPage===totalPages);
+      pBar.style.display='flex';
+      const start=(currentPage-1)*PAGE_SIZE;
+      tHead.innerHTML='<tr><th style="width:40%">Picker Name</th><th style="width:30%">Casper ID</th><th style="width:30%">Action</th></tr>';
+      tBody.innerHTML=displayed.slice(start,start+PAGE_SIZE).map(i=>`
+        <tr>
+          <td>${checkNA(i.name)}</td>
+          <td style="text-transform:none;">${checkNA(i.casperId)}</td>
+          <td><div id="box-${escHtml(i.casperId)}">
+            <button class="btn-main-rep" onclick="showOpt('${escHtml(i.casperId)}')">Report</button>
+            <div class="reason-group" id="opt-${escHtml(i.casperId)}">
+              <button class="btn-reason" style="background:var(--danger)" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button>
+            </div>
+          </div></td>
+        </tr>`).join('');
     }
+  }
 
-    function renderTable() {
-        const tHead = document.getElementById('tableHead'), tBody = document.getElementById('tableBody'), pBar = document.getElementById('paginationBar');
-        
-        if (filtered.length === 0) {
-            tHead.innerHTML = ''; 
-            tBody.innerHTML = `<tr><td colspan="${managerMode ? 2 : 3}" style="padding: 30px; color: var(--text-muted);"><b>No Records Found 📭</b></td></tr>`;
-            pBar.style.display = 'none'; return;
-        }
+  function showOpt(id){
+    document.getElementById('opt-'+id).style.display='flex';
+    document.querySelector('#box-'+CSS.escape(id)+' .btn-main-rep').style.display='none';
+  }
 
-        if (managerMode) {
-            pBar.style.display = 'none';
-            const sum = {}; filtered.forEach(i => { sum[i.clusterManager] = (sum[i.clusterManager] || 0) + 1; });
-            tHead.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-            tBody.innerHTML = Object.entries(sum).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,v]) => `<tr><td>${checkNA(n)}</td><td><span class="badge-count">${v}</span></td></tr>`).join('');
-        } else {
-            const tot = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-            currentPage = Math.min(currentPage, tot);
-            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${tot}`;
-            document.getElementById('btnPrev').disabled = (currentPage === 1); 
-            document.getElementById('btnPrev').style.opacity = (currentPage === 1) ? 0.5 : 1;
-            document.getElementById('btnNext').disabled = (currentPage === tot);
-            document.getElementById('btnNext').style.opacity = (currentPage === tot) ? 0.5 : 1;
-            pBar.style.display = 'flex';
+  function initiateSubmit(id){
+    const p=filtered.find(x=>String(x.casperId)===String(id));
+    if(!p)return;
+    const backupDb=[...db];
+    db=db.filter(i=>String(i.casperId)!==String(id));
+    reportedIds.add(String(p.casperId));
+    render();showToast("Processing update...");
+    apiPost({action:"report",n:p.name,id:p.casperId,ds:p.darkStore,c:p.city,r:'Exit'})
+      .then(res=>{
+        if(res.status==="Success")showToast("Report Submitted Successfully ✓");
+        else{db=backupDb;reportedIds.delete(String(p.casperId));render();showToast("Report Failed.",true);remoteLogError(res.error,"N/A","Backend rejected");}
+      })
+      .catch(err=>{db=backupDb;reportedIds.delete(String(p.casperId));render();onNetworkError(err,"Report Submission");});
+  }
 
-            const st = (currentPage - 1) * PAGE_SIZE;
-            tHead.innerHTML = '<tr><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
-            tBody.innerHTML = filtered.slice(st, st + PAGE_SIZE).map(i => `
-                <tr id="row-${escHtml(i.casperId)}">
-                    <td>${checkNA(i.name)}</td><td><strong style="color:var(--primary)">${checkNA(i.casperId)}</strong></td>
-                    <td><button class="btn-main-rep" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit / Left</button></td>
-                </tr>`).join('');
-        }
-    }
+  function currentExportRows(){ return displayed.length ? displayed : filtered; }
 
-    function initiateSubmit(id) {
-        if (isProcessing) return;
-        const p = filtered.find(x => String(x.casperId) === String(id));
-        if (!p) return;
-        
-        const backup = [...db]; 
-        db = db.filter(i => String(i.casperId) !== String(id)); 
-        reportedIds.add(String(p.casperId));
-        
-        render(); 
-        showToast("Processing exit..."); setUILock(true);
+  function exportData(){
+    if(isProcessing||filtered.length===0){if(filtered.length===0)showToast("No Data To Export",true);return;}
+    setUILock(true);
+    try{
+      const c=citySelectInstance.getValue(),s=storeSelectInstance.getValue();
+      const f=(managerMode?c:s)+" Pendency",h=(managerMode?c+" Summary":s+" Pendency").replace(/\b\w/g,l=>l.toUpperCase());
+      const {jsPDF}=window.jspdf,doc=new jsPDF(),w=doc.internal.pageSize.getWidth();
+      const st={halign:'center',textColor:0,lineColor:[0,0,0],lineWidth:.2,fontStyle:'bold'};
+      const hst={fillColor:[253,253,150],textColor:0,lineColor:[0,0,0],lineWidth:.2};
+      doc.setFontSize(16).text(h,w/2,15,{align:"center"});
+      doc.setFontSize(9).text(loginTxt,w/2,22,{align:"center"});
+      if(managerMode){
+        const sortedFiltered=[...filtered].sort((a,b)=>a.clusterManager.localeCompare(b.clusterManager));
+        const sd=Object.entries(filtered.reduce((acc,item)=>{acc[item.clusterManager]=(acc[item.clusterManager]||0)+1;return acc;},{})).sort((a,b)=>a[0].localeCompare(b[0]));
+        doc.autoTable({head:[['CLUSTER MANAGER','PENDENCY']],body:sd,startY:28,theme:'grid',styles:st,headStyles:hst});
+        doc.addPage();
+        doc.setFontSize(14).text("Entire Pendency",w/2,15,{align:"center"});
+        doc.setFontSize(9).text(loginTxt,w/2,21,{align:"center"});
+        doc.autoTable({head:[['CM','STORE','PICKER','ID']],body:sortedFiltered.map(i=>[i.clusterManager,i.darkStore,i.name,i.casperId]),startY:28,theme:'grid',styles:{...st,fontSize:8},headStyles:hst});
+      } else {
+        doc.autoTable({head:[['PICKER NAME','CASPER ID']],body:currentExportRows().map(i=>[i.name,i.casperId]),startY:30,theme:'grid',styles:st,headStyles:hst});
+      }
+      doc.save(f+".pdf");setUILock(false);showToast("PDF Downloaded ✓");
+    }catch(err){setUILock(false);showToast("Failed to generate PDF",true);remoteLogError(err.message,err.stack,"PDF Export");}
+  }
 
-        fetch(SCRIPT_URL, { 
-            method: "POST", headers: { "Content-Type": "text/plain" }, 
-            body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city }) 
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.status === "Success") showToast("Exit Successfully Processed ✓");
-            else { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Failed to exit.", true); }
-        })
-        .catch(err => { db = backup; reportedIds.delete(String(p.casperId)); render(); showToast("Network/Server Error", true); })
-        .finally(() => setUILock(false));
-    }
+  function exportCSV(){
+    if(filtered.length===0){showToast("No Data To Export",true);return;}
+    const rows = managerMode
+      ? [['Cluster Manager','Pendency'], ...Object.entries(filtered.reduce((a,i)=>{a[i.clusterManager]=(a[i.clusterManager]||0)+1;return a;},{}))]
+      : [['Picker Name','Casper ID'], ...currentExportRows().map(i=>[i.name,i.casperId])];
+    const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const c=citySelectInstance.getValue(),s=storeSelectInstance.getValue();
+    a.href=url; a.download=(managerMode?c:s)+" Pendency.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("CSV Downloaded ✓");
+  }
 
-    function exportData() {
-        if (filtered.length === 0 || isProcessing) return; 
-        setUILock(true);
-        try {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            const w = doc.internal.pageSize.getWidth();
-            const hd = { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' }; // Upgraded theme colors for PDF
-            const b = { halign: 'center' };
-            
-            doc.setFontSize(16).text(managerMode ? "CM Summary" : "Pendency Export", w/2, 15, {align:"center"});
-            
-            if (managerMode) {
-                const sm = {}; filtered.forEach(i => sm[i.clusterManager] = (sm[i.clusterManager]||0)+1);
-                doc.autoTable({ head: [['Cluster Manager', 'Pending Count']], body: Object.entries(sm), startY: 25, headStyles: hd, styles: b });
-            } else {
-                doc.autoTable({ head: [['Picker Name', 'Casper ID']], body: filtered.map(i=>[i.name, i.casperId]), startY: 25, headStyles: hd, styles: b });
-            }
-            doc.save("Pendency_Export.pdf"); 
-        } catch(e) { showToast("Failed to generate PDF", true); } finally { setUILock(false); }
-    }
-
-    function exportToCSV() {
-        if(filtered.length === 0 || isProcessing) return;
-        setUILock(true);
-        try {
-            let c = managerMode ? "Cluster Manager,Store,Picker Name,Casper ID\n" : "Picker Name,Casper ID\n";
-            filtered.forEach(i => { c += managerMode ? `"${i.clusterManager}","${i.darkStore}","${i.name}","${i.casperId}"\n` : `"${i.name}","${i.casperId}"\n`; });
-            const l = document.createElement("a"); 
-            l.href = encodeURI("data:text/csv;charset=utf-8," + c); 
-            l.download = "Pendency_Export.csv"; l.click();
-        } catch(e) { showToast("Failed to generate CSV", true); } finally { setUILock(false); }
-    }
-
-    function exportToGSheet() {
-        if(filtered.length === 0 || isProcessing) return;
-        document.getElementById('btnGSheet').innerText = "Generating..."; setUILock(true);
-        
-        const sm = [['CM', 'Total']]; filtered.forEach(i => sm.push([i.clusterManager, 1]));
-        const dt = [['CM', 'Store', 'Name', 'ID'], ...filtered.map(i=>[i.clusterManager, i.darkStore, i.name, i.casperId])];
-        
-        fetch(SCRIPT_URL, { 
-            method: "POST", headers: { "Content-Type": "text/plain" }, 
-            body: JSON.stringify({ action: "export", f: "Pendency Export", summaryData: sm, detailData: dt }) 
-        })
-        .then(r => r.json())
-        .then(d => {
-            if(d.url) { window.open(d.url, '_blank'); showToast("Google Sheet Created ✓"); } 
-            else showToast("Failed to generate sheet", true); 
-        })
-        .catch(e => showToast("Network error generating sheet", true))
-        .finally(() => { document.getElementById('btnGSheet').innerText = "🌐 Open as G-Sheet"; setUILock(false); });
-    }
-
-    // High Performance HTML5 Canvas Snow Effect
-    function initSnow() {
-        const canvas = document.getElementById("snowCanvas");
-        const ctx = canvas.getContext("2d");
-        let W = window.innerWidth, H = window.innerHeight;
-        canvas.width = W; canvas.height = H;
-
-        const mp = 40; // Max particles
-        const particles = [];
-        for (let i = 0; i < mp; i++) {
-            particles.push({
-                x: Math.random() * W, y: Math.random() * H, r: Math.random() * 3 + 1, d: Math.random() * mp
-            });
-        }
-        let angle = 0;
-        function draw() {
-            ctx.clearRect(0, 0, W, H);
-            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-            ctx.beginPath();
-            for (let i = 0; i < mp; i++) {
-                let p = particles[i];
-                ctx.moveTo(p.x, p.y);
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-            }
-            ctx.fill(); update();
-        }
-        function update() {
-            angle += 0.01;
-            for (let i = 0; i < mp; i++) {
-                let p = particles[i];
-                p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
-                p.x += Math.sin(angle) * 2;
-                if (p.x > W + 5 || p.x < -5 || p.y > H) {
-                    if (i % 3 > 0) { particles[i] = { x: Math.random() * W, y: -10, r: p.r, d: p.d }; } 
-                    else {
-                        if (Math.sin(angle) > 0) particles[i] = { x: -5, y: Math.random() * H, r: p.r, d: p.d };
-                        else particles[i] = { x: W + 5, y: Math.random() * H, r: p.r, d: p.d };
-                    }
-                }
-            }
-        }
-        setInterval(draw, 33); // ~30fps
-        window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; });
-    }
+  function exportToGSheet(){
+    if(isProcessing||filtered.length===0){if(filtered.length===0)showToast("No Data To Export",true);return;}
+    const btn=document.getElementById('btnGSheet'),c=citySelectInstance.getValue();
+    btn.innerText="Generating Sheet...";setUILock(true);
+    const f=c+" - Picker Pendency Export";
+    const sumData=[['Cluster Manager','Total Pendency'],...Object.entries(filtered.reduce((acc,item)=>{acc[item.clusterManager]=(acc[item.clusterManager]||0)+1;return acc;},{})).sort((a,b)=>a[0].localeCompare(b[0]))];
+    const detData=[['Cluster Manager','Store','Name','Casper ID'],...filtered.map(i=>[i.clusterManager,i.darkStore,i.name,i.casperId])];
+    apiPost({action:"export",f,summaryData:sumData,detailData:detData})
+      .then(data=>{
+        btn.innerText="Open As Google Sheet";setUILock(false);
+        if(data&&data.url&&!data.url.startsWith("Error")){showToast("Sheet Generated ✓");window.open(data.url,'_blank');}
+        else{showToast("Failed To Create Sheet",true);remoteLogError(data.error||data.url,"N/A","GSheet Export");}
+      })
+      .catch(err=>{btn.innerText="Open As Google Sheet";onNetworkError(err,"GSheet Export");});
+  }
 </script>
 </body>
 </html>
