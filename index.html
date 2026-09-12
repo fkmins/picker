@@ -116,13 +116,18 @@
         .brand-logo { width: 42px; height: 42px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .dash-title { color: var(--text-main); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -0.5px; text-align: center; }
         
-        .theme-btn {
+        .header-actions {
             position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .theme-btn, .refresh-btn {
             background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main);
             border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 700;
             cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .theme-btn:hover { transform: translateY(-50%) scale(1.03); }
+        .theme-btn:hover, .refresh-btn:hover { transform: scale(1.03); }
+        .refresh-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+        .refresh-btn.spinning { animation: spin 0.8s linear infinite; display: inline-block; }
 
         .tab-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-tab {
@@ -152,11 +157,13 @@
         #resultArea { display: none; margin-top: 30px; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease; width: 100%; }
         @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
 
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 25px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 10px; }
         .metric-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: transform 0.2s; }
         .metric-card:hover { transform: translateY(-3px); }
         .metric-card .val { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; text-align: center; }
         .metric-card .lbl { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; text-align: center; }
+
+        .stale-note { font-size: 11px; color: var(--text-muted); margin-bottom: 15px; font-weight: 600; opacity: 0.85; }
 
         .search-wrapper { position: relative; width: 100%; margin-bottom: 20px; }
         .search-box { width: 100%; border-radius: 14px; padding: 14px 20px; border: 2px solid var(--border-color); font-weight: 600; text-align: center; outline: none; background: var(--card-bg); color: var(--text-main); transition: border-color 0.2s; }
@@ -166,6 +173,7 @@
         .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; flex: 1; min-width: 160px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
         .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
         .btn-action:active { transform: scale(0.97); }
+        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .btn-pdf { background: #334155; color: #ffffff; }
         .btn-sheet { background: var(--success); color: #ffffff; }
 
@@ -178,6 +186,7 @@
         .btn-main-rep { background: var(--danger); color: #ffffff; border: none; padding: 8px 22px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); text-align: center; }
         .btn-main-rep:hover { background: var(--danger-hover); transform: translateY(-1px); }
         .btn-main-rep:active { transform: scale(0.95); }
+        .btn-main-rep:disabled { opacity: 0.5; cursor: wait; transform: none; }
 
         #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
         .toast-msg { background: var(--text-main); color: var(--card-bg); padding: 14px 28px; border-radius: 50px; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -191,7 +200,7 @@
             .dash-title { font-size: 20px; }
             .side-popup { right: 10px; bottom: 10px; }
             .side-popup img { width: 50px; height: 50px; }
-            .theme-btn { position: absolute; top: 0; right: 0; transform: none; }
+            .header-actions { position: absolute; top: 0; right: 0; transform: none; }
             .brand-header { flex-direction: column; gap: 8px; }
         }
     </style>
@@ -201,7 +210,7 @@
 
 <div id="appLoader">
     <div class="spinner"></div>
-    <div class="loading-text-anim">Welcome</div>
+    <div class="loading-text-anim" id="loaderText">Welcome</div>
 </div>
 
 <div id="sidePopup" class="side-popup">
@@ -216,7 +225,10 @@
             <img src="https://i.cdn.newsbytesapp.com/images/l71720260823162158.jpeg" class="brand-logo" alt="Logo">
             <h2 class="dash-title">Picker Pendency Dashboard</h2>
         </div>
-        <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">Save your eyes</button>
+        <div class="header-actions">
+            <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()" title="Refresh data">⟳</button>
+            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">Save your eyes</button>
+        </div>
     </div>
 
     <div class="tab-container">
@@ -234,6 +246,7 @@
             <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
             <div class="metric-card"><div class="val" id="totalReportedBadge">0</div><div class="lbl">Reported Exits</div></div>
         </div>
+        <div class="stale-note" id="staleNote" style="display:none;"></div>
 
         <div id="searchWrapper" class="search-wrapper">
             <input type="text" id="searchInput" class="search-box" placeholder="Search Name or User ID..." oninput="onSearchInput()">
@@ -263,6 +276,10 @@
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQrPPwbvcxHCMPgOq6BvSeAtTAsi6jM0EUGkaR_Jr_Z_tASNCtM9eZEIl1p1c7yGV0wQ/exec";
+    const LOCAL_CACHE_KEY = "pickerDashboard_cache_v1";
+    const LOCAL_CACHE_MAX_AGE_MS = 10 * 60 * 1000; // 10 min — only used for instant first paint, always refreshed from network after
+    const FETCH_RETRY_ATTEMPTS = 3;
+    const FETCH_RETRY_BASE_DELAY_MS = 700;
 
     const WALLPAPERS = [
         "https://rukminim2.flixcart.com/fk-p-flap/3200/1560/image/891838e4b8f8742d.png",
@@ -275,10 +292,13 @@
     let citySelectInstance, storeSelectInstance;
     let isProcessing = false, currentPage = 1, toastTimer = null, searchDebounceTimer = null;
     let searchQuery = "";
+    let lastLoadedAt = null;
+    let pendingRowIds = new Set(); // per-row in-flight guard, so one Exit click doesn't lock the whole UI
     const PAGE_SIZE = 50;
 
     const escHtml = s => String(s == null ? "" : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const checkNA = str => { const v = String(str || "").trim().toUpperCase(); return (!v || v === "N/A") ? `<span class="na-bg">N/A</span>` : escHtml(str); };
+    const sleep = ms => new Promise(res => setTimeout(res, ms));
 
     function applyRandomWallpaper() {
         const randomImg = WALLPAPERS[Math.floor(Math.random() * WALLPAPERS.length)];
@@ -344,11 +364,63 @@
         } 
     }
 
+    // Reads a raw fetch Response safely: surfaces a clear error if the server
+    // ever returns an HTML error page (e.g. a dead deployment) instead of JSON,
+    // rather than an opaque "Unexpected token <" failure.
     function apiFetch(url, options) {
-        return fetch(url, options).then(r => {
+        return fetch(url, options).then(async r => {
+            const raw = await r.text();
+            let parsed;
+            try {
+                parsed = JSON.parse(raw);
+            } catch (parseErr) {
+                throw new Error("HTTP " + r.status + " — server returned a non-JSON response (deployment URL may be outdated).");
+            }
             if (!r.ok) throw new Error("HTTP " + r.status + (r.status === 404 ? " (deployment URL may be outdated)" : ""));
-            return r.json();
+            return parsed;
         });
+    }
+
+    // Fetch with a few retries on transient network hiccups before giving up.
+    async function apiFetchWithRetry(url, options, attempts = FETCH_RETRY_ATTEMPTS) {
+        let lastErr;
+        for (let i = 0; i < attempts; i++) {
+            try {
+                return await apiFetch(url, options);
+            } catch (err) {
+                lastErr = err;
+                if (i < attempts - 1) await sleep(FETCH_RETRY_BASE_DELAY_MS * Math.pow(2, i));
+            }
+        }
+        throw lastErr;
+    }
+
+    function readLocalCache() {
+        try {
+            const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || !Array.isArray(parsed.data) || !parsed.ts) return null;
+            if (Date.now() - parsed.ts > LOCAL_CACHE_MAX_AGE_MS) return null;
+            return parsed;
+        } catch (e) { return null; }
+    }
+
+    function writeLocalCache(data) {
+        try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (e) {}
+    }
+
+    function populateCityOptions() {
+        citySelectInstance.clearOptions();
+        [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
+    }
+
+    function updateStaleNote() {
+        const el = document.getElementById('staleNote');
+        if (!el) return;
+        if (!lastLoadedAt) { el.style.display = 'none'; return; }
+        el.style.display = 'block';
+        el.innerText = "Data as of " + lastLoadedAt.toLocaleTimeString();
     }
 
     window.onload = () => {
@@ -357,19 +429,54 @@
             citySelectInstance = new TomSelect("#citySelect", { placeholder: "Select City", create: false, sortField: { field: "text", direction: "asc" } });
             storeSelectInstance = new TomSelect("#storeSelect", { placeholder: "Select Dark Store", create: false, sortField: { field: "text", direction: "asc" } });
 
-            apiFetch(`${SCRIPT_URL}?action=getData`)
-                .then(d => {
-                    hideLoader();
-                    if (d && d.error) { showToast("Backend Error: " + d.error, true); remoteLogError(d.error, "N/A", "Initial Data Fetch"); return; }
-                    db = Array.isArray(d) ? d : [];
-                    [...new Set(db.map(i => i.city))].sort().forEach(c => citySelectInstance.addOption({ value: c, text: c }));
-                })
-                .catch(err => {
-                    hideLoader(); showToast("Network Error: Could not load data.", true);
-                    remoteLogError(err.message, err.stack, "Initial Data Fetch");
-                });
+            // Instant first paint from local cache (if fresh enough), while the real fetch runs in the background.
+            const cached = readLocalCache();
+            if (cached) {
+                db = cached.data;
+                populateCityOptions();
+                lastLoadedAt = new Date(cached.ts);
+            }
+
+            loadData(!cached);
         }, 100);
     };
+
+    function loadData(showLoaderOnFail) {
+        return apiFetchWithRetry(`${SCRIPT_URL}?action=getData`)
+            .then(d => {
+                hideLoader();
+                if (d && d.error) {
+                    showToast("Backend Error: " + d.error, true);
+                    remoteLogError(d.error, "N/A", "Initial Data Fetch");
+                    return;
+                }
+                db = Array.isArray(d) ? d : [];
+                populateCityOptions();
+                lastLoadedAt = new Date();
+                writeLocalCache(db);
+                updateStaleNote();
+                // Keep whatever's currently selected/visible in sync with the fresh data
+                if (citySelectInstance.getValue()) render();
+            })
+            .catch(err => {
+                hideLoader();
+                if (showLoaderOnFail || !db.length) {
+                    showToast("Network Error: Could not load data. Tap Refresh to retry.", true);
+                } else {
+                    showToast("Couldn't refresh — showing last known data.", true);
+                }
+                remoteLogError(err.message, err.stack, "Initial Data Fetch");
+            });
+    }
+
+    function manualRefresh() {
+        if (isProcessing) return;
+        const btn = document.getElementById('refreshBtn');
+        btn.disabled = true; btn.classList.add('spinning');
+        loadData(false).finally(() => {
+            btn.disabled = false; btn.classList.remove('spinning');
+        });
+    }
 
     function setMode(m) {
         if (isProcessing) return;
@@ -430,6 +537,7 @@
         document.getElementById('countBadge').innerText = filtered.length;
         document.getElementById('totalReportedBadge').innerText = reportedIds.size;
         document.getElementById('resultArea').style.display = 'flex';
+        updateStaleNote();
         renderTable();
     }
 
@@ -462,41 +570,52 @@
             tBody.innerHTML = filtered.slice(st, st + PAGE_SIZE).map(i => `
                 <tr id="row-${escHtml(i.casperId)}">
                     <td>${checkNA(i.name)}</td><td><strong style="color:var(--primary)">${checkNA(i.casperId)}</strong></td>
-                    <td><button class="btn-main-rep" onclick="initiateSubmit('${escHtml(i.casperId)}')">Exit</button></td>
+                    <td><button class="btn-main-rep" ${pendingRowIds.has(String(i.casperId)) ? 'disabled' : ''} onclick="confirmSubmit('${escHtml(i.casperId)}')">Exit</button></td>
                 </tr>`).join('');
         }
     }
 
-    function initiateSubmit(id) {
-        if (isProcessing) return;
+    function confirmSubmit(id) {
         const p = filtered.find(x => String(x.casperId) === String(id));
-        if (!p) return;
-        
-        const backup = [...db]; 
-        db = db.filter(i => String(i.casperId) !== String(id)); 
-        reportedIds.add(String(p.casperId));
-        
-        render(); 
-        showToast("Processing exit..."); setUILock(true);
+        const label = p ? (p.name && p.name !== 'N/A' ? p.name : p.casperId) : id;
+        if (!window.confirm(`Mark "${label}" as exited? This removes them from the active list.`)) return;
+        initiateSubmit(id);
+    }
 
-        apiFetch(SCRIPT_URL, {
+    function initiateSubmit(id) {
+        const idStr = String(id);
+        if (pendingRowIds.has(idStr)) return; // already in flight for this row
+        const p = filtered.find(x => String(x.casperId) === idStr);
+        if (!p) return;
+
+        pendingRowIds.add(idStr);
+        const backup = [...db];
+        db = db.filter(i => String(i.casperId) !== idStr);
+        reportedIds.add(idStr);
+
+        render();
+        showToast("Processing exit...");
+
+        apiFetchWithRetry(SCRIPT_URL, {
             method: "POST", headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({ action: "report", n: p.name, id: p.casperId, ds: p.darkStore, c: p.city })
-        })
+        }, 2)
         .then(res => {
-            if (res.status === "Success") showToast("Exit Successfully Processed");
-            else {
-                db = backup; reportedIds.delete(String(p.casperId)); render();
+            if (res.status === "Success") {
+                showToast("Exit Successfully Processed");
+                writeLocalCache(db);
+            } else {
+                db = backup; reportedIds.delete(idStr); render();
                 showToast("Failed to exit.", true);
                 remoteLogError(res.error || "Unknown", "N/A", "Backend rejected exit report");
             }
         })
         .catch(err => {
-            db = backup; reportedIds.delete(String(p.casperId)); render();
+            db = backup; reportedIds.delete(idStr); render();
             showToast("Network/Server Error", true);
             remoteLogError(err.message, err.stack, "Report Submission");
         })
-        .finally(() => setUILock(false));
+        .finally(() => { pendingRowIds.delete(idStr); renderTable(); });
     }
 
     function exportData() {
@@ -521,14 +640,17 @@
                 doc.autoTable({ head: [['User Name', 'User ID']], body: tableBody, startY: 25, headStyles: hd, styles: b });
             }
 
-            let fileName = "Rishra_Pendency.pdf";
+            let fileName = "Pendency_Report.pdf";
+            const selectedCity = citySelectInstance ? citySelectInstance.getValue() : "";
             if (managerMode) {
-                fileName = "CMSM_Pendency.pdf";
+                fileName = (selectedCity ? selectedCity.trim().replace(/[^a-zA-Z0-9_-]/g, "_") + "_" : "") + "CMSM_Pendency.pdf";
             } else {
                 const selectedStore = storeSelectInstance ? storeSelectInstance.getValue() : "";
                 if (selectedStore && selectedStore.trim() !== "") {
                     const cleanStoreName = selectedStore.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
                     fileName = `${cleanStoreName}_Pendency.pdf`;
+                } else if (selectedCity) {
+                    fileName = selectedCity.trim().replace(/[^a-zA-Z0-9_-]/g, "_") + "_Pendency.pdf";
                 }
             }
             
@@ -550,12 +672,14 @@
         let exportTitle = "Pendency Export";
         if (!managerMode && storeSelectInstance && storeSelectInstance.getValue()) {
             exportTitle = storeSelectInstance.getValue().trim().replace(/[^a-zA-Z0-9_-]/g, "_") + "_Pendency";
+        } else if (citySelectInstance && citySelectInstance.getValue()) {
+            exportTitle = citySelectInstance.getValue().trim().replace(/[^a-zA-Z0-9_-]/g, "_") + "_Pendency";
         }
 
-        apiFetch(SCRIPT_URL, {
+        apiFetchWithRetry(SCRIPT_URL, {
             method: "POST", headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({ action: "export", f: exportTitle, summaryData: sm, detailData: dt })
-        })
+        }, 2)
         .then(d => {
             if(d.url) { window.open(d.url, '_blank'); showToast("Google Sheet Created"); } 
             else { showToast("Failed to generate sheet", true); remoteLogError(d.error || "Unknown", "N/A", "GSheet Export"); }
