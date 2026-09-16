@@ -348,7 +348,7 @@ body{
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 <div id="appLoader">
   <img class="loader-logo" src="https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/refs/heads/main/svg-smil/wind-toy.svg" alt="Loading" decoding="async">
-  <div class="loading-text">Loading Dashboard...</div>
+  <div class="loading-text">Please wait, loading your data</div>
 </div>
 
 <div class="glass-panel" id="mainPanel">
@@ -511,6 +511,19 @@ function closePopup(){
   try{sessionStorage.setItem('popupDismissed','1')}catch(e){}
 }
 (function(){try{if(sessionStorage.getItem('popupDismissed'))document.getElementById('announcementPopup')?.remove()}catch(e){}})();
+
+/* ============================================================
+ *  STALE NOTE — shows data freshness
+ * ============================================================ */
+function updateStaleNote(){
+  const note=document.getElementById('staleNote');
+  if(!lastLoadedAt||!note)return;
+  const diffMin=Math.floor((Date.now()-lastLoadedAt.getTime())/60000);
+  if(diffMin<1) note.textContent='Data loaded just now';
+  else if(diffMin===1) note.textContent='Data loaded 1 minute ago';
+  else note.textContent='Data loaded '+diffMin+' minutes ago';
+  note.style.color=diffMin<5?'var(--success)':diffMin<10?'#f59e0b':'var(--danger)';
+}
 
 /* ============================================================
  *  DATA LOADING
