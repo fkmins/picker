@@ -415,7 +415,7 @@ body{
 <div id="announcementPopup">
   <button class="popup-close" onclick="closePopup()" aria-label="Close">&times;</button>
   <img class="popup-img" src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" alt="Flipkart Minutes" decoding="async" loading="lazy">
-  <div class="popup-brand">Test Here</div>
+  <div class="popup-brand">Flipkart Minutes</div>
 </div>
 
 <script>
@@ -511,19 +511,6 @@ function closePopup(){
   try{sessionStorage.setItem('popupDismissed','1')}catch(e){}
 }
 (function(){try{if(sessionStorage.getItem('popupDismissed'))document.getElementById('announcementPopup')?.remove()}catch(e){}})();
-
-/* ============================================================
- *  STALE NOTE — shows data freshness
- * ============================================================ */
-function updateStaleNote(){
-  const note=document.getElementById('staleNote');
-  if(!lastLoadedAt||!note)return;
-  const diffMin=Math.floor((Date.now()-lastLoadedAt.getTime())/60000);
-  if(diffMin<1) note.textContent='Data loaded just now';
-  else if(diffMin===1) note.textContent='Data loaded 1 minute ago';
-  else note.textContent='Data loaded '+diffMin+' minutes ago';
-  note.style.color=diffMin<5?'var(--success)':diffMin<10?'#f59e0b':'var(--danger)';
-}
 
 /* ============================================================
  *  DATA LOADING
