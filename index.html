@@ -53,7 +53,7 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-panel:0 24px 64px rgba(0,0,0,0.55);
   --shadow-card:0 4px 16px rgba(0,0,0,0.3);
 }
-body::before{content:"";position:fixed;inset:0;background-size:cover;background-position:center;background-attachment:fixed;z-index:0;animation:wallFadeIn .8s ease both}
+body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;background-repeat:no-repeat;z-index:0;animation:wallFadeIn .8s ease both}
 body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1;transition:background .3s ease}
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
