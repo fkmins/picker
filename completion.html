@@ -16,17 +16,11 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
 <script>
 (function(){
-  if(sessionStorage.getItem('auth_complete') !== 'true'){
-    let pwd = prompt("Enter Password to access Completion Report:");
-    if(pwd !== "Kitkat"){
-      window.location.href = "index.html";
-      return; // Stop execution
-    } else {
-      sessionStorage.setItem('auth_complete', 'true');
-    }
-  }
   try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}
-  var w=['https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg','https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'];
+  var w=[
+    'https://rukmini1.flixcart.com/image/1500/1500/xif0q/poster/r/h/3/small-demon-slayer-anime-kimetsu-no-yaiba-upper-moon-1-laminated-original-imah847wxzyfzuq2.jpeg',
+    'https://m.media-amazon.com/images/M/MV5BMGVhZTY1YTctOWJlYS00MjcxLTlkNDgtYTUxZTM5MzMzZjI2XkEyXkFqcGc@._V1_.jpg'
+  ];
   var c=w[Math.floor(Math.random()*w.length)];
   var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
 })();
@@ -63,8 +57,8 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-card:0 4px 16px rgba(0,0,0,0.3);
 }
 body::before{content:"";position:fixed;inset:0;background-size:cover;background-position:center;background-attachment:fixed;z-index:0;animation:wallIn .8s ease both}
-body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1;transition:background .3s}
-:root.dark-mode body::after{background:rgba(5,10,25,0.65)}
+body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:1;transition:background .3s}
+:root.dark-mode body::after{background:rgba(5,10,25,0.75)}
 @keyframes wallIn{from{opacity:0}to{opacity:1}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes panelUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
@@ -72,10 +66,23 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
+/* Loader */
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
 .loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
+
+/* Auth Modal */
+.auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:fadeIn .2s ease}
+.auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
+.auth-icon{font-size:48px;margin-bottom:12px;line-height:1}
+.auth-title{font-weight:900;font-size:20px;color:var(--text-main);margin-bottom:24px;letter-spacing:-.3px}
+.auth-input{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:700;font-size:16px;font-family:Inter,sans-serif;background:var(--bg-panel);color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s;margin-bottom:20px;letter-spacing:4px}
+.auth-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
+.auth-btn{width:100%;padding:14px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:Inter,sans-serif;transition:all .2s;background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;letter-spacing:.5px}
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(40,116,240,.3)}
+.auth-btn:active{transform:scale(.97)}
+.auth-error{color:var(--danger);font-size:13px;font-weight:800;margin-top:16px;display:none;animation:fadeIn .3s ease}
 
 body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 48px;position:relative;z-index:3;text-align:center;transition:color .3s}
 .glass-panel{background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-radius:28px;padding:36px 32px;width:100%;max-width:960px;border:1px solid var(--border-color);box-shadow:var(--shadow-panel);position:relative;z-index:10;text-align:center;animation:panelUp .5s cubic-bezier(.22,1,.36,1) both}
@@ -93,26 +100,23 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;width:100%}
 .filter-col{flex:1 1 320px;max-width:480px;text-align:center}
 
+/* TomSelect Multi-select UI Adjustments */
 .ts-wrapper{text-align:center!important}
-.ts-wrapper .ts-control{border-radius:14px!important;padding:13px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important;display:flex!important;justify-content:center!important;align-items:center!important;text-align:center!important;transition:border-color .2s,box-shadow .2s!important}
-.ts-wrapper.has-items .ts-control>input,.ts-wrapper.single.has-items .ts-control>input{width:0!important;min-width:0!important;flex:0 0 0px!important;padding:0!important;margin:0!important;opacity:0!important;position:absolute!important;left:-9999px!important}
-.ts-wrapper .ts-control>.item,.ts-wrapper.single .ts-control>.item{text-align:center!important;width:100%!important;flex:1 1 100%!important;display:block!important;font-weight:700!important;color:var(--text-main)!important}
+.ts-wrapper .ts-control{border-radius:14px!important;padding:11px 16px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important;display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;text-align:center!important;transition:border-color .2s,box-shadow .2s!important;gap:6px!important}
+.ts-wrapper .ts-control>.item{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;border:1px solid rgba(40,116,240,0.3)!important;border-radius:8px!important;padding:4px 10px!important;font-weight:800!important;display:inline-flex!important;align-items:center!important;font-size:13px!important;white-space:nowrap!important}
 .ts-wrapper:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
 .ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
-
 .ts-dropdown{background:transparent!important;border:none!important;box-shadow:none!important;font-family:Inter,sans-serif!important}
 .ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid var(--border-color)!important;box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
 .ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important;border-color:var(--fk-blue)!important}
 
 #results{display:none;animation:fadeIn .4s ease both}
 .section{margin-bottom:28px}
-/* Yellow section title */
 .section-title{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--fk-yellow);margin-bottom:12px;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.2)}
 
 .tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;box-shadow:var(--shadow-card);max-height:380px}
 .tbl{border-collapse:collapse;width:100%;min-width:300px;color:var(--text-main);text-align:center}
 .tbl th,.tbl td{text-align:center!important;padding:14px 16px;vertical-align:middle}
-/* Yellow table headers */
 .tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
 .tbl td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color)}
 .tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
@@ -120,7 +124,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .tbl tbody tr:last-child td{border-bottom:none}
 
 .badge{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:5px 16px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
-.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
 
 .btn-export{border:none;padding:14px 30px;border-radius:14px;font-weight:800;font-size:14px;font-family:Inter,sans-serif;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#334155,#1e293b);color:#fff;display:inline-flex;align-items:center;gap:8px;margin:6px 0 24px}
 .btn-export:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
@@ -143,7 +146,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
   .icon-btn{padding:10px 22px;font-size:13px}
   .filter-area{flex-direction:column;gap:10px}
   .filter-col{max-width:100%}
-  .ts-wrapper .ts-control{padding:14px 16px!important;font-size:15px!important}
   .tbl th,.tbl td{padding:12px 10px;font-size:13px}
   .section-title{font-size:13px}
   .btn-export{width:100%;justify-content:center;padding:14px}
@@ -154,6 +156,18 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </head>
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
+
+<!-- Modern Auth Overlay -->
+<div id="authOverlay" class="auth-overlay" style="display:none;">
+  <div class="auth-modal">
+    <div class="auth-icon">🔐</div>
+    <div class="auth-title">Access Restricted</div>
+    <input type="password" id="authInput" class="auth-input" placeholder="Enter Password" autocomplete="off">
+    <button class="auth-btn" onclick="checkAuth()">Unlock Dashboard</button>
+    <div id="authError" class="auth-error">Incorrect Password. Redirecting...</div>
+  </div>
+</div>
+
 <div id="appLoader">
   <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
   <div class="loading-text">Loading Completion Report</div>
@@ -168,13 +182,14 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="hdr-actions">
-      <a href="index.html" class="icon-btn">&larr; Dashboard</a>
+      <a href="index.html" class="icon-btn">Dashboard</a>
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">Save Your Eyes</button>
     </div>
   </div>
   <hr class="divider">
   <div class="filter-area">
-    <div class="filter-col"><select id="trainerSelect" autocomplete="off"></select></div>
+    <!-- TomSelect Multiple enabled here -->
+    <div class="filter-col"><select id="trainerSelect" autocomplete="off" multiple></select></div>
   </div>
   <div id="results">
     <button class="btn-export" id="btnPdf" onclick="exportPdf()">Export PDF</button>
@@ -204,10 +219,31 @@ const CACHE_TTL=10*60*1000;
 
 let rawData=[],trainerTS,toastTimer=null;
 
+/* Authentication Logic */
+function checkAuth() {
+  const pwd = document.getElementById('authInput').value;
+  if(pwd === "Kitkat") {
+    sessionStorage.setItem('auth_complete', 'true');
+    document.getElementById('authOverlay').style.display = 'none';
+  } else {
+    document.getElementById('authError').style.display = 'block';
+    setTimeout(() => window.location.href = 'index.html', 900);
+  }
+}
+document.getElementById('authInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkAuth();
+});
+if(sessionStorage.getItem('auth_complete') !== 'true') {
+  document.getElementById('authOverlay').style.display = 'flex';
+  document.getElementById('authInput').focus();
+}
+
 const isNA=v=>{if(v==null)return true;const s=String(v).trim().toUpperCase();return !s||s==='N/A'||s==='#N/A'||s==='#NA'};
 const clean=v=>isNA(v)?null:String(v).trim();
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const pad=n=>String(n).padStart(2,'0');
 
+function todayStr(){const d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
 function toTitleCase(str) {
   if (!str) return str;
   return String(str).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
@@ -252,22 +288,37 @@ function populateTrainers(){
 }
 
 const tsRender={
-  item:function(d,e){return'<div style="text-align:center;width:100%;display:block">'+e(d.text)+'</div>'},
+  item:function(d,e){return'<div>'+e(d.text)+'</div>'},
   option:function(d,e){return'<div style="text-align:center">'+e(d.text)+'</div>'}
 };
 
 window.onload=()=>{
   if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeBtn').textContent='Damage Your Eyes (😁)';
-  trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer',create:false,sortField:{field:'text'},render:tsRender,onChange:onTrainerChange});
+  
+  // Initialize Multi-select
+  trainerTS=new TomSelect('#trainerSelect',{
+    placeholder:'Select Trainer(s)',
+    create:false,
+    maxItems:null,
+    sortField:{field:'text'},
+    render:tsRender,
+    onChange:onTrainerChange
+  });
+  
   const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch{return null}})();
   if(cached){rawData=cached.data;populateTrainers();hideLoader()}
+  
+  // loadData fetches in background independent of auth modal visibility
   loadData();
 };
 
 function onTrainerChange(val){
-  if(!val){document.getElementById('results').style.display='none';return}
-  const data=rawData.filter(r=>r.trainer===val);
-  if(!data.length){document.getElementById('results').style.display='none';showToast('No records for this trainer.',true);return}
+  // 'val' is now an array of selected trainers
+  if(!val || val.length === 0){document.getElementById('results').style.display='none';return}
+  
+  const data=rawData.filter(r=>val.includes(r.trainer));
+  if(!data.length){document.getElementById('results').style.display='none';showToast('No records for selected trainer(s).',true);return}
+  
   renderSection('th1','tb1',['Store Name','Pendency'],groupBy(data,'store'));
   renderSection('th2','tb2',['Cluster Manager','Pendency'],groupBy(data,'cm'));
   renderSection('th3','tb3',['City','Pendency'],groupBy(data,'city'));
@@ -287,68 +338,66 @@ function renderSection(thId,tbId,headers,{entries,total}){
     document.getElementById(tbId).innerHTML='<tr><td colspan="2" style="padding:24px;color:var(--text-muted);font-weight:700">No Data</td></tr>';
     return;
   }
+  
+  // HTML rendering WITHOUT the total row
   let html=entries.map(([name,count])=>{
     return '<tr><td>'+esc(name)+'</td><td><span class="badge">'+count+'</span></td></tr>';
   }).join('');
-  html+='<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
+  
   document.getElementById(tbId).innerHTML=html;
 }
 
-/* PDF — Generated with autoTable applying colored pendency logic inside PDF */
+/* PDF Export Engine */
 const _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=()=>{delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 async function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return;await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');if(!window.jspdf)throw new Error('PDF library failed.')}
 
 async function exportPdf(){
-  const trainer=trainerTS.getValue();
-  if(!trainer)return;
+  const trainers=trainerTS.getValue();
+  if(!trainers || trainers.length===0)return;
   const btn=document.getElementById('btnPdf');
   btn.disabled=true;btn.textContent='Generating...';
   try{
     await ensureJsPdf();
     const{jsPDF}=window.jspdf;
-    const data=rawData.filter(r=>r.trainer===trainer);
+    const data=rawData.filter(r=>trainers.includes(r.trainer));
     const byStore=groupBy(data,'store');
     const byCM=groupBy(data,'cm');
     const byCity=groupBy(data,'city');
     
-    // Thick black Double-like borders, center aligned, black text
     const hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
     const bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
+    const dt = todayStr();
 
-    // PDF Cell Fill Coloring Hook 
     const cellStyleMap = function(data) {
       if (data.section === 'body' && data.column.index === 1) {
         const val = parseInt(data.cell.raw);
         if (!isNaN(val)) {
-          if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; } // Red
-          else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; } // Yellow
-          else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } // Green
+          if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; }
+          else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; }
+          else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; }
         }
-        if (data.row.raw[0] === 'TOTAL') {
-           data.cell.styles.fontStyle = 'bold';
-        }
+        if (data.row.raw[0] === 'TOTAL') data.cell.styles.fontStyle = 'bold';
       }
       if (data.section === 'body' && data.column.index === 0 && data.row.raw[0] === 'TOTAL') {
          data.cell.styles.fontStyle = 'bold';
       }
     };
 
-    // 1. Store Wise PDF
     if(byStore.entries.length) {
       let doc1 = new jsPDF({compress:true});
       let pw1 = doc1.internal.pageSize.getWidth();
       doc1.setFontSize(14).setTextColor(0,0,0).text('~ : Store Name Wise Pendency : ~', pw1/2, 14, {align:'center'});
+      // TOTAL is preserved here
       doc1.autoTable({
         head:[['Store Name','Pendency']], 
         body:[...byStore.entries,['TOTAL',byStore.total]], 
         startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
         didParseCell: cellStyleMap
       });
-      doc1.save('Store_Wise_Pendency.pdf');
+      doc1.save('Store_Wise_Pendency_' + dt + '.pdf');
     }
 
-    // 2. Cluster Manager Wise PDF
     if(byCM.entries.length) {
       let doc2 = new jsPDF({compress:true});
       let pw2 = doc2.internal.pageSize.getWidth();
@@ -359,10 +408,9 @@ async function exportPdf(){
         startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
         didParseCell: cellStyleMap
       });
-      doc2.save('Cluster_Wise_Pendency.pdf');
+      doc2.save('Cluster_Manager_Wise_Pendency_' + dt + '.pdf');
     }
 
-    // 3. City Wise PDF
     if(byCity.entries.length) {
       let doc3 = new jsPDF({compress:true});
       let pw3 = doc3.internal.pageSize.getWidth();
@@ -373,16 +421,15 @@ async function exportPdf(){
         startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
         didParseCell: cellStyleMap
       });
-      doc3.save('City_Wise_Pendency.pdf');
+      doc3.save('City_Wise_Pendency_' + dt + '.pdf');
     }
-
-    showToast('3 PDFs Downloaded');
+    showToast('PDFs Downloaded');
   }catch(e){
     showToast('PDF failed: '+e.message,true);
   }
   finally{
     btn.disabled=false;
-    btn.innerHTML='Export PDF'; // icon stripped
+    btn.innerHTML='Export PDF';
   }
 }
 
