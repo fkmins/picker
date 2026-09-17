@@ -53,9 +53,12 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-panel:0 24px 64px rgba(0,0,0,0.55);
   --shadow-card:0 4px 16px rgba(0,0,0,0.3);
 }
+
+/* Strictly Auto-Fit Background Image */
 body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;background-repeat:no-repeat;z-index:0;animation:wallFadeIn .8s ease both}
 body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1;transition:background .3s ease}
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
+
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
@@ -139,7 +142,9 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-exit:hover:not(:disabled){transform:translateY(-2px);opacity:.9}
 .btn-exit:disabled{opacity:.45;cursor:wait}
 
-.badge-count{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:5px 14px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
+/* Removing Round Styles for Pendency counts too to match normal design requests */
+.normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
+
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
 .pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2)}
 
@@ -377,8 +382,9 @@ function renderTable(){
     filtered.forEach(i=>{sm[i.clusterManager]=(sm[i.clusterManager]||0)+1; total++});
     tH.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
     
+    // NORMAL TEXT implementation instead of pill badges
     let html = Object.entries(sm).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0])).map(([n,v])=>{
-      return '<tr><td>'+checkNA(n)+'</td><td><span class="badge-count">'+v+'</span></td></tr>';
+      return '<tr><td>'+checkNA(n)+'</td><td><span class="normal-count">'+v+'</span></td></tr>';
     }).join('');
     
     html += '<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
