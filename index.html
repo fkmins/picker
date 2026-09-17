@@ -59,12 +59,10 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
-#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .45s ease}
+#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
-.cat-emoji{font-size:64px;line-height:1;margin-bottom:-10px;text-shadow:0 0 30px var(--gold-glow);animation:pulseTxt 1.6s ease-in-out infinite}
-.loader-spinner{width:56px;height:56px;border:5px solid rgba(212,175,55,.15);border-top:5px solid var(--gold);border-right:5px solid rgba(212,175,55,.4);border-radius:50%;animation:spin .85s linear infinite}
+.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
@@ -93,7 +91,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
 .filter-col{flex:1 1 260px;max-width:420px;text-align:center}
 
-/* TOM SELECT */
 .ts-wrapper{text-align:center!important}
 .ts-wrapper .ts-control{border-radius:14px!important;padding:13px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important;transition:border-color .2s,box-shadow .2s!important;display:flex!important;justify-content:center!important;align-items:center!important;text-align:center!important}
 .ts-wrapper.has-items .ts-control>input,.ts-wrapper.single.has-items .ts-control>input{width:0!important;min-width:0!important;flex:0 0 0px!important;padding:0!important;margin:0!important;opacity:0!important;position:absolute!important;left:-9999px!important}
@@ -101,7 +98,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .ts-wrapper:not(.has-items) .ts-control>input,.ts-wrapper.single:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
 .ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
 
-/* Popup Menu Background Box Removed */
 .ts-dropdown{background:transparent!important;border:none!important;box-shadow:none!important;font-family:Inter,sans-serif!important}
 .ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid var(--border-color)!important;box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
 .ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important;border-color:var(--fk-blue)!important}
@@ -143,15 +139,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-exit:hover:not(:disabled){transform:translateY(-2px);opacity:.9}
 .btn-exit:disabled{opacity:.45;cursor:wait}
 
-/* Colored Count Badges */
-.badge-count{padding:5px 16px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
-.bg-green{background:#dcfce7!important;color:#166534!important;border:1px solid #bbf7d0}
-.bg-yellow{background:#fef08a!important;color:#854d0e!important;border:1px solid #fde047}
-.bg-red{background:#fee2e2!important;color:#991b1b!important;border:1px solid #fecaca}
-:root.dark-mode .bg-green{background:rgba(22,101,52,0.3)!important;color:#4ade80!important;border-color:#166534}
-:root.dark-mode .bg-yellow{background:rgba(133,77,14,0.3)!important;color:#facc15!important;border-color:#854d0e}
-:root.dark-mode .bg-red{background:rgba(153,27,27,0.3)!important;color:#f87171!important;border-color:#991b1b}
-
+/* Standard HTML Badges (No HTML-side Highlighting logic) */
+.badge-count{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:5px 14px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
 .pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2)}
 
@@ -165,7 +154,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .toast-msg{background:var(--text-main);color:var(--card-bg);padding:13px 28px;border-radius:50px;font-weight:700;font-size:13px;font-family:Inter,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.25);text-align:center;transition:opacity .3s ease,transform .3s ease}
 .toast-msg.hidden{opacity:0;transform:translateY(8px);pointer-events:none}
 
-/* Without background box for Popup Menu */
 #announcementPopup{position:fixed;bottom:28px;right:24px;z-index:9998;background:transparent;border:none;box-shadow:none;padding:18px 18px 16px;width:200px;display:flex;flex-direction:column;align-items:center;gap:10px;animation:popupBounce .5s cubic-bezier(.22,1,.36,1) both;text-align:center;transition:opacity .3s ease,transform .3s ease}
 @keyframes popupBounce{from{opacity:0;transform:scale(.7) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .popup-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:20px;line-height:1;color:var(--text-muted);cursor:pointer;font-weight:700;transition:color .15s ease,transform .2s ease;padding:2px 6px;border-radius:6px}
@@ -220,8 +208,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 <div id="appLoader">
-  <div class="cat-emoji">🐈‍⬛</div>
-  <div class="loader-spinner"></div>
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
   <div class="loading-text">Please wait, loading your data</div>
 </div>
 <div class="glass-panel" id="mainPanel">
@@ -255,8 +242,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       <input type="text" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" oninput="onSearchInput()">
     </div>
     <div class="action-buttons">
-      <button class="btn-action btn-pdf" onclick="exportData()">&#128196; Export PDF</button>
-      <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">&#128202; Open as G-Sheet</button>
+      <button class="btn-action btn-pdf" id="btnPdf" onclick="exportData()">Export PDF</button>
+      <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open as G-Sheet</button>
     </div>
     <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
     <div id="paginationBar">
@@ -305,7 +292,7 @@ function normalizeRow(r){
   return { casperId: r.id, name: toTitleCase(r.nm), darkStore: toTitleCase(r.ds), city: toTitleCase(r.ct), clusterManager: toTitleCase(r.cm) };
 }
 
-/* NETWORK — retry+timeout, no res.ok (GAS 302 unreliable) */
+/* NETWORK */
 async function apiFetch(url,opts={}){
   const MAX=2,TM=opts.method==='POST'?90000:15000;
   for(let a=0;a<=MAX;a++){
@@ -371,12 +358,6 @@ function onCityChange(silent){if(isProcessing)return;const c=cityTS.getValue();c
 function onSearchInput(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchQuery=document.getElementById('searchInput').value.trim().toLowerCase();currentPage=1;render()},240)}
 
 /* RENDER */
-function getColorClass(count) {
-  if (count > 20) return 'bg-red';
-  if (count >= 10) return 'bg-yellow';
-  return 'bg-green';
-}
-
 function changePage(d){currentPage+=d;renderTable()}
 function render(){
   const c=cityTS.getValue(),s=storeTS.getValue();
@@ -396,11 +377,12 @@ function renderTable(){
     const sm={};let total=0;
     filtered.forEach(i=>{sm[i.clusterManager]=(sm[i.clusterManager]||0)+1; total++});
     tH.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-    // Sorted Bigger to Smaller
+    
+    // Using default blue HTML badge as requested
     let html = Object.entries(sm).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0])).map(([n,v])=>{
-      let cClass = getColorClass(v);
-      return '<tr><td>'+checkNA(n)+'</td><td><span class="badge-count '+cClass+'">'+v+'</span></td></tr>';
+      return '<tr><td>'+checkNA(n)+'</td><td><span class="badge-count">'+v+'</span></td></tr>';
     }).join('');
+    
     html += '<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
     tB.innerHTML = html;
   }
@@ -440,38 +422,59 @@ const _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=()=>{delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 async function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return;await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');if(!window.jspdf)throw new Error('PDF library failed.')}
 
-/* EXPORT PDF — compressed, with colored date */
+/* EXPORT PDF */
 async function exportData(){
   if(!filtered.length||isProcessing)return;setUILock(true);
+  const btn = document.getElementById('btnPdf');
+  btn.textContent = 'Generating...';
   try{await ensureJsPdf();
     const{jsPDF}=window.jspdf,doc=new jsPDF({compress:true});
     const pw=doc.internal.pageSize.getWidth();
-    const hd={fillColor:[230,230,230],textColor:30,fontStyle:'bold',halign:'center'};
-    const bd={halign:'center',textColor:30,fontSize:9};
+    
+    // Thick black grid styles
+    const hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
+    const bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
+    
     const c=cityTS?cityTS.getValue():'',s=storeTS?storeTS.getValue():'';
     
-    doc.setFontSize(14).setTextColor(30).text(managerMode?'Pendency Summary \u2014 '+c:'Picker Pendency \u2014 '+(s||c),pw/2,14,{align:'center'});
-    
-    // Colored Date (FK Blue)
-    doc.setFontSize(9).setTextColor(40, 116, 240).text('Export Date: '+new Date().toLocaleString(),pw/2,20,{align:'center'});
+    doc.setFontSize(14).setTextColor(0,0,0).text(managerMode?'Pendency Summary \u2014 '+c:'Picker Pendency \u2014 '+(s||c),pw/2,14,{align:'center'});
     
     if(managerMode){
       const sm={};filtered.forEach(i=>sm[i.clusterManager]=(sm[i.clusterManager]||0)+1);
       const sortedEntries = Object.entries(sm).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
-      doc.autoTable({head:[['Cluster Manager','Count']],body:sortedEntries,startY:25,headStyles:hd,styles:bd,theme:'grid'})
+      doc.autoTable({
+        head:[['Cluster Manager','Count']],
+        body:sortedEntries,
+        startY:22, headStyles:hd, styles:bd, theme:'grid',
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 1) {
+            const val = parseInt(data.cell.raw);
+            if (!isNaN(val)) {
+              if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; } // Red
+              else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; } // Yellow
+              else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } // Green
+            }
+          }
+        }
+      })
     }
     else{
-      doc.autoTable({head:[['#','Name','ID']],body:filtered.map((i,idx)=>[idx+1,i.name||'',i.casperId||'']),startY:25,headStyles:hd,styles:bd,theme:'grid'})
+      doc.autoTable({head:[['#','Name','ID']],body:filtered.map((i,idx)=>[idx+1,i.name||'',i.casperId||'']),startY:22,headStyles:hd,styles:bd,theme:'grid'})
     }
     doc.save(((managerMode?c+'_Summary':(s||c)+'_Pendency')+'.pdf').replace(/[^a-zA-Z0-9_.-]/g,'_'));
     showToast('PDF Downloaded');
-  }catch(e){showToast('PDF failed: '+e.message,true)}finally{setUILock(false)}
+  }catch(e){showToast('PDF failed: '+e.message,true)}finally{
+    setUILock(false);
+    btn.innerHTML = 'Export PDF'; // Icons stripped
+  }
 }
 
-/* EXPORT G-SHEET — 90s timeout for slow GAS */
+/* EXPORT G-SHEET */
 function exportToGSheet(){
   if(!filtered.length||isProcessing)return;
-  const btn=document.getElementById('btnGSheet');btn.textContent='Generating...';setUILock(true);
+  const btn=document.getElementById('btnGSheet');
+  btn.textContent='Generating...';setUILock(true);
+  
   const smMap={};filtered.forEach(i=>smMap[i.clusterManager]=(smMap[i.clusterManager]||0)+1);
   const sm=[['Cluster Manager','Total Pendency'],...Object.entries(smMap).sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]))];
   const dt=[['CMSM','Dark Store','Name','Casper ID'],...filtered.map(i=>[i.clusterManager||'',i.darkStore||'',i.name||'',i.casperId||''])];
@@ -480,10 +483,13 @@ function exportToGSheet(){
   apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'export',f:fTitle,summaryData:sm,detailData:dt})})
   .then(d=>{if(d.url){window.open(d.url,'_blank');showToast('G-Sheet Created')}else throw new Error(d.error||'No URL')})
   .catch(e=>showToast('Export failed: '+(e.message||'Retry.'),true))
-  .finally(()=>{btn.innerHTML='&#128202; Open as G-Sheet';setUILock(false)});
+  .finally(()=>{
+    btn.innerHTML='Open as G-Sheet'; // Icons stripped
+    setUILock(false);
+  });
 }
 
-/* SNOW — optimized */
+/* SNOW */
 function initSnow(){
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
   const cvs=document.getElementById('snowCanvas');if(!cvs)return;const ctx=cvs.getContext('2d');
