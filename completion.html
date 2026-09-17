@@ -66,7 +66,7 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
-.loader-logo{width:72px;height:72px;border-radius:18px;object-fit:cover;box-shadow:0 0 40px var(--gold-glow),0 8px 24px rgba(0,0,0,.5)}
+.cat-emoji{font-size:64px;line-height:1;margin-bottom:-10px;text-shadow:0 0 30px var(--gold-glow);animation:pulseTxt 1.6s ease-in-out infinite}
 .loader-spinner{width:56px;height:56px;border:5px solid rgba(212,175,55,.15);border-top:5px solid var(--gold);border-right:5px solid rgba(212,175,55,.4);border-radius:50%;animation:spin .85s linear infinite}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
@@ -92,14 +92,15 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .ts-wrapper .ts-control>.item,.ts-wrapper.single .ts-control>.item{text-align:center!important;width:100%!important;flex:1 1 100%!important;display:block!important;font-weight:700!important;color:var(--text-main)!important}
 .ts-wrapper:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
 .ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
-.ts-dropdown{background:var(--card-bg)!important;color:var(--text-main)!important;border:1.5px solid var(--border-color)!important;border-radius:14px!important;box-shadow:0 12px 32px rgba(0,0,0,.22)!important;font-family:Inter,sans-serif!important}
-.ts-dropdown .option{text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important}
-.ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important}
+
+/* Popup Menu Background Box Removed */
+.ts-dropdown{background:transparent!important;border:none!important;box-shadow:none!important;font-family:Inter,sans-serif!important}
+.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid var(--border-color)!important;box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
+.ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important;border-color:var(--fk-blue)!important}
 
 #results{display:none;animation:fadeIn .4s ease both}
 .section{margin-bottom:28px}
-.section-title{font-weight:900;font-size:16px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;text-align:center}
-.section-title span{color:var(--gold)}
+.section-title{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;text-align:center}
 
 .tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;box-shadow:var(--shadow-card);max-height:380px}
 .tbl{border-collapse:collapse;width:100%;min-width:300px;color:var(--text-main);text-align:center}
@@ -109,8 +110,18 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
 .tbl tbody tr:hover td{background:var(--dropdown-hover)}
 .tbl tbody tr:last-child td{border-bottom:none}
-.badge{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:4px 14px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px}
-.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important}
+
+/* Pendency Coloring Badges */
+.badge{padding:5px 16px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
+.bg-green{background:#dcfce7!important;color:#166534!important;border:1px solid #bbf7d0}
+.bg-yellow{background:#fef08a!important;color:#854d0e!important;border:1px solid #fde047}
+.bg-red{background:#fee2e2!important;color:#991b1b!important;border:1px solid #fecaca}
+:root.dark-mode .bg-green{background:rgba(22,101,52,0.3)!important;color:#4ade80!important;border-color:#166534}
+:root.dark-mode .bg-yellow{background:rgba(133,77,14,0.3)!important;color:#facc15!important;border-color:#854d0e}
+:root.dark-mode .bg-red{background:rgba(153,27,27,0.3)!important;color:#f87171!important;border-color:#991b1b}
+
+/* Bold TOTALs */
+.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
 
 .btn-export{border:none;padding:14px 30px;border-radius:14px;font-weight:800;font-size:14px;font-family:Inter,sans-serif;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#334155,#1e293b);color:#fff;display:inline-flex;align-items:center;gap:8px;margin:6px 0 24px}
 .btn-export:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
@@ -135,7 +146,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
   .filter-col{max-width:100%}
   .ts-wrapper .ts-control{padding:14px 16px!important;font-size:15px!important}
   .tbl th,.tbl td{padding:12px 10px;font-size:13px}
-  .section-title{font-size:14px}
+  .section-title{font-size:13px}
   .btn-export{width:100%;justify-content:center;padding:14px}
 }
 @media(max-width:400px){.glass-panel{padding:22px 12px;border-radius:18px}}
@@ -145,7 +156,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 <div id="appLoader">
-  <img class="loader-logo" src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" alt="Loading" decoding="async">
+  <div class="cat-emoji">🐈‍⬛</div>
   <div class="loader-spinner"></div>
   <div class="loading-text">Loading Completion Report</div>
 </div>
@@ -169,16 +180,19 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
   </div>
   <div id="results">
     <button class="btn-export" id="btnPdf" onclick="exportPdf()">&#128196; Export PDF</button>
+    
     <div class="section" id="sec1">
-      <div class="section-title"><span>Section 1</span> &mdash; Store Name Wise</div>
+      <div class="section-title">~ : Store Name Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th1"></thead><tbody id="tb1"></tbody></table></div>
     </div>
+    
     <div class="section" id="sec2">
-      <div class="section-title"><span>Section 2</span> &mdash; Cluster Manager Wise</div>
+      <div class="section-title">~ : Cluster Manager Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th2"></thead><tbody id="tb2"></tbody></table></div>
     </div>
+    
     <div class="section" id="sec3">
-      <div class="section-title"><span>Section 3</span> &mdash; City Wise</div>
+      <div class="section-title">~ : City Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th3"></thead><tbody id="tb3"></tbody></table></div>
     </div>
   </div>
@@ -198,7 +212,12 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;'
 const pad=n=>String(n).padStart(2,'0');
 function todayStr(){const d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
 
-function toggleTheme(){const d=document.documentElement.classList.toggle('dark-mode');document.getElementById('themeBtn').textContent=d?'Damaged Your Eyes':'Save Your Eyes';try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
+function toTitleCase(str) {
+  if (!str) return str;
+  return String(str).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function toggleTheme(){const d=document.documentElement.classList.toggle('dark-mode');document.getElementById('themeBtn').textContent=d?'Damage Your Eyes (😁)':'Save Your Eyes';try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
 function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
 function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
 
@@ -214,7 +233,7 @@ async function apiFetch(url){
 }
 
 function normalizeRow(r){
-  const nm=clean(r.nm),tn=clean(r.tn),ds=clean(r.ds),ct=clean(r.ct),cm=clean(r.cm),ts=clean(r.ts),id=clean(r.id);
+  const nm=toTitleCase(clean(r.nm)),tn=toTitleCase(clean(r.tn)),ds=toTitleCase(clean(r.ds)),ct=toTitleCase(clean(r.ct)),cm=toTitleCase(clean(r.cm)),ts=clean(r.ts),id=clean(r.id);
   if(!id)return null;
   return{id,name:nm||'N/A',trainer:tn,store:ds,city:ct,cm:cm,status:ts};
 }
@@ -242,7 +261,7 @@ const tsRender={
 };
 
 window.onload=()=>{
-  if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeBtn').textContent='Damaged Your Eyes';
+  if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeBtn').textContent='Damage Your Eyes (😁)';
   trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer',create:false,sortField:{field:'text'},render:tsRender,onChange:onTrainerChange});
   const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch{return null}})();
   if(cached){rawData=cached.data;populateTrainers();hideLoader()}
@@ -262,8 +281,15 @@ function onTrainerChange(val){
 function groupBy(arr,key){
   const map={};let total=0;
   arr.forEach(r=>{const v=r[key];if(isNA(v))return;map[v]=(map[v]||0)+1;total++});
-  const entries=Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
+  // Sorting Bigger to Smaller
+  const entries=Object.entries(map).sort((a,b)=> b[1] - a[1] || a[0].localeCompare(b[0]));
   return{entries,total};
+}
+
+function getColorClass(count) {
+  if (count > 20) return 'bg-red';
+  if (count >= 10) return 'bg-yellow';
+  return 'bg-green';
 }
 
 function renderSection(thId,tbId,headers,{entries,total}){
@@ -272,8 +298,11 @@ function renderSection(thId,tbId,headers,{entries,total}){
     document.getElementById(tbId).innerHTML='<tr><td colspan="2" style="padding:24px;color:var(--text-muted);font-weight:700">No Data</td></tr>';
     return;
   }
-  let html=entries.map(([name,count])=>'<tr><td>'+esc(name)+'</td><td><span class="badge">'+count+'</span></td></tr>').join('');
-  html+='<tr class="total-row"><td><strong>Total</strong></td><td><strong>'+total+'</strong></td></tr>';
+  let html=entries.map(([name,count])=>{
+    let cClass = getColorClass(count);
+    return '<tr><td>'+esc(name)+'</td><td><span class="badge '+cClass+'">'+count+'</span></td></tr>';
+  }).join('');
+  html+='<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
   document.getElementById(tbId).innerHTML=html;
 }
 
@@ -299,22 +328,24 @@ async function exportPdf(){
     const bd={halign:'center',textColor:30,fontSize:9};
     const d=new Date();
     const dateStr=pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
-    doc.setFontSize(16).setTextColor(30).text('Completion Report',pw/2,14,{align:'center'});
-    doc.setFontSize(9).setTextColor(100).text('Trainer: '+trainer+'  |  Date: '+dateStr,pw/2,20,{align:'center'});
-    let y=28;
-    doc.setFontSize(11).setTextColor(30).text('Section 1: Store Name Wise',14,y);y+=4;
+    
+    // Removing the generic Report Header and providing a colored date export line
+    doc.setFontSize(10).setTextColor(40, 116, 240).text('Export Date: ' + dateStr, pw/2, 14, {align:'center'});
+    
+    let y=22;
+    doc.setFontSize(11).setTextColor(30).text('~ : Store Name Wise Pendency : ~',14,y);y+=4;
     if(byStore.entries.length){
       doc.autoTable({head:[['Store Name','Pendency']],body:[...byStore.entries,['TOTAL',byStore.total]],startY:y,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14}});
       y=doc.lastAutoTable.finalY+10;
     }else{doc.setFontSize(8).setTextColor(150).text('No data',pw/2,y+4,{align:'center'});y+=12}
 
-    doc.setFontSize(11).setTextColor(30).text('Section 2: Cluster Manager Wise',14,y);y+=4;
+    doc.setFontSize(11).setTextColor(30).text('~ : Cluster Manager Wise Pendency : ~',14,y);y+=4;
     if(byCM.entries.length){
       doc.autoTable({head:[['Cluster Manager','Pendency']],body:[...byCM.entries,['TOTAL',byCM.total]],startY:y,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14}});
       y=doc.lastAutoTable.finalY+10;
     }else{doc.setFontSize(8).setTextColor(150).text('No data',pw/2,y+4,{align:'center'});y+=12}
 
-    doc.setFontSize(11).setTextColor(30).text('Section 3: City Wise',14,y);y+=4;
+    doc.setFontSize(11).setTextColor(30).text('~ : City Wise Pendency : ~',14,y);y+=4;
     if(byCity.entries.length){
       doc.autoTable({head:[['City','Pendency']],body:[...byCity.entries,['TOTAL',byCity.total]],startY:y,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14}});
     }
