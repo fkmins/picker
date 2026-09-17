@@ -17,7 +17,7 @@
 <script>
 (function(){
   try{ if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark-mode'); }catch(e){}
-  var walls=['https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg','https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'];
+  var walls=['#','https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'];
   var chosen=walls[Math.floor(Math.random()*walls.length)];
   window.__chosenWall=chosen;
   var s=document.createElement('style');
