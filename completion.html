@@ -16,6 +16,15 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
 <script>
 (function(){
+  if(sessionStorage.getItem('auth_complete') !== 'true'){
+    let pwd = prompt("Enter Password to access Completion Report:");
+    if(pwd !== "Kitkat"){
+      window.location.href = "index.html";
+      return; // Stop execution
+    } else {
+      sessionStorage.setItem('auth_complete', 'true');
+    }
+  }
   try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}
   var w=['https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg','https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'];
   var c=w[Math.floor(Math.random()*w.length)];
@@ -60,14 +69,12 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes panelUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
-#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .45s ease}
+#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
-.cat-emoji{font-size:64px;line-height:1;margin-bottom:-10px;text-shadow:0 0 30px var(--gold-glow);animation:pulseTxt 1.6s ease-in-out infinite}
-.loader-spinner{width:56px;height:56px;border:5px solid rgba(212,175,55,.15);border-top:5px solid var(--gold);border-right:5px solid rgba(212,175,55,.4);border-radius:50%;animation:spin .85s linear infinite}
+.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
 body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 48px;position:relative;z-index:3;text-align:center;transition:color .3s}
@@ -93,34 +100,26 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .ts-wrapper:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
 .ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
 
-/* Popup Menu Background Box Removed */
 .ts-dropdown{background:transparent!important;border:none!important;box-shadow:none!important;font-family:Inter,sans-serif!important}
 .ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid var(--border-color)!important;box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
 .ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important;border-color:var(--fk-blue)!important}
 
 #results{display:none;animation:fadeIn .4s ease both}
 .section{margin-bottom:28px}
-.section-title{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;text-align:center}
+/* Yellow section title */
+.section-title{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--fk-yellow);margin-bottom:12px;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.2)}
 
 .tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;box-shadow:var(--shadow-card);max-height:380px}
 .tbl{border-collapse:collapse;width:100%;min-width:300px;color:var(--text-main);text-align:center}
 .tbl th,.tbl td{text-align:center!important;padding:14px 16px;vertical-align:middle}
-.tbl thead th{background:var(--table-header);color:var(--text-muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
+/* Yellow table headers */
+.tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
 .tbl td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color)}
 .tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
 .tbl tbody tr:hover td{background:var(--dropdown-hover)}
 .tbl tbody tr:last-child td{border-bottom:none}
 
-/* Pendency Coloring Badges */
-.badge{padding:5px 16px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
-.bg-green{background:#dcfce7!important;color:#166534!important;border:1px solid #bbf7d0}
-.bg-yellow{background:#fef08a!important;color:#854d0e!important;border:1px solid #fde047}
-.bg-red{background:#fee2e2!important;color:#991b1b!important;border:1px solid #fecaca}
-:root.dark-mode .bg-green{background:rgba(22,101,52,0.3)!important;color:#4ade80!important;border-color:#166534}
-:root.dark-mode .bg-yellow{background:rgba(133,77,14,0.3)!important;color:#facc15!important;border-color:#854d0e}
-:root.dark-mode .bg-red{background:rgba(153,27,27,0.3)!important;color:#f87171!important;border-color:#991b1b}
-
-/* Bold TOTALs */
+.badge{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:5px 16px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
 .total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
 
 .btn-export{border:none;padding:14px 30px;border-radius:14px;font-weight:800;font-size:14px;font-family:Inter,sans-serif;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#334155,#1e293b);color:#fff;display:inline-flex;align-items:center;gap:8px;margin:6px 0 24px}
@@ -156,8 +155,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 <div id="appLoader">
-  <div class="cat-emoji">🐈‍⬛</div>
-  <div class="loader-spinner"></div>
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
   <div class="loading-text">Loading Completion Report</div>
 </div>
 <div class="glass-panel">
@@ -179,7 +177,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     <div class="filter-col"><select id="trainerSelect" autocomplete="off"></select></div>
   </div>
   <div id="results">
-    <button class="btn-export" id="btnPdf" onclick="exportPdf()">&#128196; Export PDF</button>
+    <button class="btn-export" id="btnPdf" onclick="exportPdf()">Export PDF</button>
     
     <div class="section" id="sec1">
       <div class="section-title">~ : Store Name Wise Pendency : ~</div>
@@ -209,8 +207,6 @@ let rawData=[],trainerTS,toastTimer=null;
 const isNA=v=>{if(v==null)return true;const s=String(v).trim().toUpperCase();return !s||s==='N/A'||s==='#N/A'||s==='#NA'};
 const clean=v=>isNA(v)?null:String(v).trim();
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const pad=n=>String(n).padStart(2,'0');
-function todayStr(){const d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
 
 function toTitleCase(str) {
   if (!str) return str;
@@ -281,15 +277,8 @@ function onTrainerChange(val){
 function groupBy(arr,key){
   const map={};let total=0;
   arr.forEach(r=>{const v=r[key];if(isNA(v))return;map[v]=(map[v]||0)+1;total++});
-  // Sorting Bigger to Smaller
   const entries=Object.entries(map).sort((a,b)=> b[1] - a[1] || a[0].localeCompare(b[0]));
   return{entries,total};
-}
-
-function getColorClass(count) {
-  if (count > 20) return 'bg-red';
-  if (count >= 10) return 'bg-yellow';
-  return 'bg-green';
 }
 
 function renderSection(thId,tbId,headers,{entries,total}){
@@ -299,14 +288,13 @@ function renderSection(thId,tbId,headers,{entries,total}){
     return;
   }
   let html=entries.map(([name,count])=>{
-    let cClass = getColorClass(count);
-    return '<tr><td>'+esc(name)+'</td><td><span class="badge '+cClass+'">'+count+'</span></td></tr>';
+    return '<tr><td>'+esc(name)+'</td><td><span class="badge">'+count+'</span></td></tr>';
   }).join('');
   html+='<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
   document.getElementById(tbId).innerHTML=html;
 }
 
-/* PDF — B&W, compressed, for WhatsApp sharing */
+/* PDF — Generated with autoTable applying colored pendency logic inside PDF */
 const _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=()=>{delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 async function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return;await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');if(!window.jspdf)throw new Error('PDF library failed.')}
@@ -318,42 +306,84 @@ async function exportPdf(){
   btn.disabled=true;btn.textContent='Generating...';
   try{
     await ensureJsPdf();
-    const{jsPDF}=window.jspdf,doc=new jsPDF({compress:true});
-    const pw=doc.internal.pageSize.getWidth();
+    const{jsPDF}=window.jspdf;
     const data=rawData.filter(r=>r.trainer===trainer);
     const byStore=groupBy(data,'store');
     const byCM=groupBy(data,'cm');
     const byCity=groupBy(data,'city');
-    const hd={fillColor:[230,230,230],textColor:30,fontStyle:'bold',halign:'center'};
-    const bd={halign:'center',textColor:30,fontSize:9};
-    const d=new Date();
-    const dateStr=pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
     
-    // Removing the generic Report Header and providing a colored date export line
-    doc.setFontSize(10).setTextColor(40, 116, 240).text('Export Date: ' + dateStr, pw/2, 14, {align:'center'});
-    
-    let y=22;
-    doc.setFontSize(11).setTextColor(30).text('~ : Store Name Wise Pendency : ~',14,y);y+=4;
-    if(byStore.entries.length){
-      doc.autoTable({head:[['Store Name','Pendency']],body:[...byStore.entries,['TOTAL',byStore.total]],startY:y,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14}});
-      y=doc.lastAutoTable.finalY+10;
-    }else{doc.setFontSize(8).setTextColor(150).text('No data',pw/2,y+4,{align:'center'});y+=12}
+    // Thick black Double-like borders, center aligned, black text
+    const hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
+    const bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
 
-    doc.setFontSize(11).setTextColor(30).text('~ : Cluster Manager Wise Pendency : ~',14,y);y+=4;
-    if(byCM.entries.length){
-      doc.autoTable({head:[['Cluster Manager','Pendency']],body:[...byCM.entries,['TOTAL',byCM.total]],startY:y,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14}});
-      y=doc.lastAutoTable.finalY+10;
-    }else{doc.setFontSize(8).setTextColor(150).text('No data',pw/2,y+4,{align:'center'});y+=12}
+    // PDF Cell Fill Coloring Hook 
+    const cellStyleMap = function(data) {
+      if (data.section === 'body' && data.column.index === 1) {
+        const val = parseInt(data.cell.raw);
+        if (!isNaN(val)) {
+          if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; } // Red
+          else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; } // Yellow
+          else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } // Green
+        }
+        if (data.row.raw[0] === 'TOTAL') {
+           data.cell.styles.fontStyle = 'bold';
+        }
+      }
+      if (data.section === 'body' && data.column.index === 0 && data.row.raw[0] === 'TOTAL') {
+         data.cell.styles.fontStyle = 'bold';
+      }
+    };
 
-    doc.setFontSize(11).setTextColor(30).text('~ : City Wise Pendency : ~',14,y);y+=4;
-    if(byCity.entries.length){
-      doc.autoTable({head:[['City','Pendency']],body:[...byCity.entries,['TOTAL',byCity.total]],startY:y,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14}});
+    // 1. Store Wise PDF
+    if(byStore.entries.length) {
+      let doc1 = new jsPDF({compress:true});
+      let pw1 = doc1.internal.pageSize.getWidth();
+      doc1.setFontSize(14).setTextColor(0,0,0).text('~ : Store Name Wise Pendency : ~', pw1/2, 14, {align:'center'});
+      doc1.autoTable({
+        head:[['Store Name','Pendency']], 
+        body:[...byStore.entries,['TOTAL',byStore.total]], 
+        startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
+        didParseCell: cellStyleMap
+      });
+      doc1.save('Store_Wise_Pendency.pdf');
     }
 
-    doc.save('Report_'+todayStr()+'.pdf');
-    showToast('PDF Downloaded');
-  }catch(e){showToast('PDF failed: '+e.message,true)}
-  finally{btn.disabled=false;btn.innerHTML='&#128196; Export PDF'}
+    // 2. Cluster Manager Wise PDF
+    if(byCM.entries.length) {
+      let doc2 = new jsPDF({compress:true});
+      let pw2 = doc2.internal.pageSize.getWidth();
+      doc2.setFontSize(14).setTextColor(0,0,0).text('~ : Cluster Manager Wise Pendency : ~', pw2/2, 14, {align:'center'});
+      doc2.autoTable({
+        head:[['Cluster Manager','Pendency']], 
+        body:[...byCM.entries,['TOTAL',byCM.total]], 
+        startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
+        didParseCell: cellStyleMap
+      });
+      doc2.save('Cluster_Wise_Pendency.pdf');
+    }
+
+    // 3. City Wise PDF
+    if(byCity.entries.length) {
+      let doc3 = new jsPDF({compress:true});
+      let pw3 = doc3.internal.pageSize.getWidth();
+      doc3.setFontSize(14).setTextColor(0,0,0).text('~ : City Wise Pendency : ~', pw3/2, 14, {align:'center'});
+      doc3.autoTable({
+        head:[['City','Pendency']], 
+        body:[...byCity.entries,['TOTAL',byCity.total]], 
+        startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
+        didParseCell: cellStyleMap
+      });
+      doc3.save('City_Wise_Pendency.pdf');
+    }
+
+    showToast('3 PDFs Downloaded');
+  }catch(e){
+    showToast('PDF failed: '+e.message,true);
+  }
+  finally{
+    btn.disabled=false;
+    btn.innerHTML='Export PDF'; // icon stripped
+  }
 }
 
 /* SNOW */
