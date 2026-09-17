@@ -57,7 +57,7 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-card:0 4px 16px rgba(0,0,0,0.3);
 }
 
-/* Auto-fit Background Image */
+/* Strictly Auto-Fit Background Image */
 body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;background-repeat:no-repeat;z-index:0;animation:wallIn .8s ease both}
 body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:1;transition:background .3s}
 :root.dark-mode body::after{background:rgba(5,10,25,0.75)}
@@ -75,9 +75,9 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-i
 .loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
-/* Modern Auth Overlay - Permits background loading */
-.auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:fadeIn .3s ease}
-.auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.45);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
+/* Un-bypassable Solid Opaque Password Overlay */
+.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease}
+.auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
 .auth-icon{font-size:48px;margin-bottom:12px;line-height:1}
 .auth-title{font-weight:900;font-size:20px;color:var(--text-main);margin-bottom:24px;letter-spacing:-.3px}
 .auth-input{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:700;font-size:16px;font-family:Inter,sans-serif;background:var(--bg-panel);color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s;margin-bottom:20px;letter-spacing:4px}
@@ -128,10 +128,11 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .tbl tbody tr:hover td{background:var(--dropdown-hover)}
 .tbl tbody tr:last-child td{border-bottom:none}
 
-/* Normalizing numbers - removing the pill styles entirely */
+/* Standardized normal text pendency, zero round pill styling */
 .normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
 
-.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
+/* Ensure TOTAL rows stand out clearly */
+.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase;color:var(--text-main)!important}
 
 .btn-export{border:none;padding:14px 30px;border-radius:14px;font-weight:800;font-size:14px;font-family:Inter,sans-serif;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#334155,#1e293b);color:#fff;display:inline-flex;align-items:center;gap:8px;margin:6px 0 24px}
 .btn-export:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
@@ -165,8 +166,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 
-<!-- Modern Auth Overlay - Data loads in background while this is active -->
-<div id="authOverlay" class="auth-overlay" style="display:none;">
+<!-- Rigid Authentication Wall - Forces display flex to completely block UI until unlocked -->
+<div id="authOverlay" class="auth-overlay" style="display:flex;">
   <div class="auth-modal">
     <div class="auth-icon">🔐</div>
     <div class="auth-title">Access Restricted</div>
@@ -228,11 +229,11 @@ const CACHE_TTL=10*60*1000;
 
 let rawData=[],trainerTS,toastTimer=null;
 
-/* Authentication Logic - Evaluates locally, un-bypassable via UI without right pwd */
+/* Strict Front-End Authentication Logic */
 function checkAuth() {
   const pwd = document.getElementById('authInput').value;
   if(pwd === "Kitkat") {
-    sessionStorage.setItem('auth_complete', 'true');
+    // Correct password unlocks the overlay instantly 
     document.getElementById('authOverlay').style.display = 'none';
   } else {
     document.getElementById('authError').style.display = 'block';
@@ -241,15 +242,13 @@ function checkAuth() {
   }
 }
 
+// Allows hitting enter to submit password
 document.getElementById('authInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') checkAuth();
 });
 
-// Check auth immediately on script run
-if(sessionStorage.getItem('auth_complete') !== 'true') {
-  document.getElementById('authOverlay').style.display = 'flex';
-  document.getElementById('authInput').focus();
-}
+// Focus the password input as soon as possible
+document.getElementById('authInput').focus();
 
 const isNA=v=>{if(v==null)return true;const s=String(v).trim().toUpperCase();return !s||s==='N/A'||s==='#N/A'||s==='#NA'};
 const clean=v=>isNA(v)?null:String(v).trim();
@@ -278,6 +277,9 @@ async function apiFetch(url){
 }
 
 function normalizeRow(r){
+  // Extra safeguard: Filter out any stray #N/A Cluster Managers on the frontend too
+  if(isNA(r.cm)) return null; 
+  
   const nm=toTitleCase(clean(r.nm)),tn=toTitleCase(clean(r.tn)),ds=toTitleCase(clean(r.ds)),ct=toTitleCase(clean(r.ct)),cm=toTitleCase(clean(r.cm)),ts=clean(r.ts),id=clean(r.id);
   if(!id)return null;
   return{id,name:nm||'N/A',trainer:tn,store:ds,city:ct,cm:cm,status:ts};
@@ -321,7 +323,7 @@ window.onload=()=>{
   const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch{return null}})();
   if(cached){rawData=cached.data;populateTrainers();hideLoader()}
   
-  // Load data triggers automatically behind the auth screen
+  // Load data triggers automatically behind the opaque auth screen
   loadData();
 };
 
@@ -352,12 +354,12 @@ function renderSection(thId,tbId,headers,{entries,total}){
     return;
   }
   
-  // NORMAL TEXT - Round styling completely removed
+  // NORMAL TEXT - Round styling completely removed from HTML output
   let html=entries.map(([name,count])=>{
     return '<tr><td>'+esc(name)+'</td><td><span class="normal-count">'+count+'</span></td></tr>';
   }).join('');
   
-  // ADDED TOTAL ROW BACK IN HTML
+  // TOTAL Row Added Here
   html+='<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
   
   document.getElementById(tbId).innerHTML=html;
@@ -383,7 +385,7 @@ async function exportPdf(){
     
     const hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
     const bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
-    const dt = todayStr(); // Returns format DD-MM-YYYY natively
+    const dt = todayStr(); // Format DD-MM-YYYY natively handled
 
     const cellStyleMap = function(data) {
       if (data.section === 'body' && data.column.index === 1) {
