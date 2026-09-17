@@ -139,7 +139,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-exit:hover:not(:disabled){transform:translateY(-2px);opacity:.9}
 .btn-exit:disabled{opacity:.45;cursor:wait}
 
-/* Standard HTML Badges (No HTML-side Highlighting logic) */
 .badge-count{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:5px 14px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;min-width:40px}
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
 .pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2)}
@@ -378,7 +377,6 @@ function renderTable(){
     filtered.forEach(i=>{sm[i.clusterManager]=(sm[i.clusterManager]||0)+1; total++});
     tH.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
     
-    // Using default blue HTML badge as requested
     let html = Object.entries(sm).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0])).map(([n,v])=>{
       return '<tr><td>'+checkNA(n)+'</td><td><span class="badge-count">'+v+'</span></td></tr>';
     }).join('');
@@ -431,7 +429,6 @@ async function exportData(){
     const{jsPDF}=window.jspdf,doc=new jsPDF({compress:true});
     const pw=doc.internal.pageSize.getWidth();
     
-    // Thick black grid styles
     const hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
     const bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
     
@@ -450,9 +447,9 @@ async function exportData(){
           if (data.section === 'body' && data.column.index === 1) {
             const val = parseInt(data.cell.raw);
             if (!isNaN(val)) {
-              if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; } // Red
-              else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; } // Yellow
-              else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } // Green
+              if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; }
+              else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; }
+              else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; }
             }
           }
         }
@@ -465,7 +462,7 @@ async function exportData(){
     showToast('PDF Downloaded');
   }catch(e){showToast('PDF failed: '+e.message,true)}finally{
     setUILock(false);
-    btn.innerHTML = 'Export PDF'; // Icons stripped
+    btn.innerHTML = 'Export PDF';
   }
 }
 
@@ -484,7 +481,7 @@ function exportToGSheet(){
   .then(d=>{if(d.url){window.open(d.url,'_blank');showToast('G-Sheet Created')}else throw new Error(d.error||'No URL')})
   .catch(e=>showToast('Export failed: '+(e.message||'Retry.'),true))
   .finally(()=>{
-    btn.innerHTML='Open as G-Sheet'; // Icons stripped
+    btn.innerHTML='Open as G-Sheet';
     setUILock(false);
   });
 }
