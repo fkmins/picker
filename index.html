@@ -61,7 +61,7 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
-.loader-cat{width:80px;height:80px;filter:drop-shadow(0 0 24px var(--gold-glow))}
+.loader-logo{width:72px;height:72px;border-radius:18px;object-fit:cover;box-shadow:0 0 40px var(--gold-glow),0 8px 24px rgba(0,0,0,.5)}
 .loader-spinner{width:56px;height:56px;border:5px solid rgba(212,175,55,.15);border-top:5px solid var(--gold);border-right:5px solid rgba(212,175,55,.4);border-radius:50%;animation:spin .85s linear infinite}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
