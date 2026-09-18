@@ -78,7 +78,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .dash-subtitle{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s ease;font-family:Inter,sans-serif}
+.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s ease;font-family:Inter,sans-serif;line-height:1}
 .icon-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px var(--gold-glow);border-color:var(--gold)}
 .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
 
@@ -90,11 +90,14 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
 .filter-col{flex:1 1 260px;max-width:420px;text-align:center}
 
-/* Fixed Dropdown Styling to eliminate pill gap bug */
-.ts-wrapper .ts-control{border-radius:14px!important;padding:13px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important}
-.ts-wrapper.has-items .ts-control>input{width:0!important;opacity:0!important;position:absolute!important}
-.ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
-.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; }
+/* TomSelect Strict Absolute Centering Overrides */
+.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
+.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+.ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
+.ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
+.ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
+.ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
+.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; }
 .ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; }
 .ts-dropdown .option:last-child { border-bottom: none !important; }
 .ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
@@ -183,7 +186,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">Save Your Eyes</button>
+      <!-- Icon locked as ☢ as requested -->
+      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">☢</button>
     </div>
   </div>
   <hr class="divider">
@@ -210,7 +214,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
     <div id="paginationBar">
       <button class="btn-page" id="btnPrev" onclick="changePage(-1)">&larr; Prev</button>
-      <span class="page-info" id="pageInfo">Page 1</span>
+      <span class="page-info" id="pageInfo">1 - 1 of 1</span>
       <button class="btn-page" id="btnNext" onclick="changePage(1)">Next &rarr;</button>
     </div>
   </div>
@@ -230,7 +234,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
-const LOCAL_CACHE_KEY='pickerDash_v6';
+const LOCAL_CACHE_KEY='pickerDash_v7';
 const CACHE_TTL=10*60*1000;
 const PAGE_SIZE=50;
 
@@ -260,7 +264,6 @@ async function apiFetch(url,opts={}){
 
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark-mode');
-  document.getElementById('themeToggleBtn').textContent=d?'Damage Your Eyes (😁)':'Save Your Eyes';
   try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
 }
 
@@ -284,15 +287,9 @@ function loadData(showErr){
   }).catch(e=>{hideLoader();if(showErr||!db.length)showToast('Network Error: '+(e.message||'Refresh.'),true)});
 }
 
-const tsRender={
-  item:function(data,escape){return'<div style="text-align:center;width:100%;display:block">'+escape(data.text)+'</div>'},
-  option:function(data,escape){return'<div style="text-align:center">'+escape(data.text)+'</div>'}
-};
-
 window.onload=()=>{
-  if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeToggleBtn').textContent='Damage Your Eyes (😁)';
-  cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'},render:tsRender});
-  storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'},render:tsRender});
+  cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'}});
+  storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'}});
   const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
   if(cached){db=cached.data;populateCityOptions();hideLoader()}
   loadData(!cached);
@@ -333,11 +330,16 @@ function renderTable(){
     const tot=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
     currentPage=Math.min(currentPage,tot);
     const st=(currentPage-1)*PAGE_SIZE,end=Math.min(st+PAGE_SIZE,filtered.length);
-    document.getElementById('pageInfo').textContent='Showing '+(st+1)+'\u2013'+end+' of '+filtered.length;
+    
+    /* Strict format applied here: "1 - 1 of 1" */
+    document.getElementById('pageInfo').textContent = (st+1) + ' - ' + end + ' of ' + filtered.length;
+    
     document.getElementById('btnPrev').disabled=(currentPage===1);
     document.getElementById('btnNext').disabled=(currentPage===tot);
     pB.style.display='flex';
-    tH.innerHTML='<tr><th>#</th><th>User Name</th><th>User ID</th><th>Action</th></tr>';
+    
+    /* Table headers updated */
+    tH.innerHTML='<tr><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
     
     tB.innerHTML=filtered.slice(st,end).map((i,idx)=> {
       let statusHtml = '';
@@ -400,7 +402,7 @@ async function exportData(){
       })
     }
     else{
-      doc.autoTable({head:[['#','Name','ID', 'Status']],body:filtered.map((i,idx)=>[idx+1,i.name||'',i.casperId||'', i.ts||'']),startY:22,headStyles:hd,styles:bd,theme:'grid'})
+      doc.autoTable({head:[['Sl.','Picker Name','Casper ID', 'Status']],body:filtered.map((i,idx)=>[idx+1,i.name||'',i.casperId||'', i.ts||'']),startY:22,headStyles:hd,styles:bd,theme:'grid'})
     }
     doc.save(((managerMode?c+'_Summary':(s||c)+'_Pendency')+'.pdf').replace(/[^a-zA-Z0-9_.-]/g,'_'));
     showToast('PDF Downloaded');
