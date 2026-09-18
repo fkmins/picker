@@ -91,15 +91,16 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 .filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;width:100%}
 .filter-col{flex:1 1 320px;max-width:480px;text-align:center}
 
-/* TomSelect Strict Absolute Centering Overrides */
+/* TomSelect Strict Absolute Centering Overrides for completion too */
 .ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
-.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; flex: 1 1 auto !important; }
 .ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
 .ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
 .ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
 .ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
 .ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; }
-.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; }
+.ts-dropdown .ts-dropdown-content { display: flex; flex-direction: column; text-align: center !important; }
+.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; width: 100% !important; justify-content: center !important; }
 .ts-dropdown .option:last-child { border-bottom: none !important; }
 .ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
 
@@ -154,6 +155,7 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
     </div>
     <div class="hdr-actions">
       <a href="index.html" class="icon-btn">Dashboard</a>
+      <!-- Icon locked to ☢ -->
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☢</button>
     </div>
   </div>
@@ -171,7 +173,7 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
-const LOCAL_CACHE_KEY='completionDash_v1';
+const LOCAL_CACHE_KEY='completionDash_v2';
 const CACHE_TTL=10*60*1000;
 
 let rawData=[],trainerTS;
@@ -232,11 +234,9 @@ function populateTrainers(){
   trainers.forEach(t=>trainerTS.addOption({value:t,text:t}));
 }
 
-/* Removes TomSelect default item styling logic to let CSS handle it cleanly */
 window.onload=()=>{
   trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer(s)',create:false,maxItems:null,sortField:{field:'text'},onChange:onTrainerChange});
   
-  /* Apply Caching logic identical to index.html to eliminate the 1-minute delay */
   const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
   
   if(cached){
@@ -307,7 +307,6 @@ async function exportPdf(){
 
     let currentY = 14;
 
-    // Table 1: Store Wise
     if(byStore.entries.length) {
       doc.setFontSize(14).setTextColor(0,0,0).text('~ : Store Name Wise Pendency : ~', pw/2, currentY, {align:'center'});
       doc.autoTable({
@@ -318,7 +317,6 @@ async function exportPdf(){
       currentY = doc.lastAutoTable.finalY + 15;
     }
 
-    // Table 2: Cluster Manager Wise
     if(byCM.entries.length) {
       if (currentY > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); currentY = 14; }
       doc.setFontSize(14).setTextColor(0,0,0).text('~ : Cluster Manager Wise Pendency : ~', pw/2, currentY, {align:'center'});
@@ -330,7 +328,6 @@ async function exportPdf(){
       currentY = doc.lastAutoTable.finalY + 15;
     }
 
-    // Table 3: City Wise
     if(byCity.entries.length) {
       if (currentY > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); currentY = 14; }
       doc.setFontSize(14).setTextColor(0,0,0).text('~ : City Wise Pendency : ~', pw/2, currentY, {align:'center'});
@@ -341,7 +338,6 @@ async function exportPdf(){
       });
     }
 
-    /* Fixed PDF Name Implementation */
     doc.save('Disprz_Report_' + todayStr() + '.pdf');
   }catch(e){
     alert('PDF export failed');
