@@ -62,6 +62,12 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-i
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
+#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
+#appLoader.hidden{opacity:0;pointer-events:none}
+.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
+.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
+@keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
+
 .auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease}
 .auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
 .auth-icon{font-size:48px;margin-bottom:12px;line-height:1}
@@ -79,22 +85,23 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 .hdr-title{font-weight:900;font-size:24px;letter-spacing:-.6px;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
 .hdr-sub{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .hdr-actions{display:flex;gap:8px}
-.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none}
+.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;line-height:1}
 .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
 
 .filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;width:100%}
 .filter-col{flex:1 1 320px;max-width:480px;text-align:center}
 
-/* Fixed Dropdown Styling to eliminate pill gap bug */
-.ts-wrapper .ts-control{border-radius:14px!important;padding:13px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important;display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:6px!important}
-.ts-wrapper .ts-control>.item{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;border:1px solid rgba(40,116,240,0.3)!important;border-radius:8px!important;padding:4px 10px!important;font-weight:800!important;font-size:13px!important}
-.ts-wrapper.has-items .ts-control>input{width:0!important;opacity:0!important;position:absolute!important}
-.ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
-.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; }
+/* TomSelect Strict Absolute Centering Overrides */
+.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
+.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+.ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
+.ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
+.ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
+.ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
+.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; }
 .ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; }
 .ts-dropdown .option:last-child { border-bottom: none !important; }
 .ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
-
 
 #results{display:none;animation:fadeIn .4s ease both}
 .section{margin-bottom:28px}
@@ -131,6 +138,11 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
   </div>
 </div>
 
+<div id="appLoader">
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
+  <div class="loading-text">Please wait, loading report</div>
+</div>
+
 <div class="glass-panel">
   <div class="hdr">
     <div class="hdr-brand">
@@ -142,7 +154,7 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
     </div>
     <div class="hdr-actions">
       <a href="index.html" class="icon-btn">Dashboard</a>
-      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">Save Your Eyes</button>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☢</button>
     </div>
   </div>
   <hr class="divider">
@@ -159,9 +171,12 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
-const CACHE_KEY='completionReport_v5';
+const LOCAL_CACHE_KEY='completionDash_v1';
+const CACHE_TTL=10*60*1000;
 
 let rawData=[],trainerTS;
+
+function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
 
 function checkAuth() {
   const pwd = document.getElementById('authInput').value;
@@ -182,24 +197,33 @@ const pad=n=>String(n).padStart(2,'0');
 
 function todayStr(){const d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
 function toTitleCase(str) { return str ? String(str).toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : str; }
-function toggleTheme(){const d=document.documentElement.classList.toggle('dark-mode');document.getElementById('themeBtn').textContent=d?'Damage Your Eyes (😁)':'Save Your Eyes';try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
+function toggleTheme(){const d=document.documentElement.classList.toggle('dark-mode');try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
 
 async function apiFetch(url){
-  const r=await fetch(url);
-  return await r.json();
+  const MAX=2;
+  for(let a=0;a<=MAX;a++){
+    try{
+      const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);
+      const r=await fetch(url,{redirect:'follow',signal:c.signal});
+      clearTimeout(t);const txt=await r.text();
+      try{return JSON.parse(txt)}catch{throw new Error('Invalid response')}
+    }catch(e){if(a===MAX)throw e;await new Promise(r=>setTimeout(r,1000*(a+1)))}
+  }
 }
 
 function normalizeRow(r){
-  if(isNA(r.tn)) return null; // Drop empty Trainers entirely
+  if(isNA(r.tn)) return null; 
   return{id:clean(r.id),name:toTitleCase(clean(r.nm)),trainer:toTitleCase(clean(r.tn)),store:toTitleCase(clean(r.ds)),city:toTitleCase(clean(r.ct)),cm:toTitleCase(clean(r.cm)),status:clean(r.ts)};
 }
 
 function loadData(){
   apiFetch(SCRIPT_URL+'?action=getData').then(d=>{
-    // Only map those who have valid 'tn' (Trainer Name)
+    hideLoader();
+    if(d?.error) return;
     rawData=Array.isArray(d) ? d.map(normalizeRow).filter(x=>x&&x.trainer) : [];
+    try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:rawData,ts:Date.now()}))}catch(e){}
     populateTrainers();
-  }).catch(()=>{});
+  }).catch(()=>{ hideLoader(); });
 }
 
 function populateTrainers(){
@@ -208,14 +232,20 @@ function populateTrainers(){
   trainers.forEach(t=>trainerTS.addOption({value:t,text:t}));
 }
 
-const tsRender={
-  item:function(d,e){return'<div>'+e(d.text)+'</div>'},
-  option:function(d,e){return'<div style="text-align:center">'+e(d.text)+'</div>'}
-};
-
+/* Removes TomSelect default item styling logic to let CSS handle it cleanly */
 window.onload=()=>{
-  trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer(s)',create:false,maxItems:null,sortField:{field:'text'},render:tsRender,onChange:onTrainerChange});
-  loadData();
+  trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer(s)',create:false,maxItems:null,sortField:{field:'text'},onChange:onTrainerChange});
+  
+  /* Apply Caching logic identical to index.html to eliminate the 1-minute delay */
+  const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
+  
+  if(cached){
+    rawData = cached.data;
+    populateTrainers();
+    hideLoader();
+  } else {
+    loadData();
+  }
 };
 
 function onTrainerChange(val){
@@ -311,7 +341,8 @@ async function exportPdf(){
       });
     }
 
-    doc.save('Full_Completion_Report_' + todayStr() + '.pdf');
+    /* Fixed PDF Name Implementation */
+    doc.save('Disprz_Report_' + todayStr() + '.pdf');
   }catch(e){
     alert('PDF export failed');
   }finally{
