@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
+
+<!-- PWA / Manifest Links (Required for Install App) -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,8 +48,10 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-panel:0 24px 64px rgba(0,0,0,0.20);
   --shadow-card:0 4px 16px rgba(0,0,0,0.07);
   --blur:blur(22px);
+  --dropdown-bg: #ffffff;
 }
-:root.dark-mode{ --dropdown-bg: #1e293b;
+:root.dark-mode{
+  --dropdown-bg: #1e293b;
   --bg-panel:rgba(15,23,42,0.88);--card-bg:rgba(15,23,42,0.98);
   --table-header:rgba(8,14,31,0.98);--table-hover:rgba(30,41,59,0.98);
   --dropdown-hover:rgba(40,116,240,0.18);
@@ -59,13 +66,20 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
 
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{0%{background-position:-200% auto}100%{background-position:200% auto}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
-#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
-#appLoader.hidden{opacity:0;pointer-events:none}
-.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
-.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
-@keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
+/* Skeleton Loaders */
+.skeleton-box {
+  background: linear-gradient(90deg, var(--table-hover) 25%, var(--border-color) 50%, var(--table-hover) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel-text { height: 16px; width: 60%; margin: 4px auto; }
+.skel-btn { height: 32px; width: 70px; border-radius: 10px; margin: 0 auto; }
+.skel-id { height: 26px; width: 100px; border-radius: 50px; margin: 0 auto; }
 
 body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 48px;position:relative;z-index:3;text-align:center;transition:color .3s ease}
 .glass-panel{background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-radius:28px;padding:36px 32px;width:100%;max-width:920px;border:1px solid var(--border-color);box-shadow:var(--shadow-panel);position:relative;z-index:10;text-align:center;transition:background .3s ease,border-color .3s ease;animation:panelSlideUp .5s cubic-bezier(.22,1,.36,1) both}
@@ -75,7 +89,9 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .header-wrapper{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:26px;width:100%;gap:12px;flex-wrap:wrap}
 .brand-header{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0}
 .brand-logo{width:80px;height:44px;border-radius:12px;object-fit:cover;box-shadow:0 4px 14px rgba(40,116,240,.3);flex-shrink:0}
-.dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Restored shimmer animation to title */
+.dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
 .dash-subtitle{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s ease;font-family:Inter,sans-serif;line-height:1}
@@ -90,19 +106,16 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
 .filter-col{flex:1 1 260px;max-width:420px;text-align:center}
 
-/* TomSelect Strict Absolute Centering Overrides */
-.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
-.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; flex: 1 1 auto !important; }
-.ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
-.ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
-.ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
-.ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
-.ts-dropdown { z-index: 9999 !important; background: var(--dropdown-bg, #fff) !important; padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; }
-.ts-dropdown .ts-dropdown-content { display: flex; flex-direction: column; text-align: center !important; }
-.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; width: 100% !important; justify-content: center !important; }
-.ts-dropdown .option:last-child { border-bottom: none !important; }
-.ts-dropdown .highlight { background: rgba(40,116,240,0.2) !important; color: inherit !important; padding: 0 2px; border-radius: 3px; }
-.ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
+/* Clean TomSelect Overrides (Fixed Layout for Desktop/Laptop) */
+.ts-wrapper .ts-control { border-radius: 14px; padding: 12px 18px; border: 1.5px solid var(--border-color); font-weight: 600; font-size: 14px; font-family: Inter, sans-serif; background: var(--card-bg); color: var(--text-main); box-shadow: none; transition: all 0.2s; min-height: 48px; }
+.ts-wrapper .ts-control > input { color: var(--text-main); font-weight: 600; font-family: Inter, sans-serif; }
+.ts-wrapper .ts-control.focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
+.ts-dropdown { z-index: 9999; border-radius: 14px; border: 1px solid var(--border-color); background: var(--dropdown-bg); overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.15); margin-top: 4px; }
+.ts-dropdown .ts-dropdown-content { text-align: left; }
+.ts-dropdown .option { background: transparent; color: var(--text-main); padding: 12px 16px; font-weight: 500; font-size: 14px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+.ts-dropdown .option:last-child { border-bottom: none; }
+.ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover); color: var(--fk-blue); font-weight: 700; }
+.ts-dropdown .highlight { background: var(--fk-yellow); color: #000; font-weight: 800; padding: 0 3px; border-radius: 3px; display: inline-block; }
 
 .search-wrapper{position:relative;width:100%;margin-bottom:20px}
 .search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:Inter,sans-serif;background:var(--card-bg);color:var(--text-main);text-align:center}
@@ -122,6 +135,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-action:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
 .btn-pdf{background:linear-gradient(135deg,#334155,#1e293b);color:#fff}
 .btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669);color:#fff}
+.btn-batch-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;display:none}
 
 .table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:460px;overflow-y:auto;overflow-x:auto;box-shadow:var(--shadow-card)}
 .table{border-collapse:collapse;width:100%;min-width:460px;color:var(--text-main);text-align:center}
@@ -174,10 +188,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </head>
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
-<div id="appLoader">
-  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
-  <div class="loading-text">Please wait, synchronizing Picker Data</div>
-</div>
 <div class="glass-panel" id="mainPanel">
   <div class="header-wrapper">
     <div class="brand-header">
@@ -188,8 +198,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
-      <!-- Icon explicitly locked to â˜¢ -->
-      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">â˜¢</button>
+      <!-- Tooltip updated dynamically in JS -->
+      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Damage Your Eyes">☢</button>
     </div>
   </div>
   <hr class="divider">
@@ -211,7 +221,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     </div>
     <div class="action-buttons">
       <button class="btn-action btn-pdf" id="btnPdf" onclick="exportData()">Export PDF</button>
-      <button id="btnBatchExit" class="btn-action btn-batch-exit" style="display:none; background:linear-gradient(135deg,var(--danger),#b91c1c); color:#fff;" onclick="showBatchExitModal()">Batch Exit Selected (0)</button>`n      <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open as G-Sheet</button>
+      <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open as G-Sheet</button>
+      <button id="btnBatchExit" class="btn-action btn-batch-exit" onclick="showBatchExitModal()">Batch Exit Selected (0)</button>
     </div>
     <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
     <div id="paginationBar">
@@ -223,7 +234,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </div>
 <div id="exitModal" class="exit-overlay" style="display:none">
   <div class="exit-modal">
-    <div class="exit-modal-icon">âš ï¸</div>
+    <div class="exit-modal-icon">⚠️</div>
     <div class="exit-modal-title">Confirm Exit</div>
     <div class="exit-modal-name" id="exitModalName"></div>
     <div class="exit-modal-actions">
@@ -269,15 +280,33 @@ function updateThemeTooltip() {
   const btn = document.getElementById('themeToggleBtn');
   if (btn) btn.title = isDark ? 'Save Your Eyes' : 'Damage Your Eyes';
 }
+
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark-mode');
   try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
   updateThemeTooltip();
 }
 
-function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
 function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
 function setUILock(on){isProcessing=on;document.getElementById('mainPanel').classList.toggle('ui-locked',on)}
+
+function renderSkeleton() {
+  const tH=document.getElementById('tableHead'),tB=document.getElementById('tableBody'),pB=document.getElementById('paginationBar');
+  tH.innerHTML='<tr><th><input type="checkbox" disabled></th><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
+  let skelHtml = '';
+  for(let i=0; i<5; i++) {
+    skelHtml += `<tr>
+      <td><input type="checkbox" disabled></td>
+      <td><div class="skeleton-box skel-text" style="width:20px"></div></td>
+      <td><div class="skeleton-box skel-text"></div></td>
+      <td><div class="skeleton-box skel-id"></div></td>
+      <td><div class="skeleton-box skel-btn"></div></td>
+    </tr>`;
+  }
+  tB.innerHTML = skelHtml;
+  pB.style.display='none';
+  document.getElementById('resultArea').style.display='flex';
+}
 
 function populateCityOptions(){
   const cur=cityTS.getValue();cityTS.clearOptions();
@@ -286,13 +315,12 @@ function populateCityOptions(){
 }
 function loadData(showErr){
   return apiFetch(SCRIPT_URL+'?action=getData').then(d=>{
-    hideLoader();
     if(d?.error){showToast('Error: '+d.error,true);return}
     db=Array.isArray(d)?d.map(normalizeRow):[];
     populateCityOptions();
     try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}
     if(cityTS.getValue()){if(!managerMode)onCityChange(true);render()}
-  }).catch(e=>{hideLoader();if(showErr||!db.length)showToast('Network Error: '+(e.message||'Refresh.'),true)});
+  }).catch(e=>{if(showErr||!db.length)showToast('Network Error: '+(e.message||'Refresh.'),true)});
 }
 
 window.onload=()=>{
@@ -300,7 +328,12 @@ window.onload=()=>{
   cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'}});
   storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'}});
   const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
-  if(cached){db=cached.data;populateCityOptions();hideLoader()}
+  if(cached){
+    db=cached.data;
+    populateCityOptions();
+  } else {
+    renderSkeleton();
+  }
   loadData(!cached);
 };
 
@@ -315,12 +348,14 @@ function render(){
   filtered=db.filter(i=>{if(i.city!==c)return false;if(!managerMode&&i.darkStore!==s)return false;if(reportedIds.has(String(i.casperId)))return false;if(searchQuery&&!managerMode)return String(i.name).toLowerCase().includes(searchQuery)||String(i.casperId).toLowerCase().includes(searchQuery);return true});
   document.getElementById('countBadge').textContent=filtered.length;
   document.getElementById('totalReportedBadge').textContent=reportedIds.size;
-  document.getElementById('resultArea').style.display='flex';renderTable();
+  document.getElementById('resultArea').style.display='flex';
+  updateBatchExitBtn();
+  renderTable();
 }
 
 function renderTable(){
   const tH=document.getElementById('tableHead'),tB=document.getElementById('tableBody'),pB=document.getElementById('paginationBar');
-  if(!filtered.length){tH.innerHTML='';tB.innerHTML='<tr><td colspan="'+(managerMode?2:4)+'" style="padding:32px;color:var(--text-muted);font-weight:700">No Records Found</td></tr>';pB.style.display='none';return}
+  if(!filtered.length){tH.innerHTML='';tB.innerHTML='<tr><td colspan="'+(managerMode?2:5)+'" style="padding:32px;color:var(--text-muted);font-weight:700">No Records Found</td></tr>';pB.style.display='none';return}
   
   if(managerMode){
     pB.style.display='none';
@@ -340,14 +375,12 @@ function renderTable(){
     currentPage=Math.min(currentPage,tot);
     const st=(currentPage-1)*PAGE_SIZE,end=Math.min(st+PAGE_SIZE,filtered.length);
     
-    /* Strict Pagination text */
     document.getElementById('pageInfo').textContent = (st+1) + ' - ' + end + ' of ' + filtered.length;
     
     document.getElementById('btnPrev').disabled=(currentPage===1);
     document.getElementById('btnNext').disabled=(currentPage===tot);
     pB.style.display='flex';
     
-    /* Headers updated exactly to user requirement */
     tH.innerHTML='<tr><th><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
     
     tB.innerHTML=filtered.slice(st,end).map((i,idx)=> {
@@ -355,8 +388,17 @@ function renderTable(){
       if(i.ts === 'Not Started') statusHtml = '<span class="status-not-started">(Not Started)</span>';
       else if(i.ts === 'In-Progress' || i.ts === 'In Progress') statusHtml = '<span class="status-in-progress">(In-Progress)</span>';
       
-      return '<tr id="row-'+escHtml(i.casperId)+'">' + '<td><input type="checkbox" class="row-checkbox" value="'+escHtml(i.casperId)+'" onchange="updateBatchExitBtn()" '+(pendingRowIds.has(String(i.casperId))?'disabled':'')+'></td><td style="color:var(--text-muted);font-size:12px;font-weight:700">'+(st+idx+1)+'</td><td>'+checkNA(i.name)+statusHtml+'</td><td><span class="pill-id">'+checkNA(i.casperId)+'</span></td><td><button class="btn-exit" '+(pendingRowIds.has(String(i.casperId))?'disabled':'')+' onclick="showExitModal(\''+escHtml(i.casperId)+'\')">Exit</button></td></tr>'
+      const isPending = pendingRowIds.has(String(i.casperId));
+      return '<tr id="row-'+escHtml(i.casperId)+'">' + 
+             '<td><input type="checkbox" class="row-checkbox" value="'+escHtml(i.casperId)+'" onchange="updateBatchExitBtn()" '+(isPending?'disabled':'')+'></td>' +
+             '<td style="color:var(--text-muted);font-size:12px;font-weight:700">'+(st+idx+1)+'</td>' +
+             '<td>'+checkNA(i.name)+statusHtml+'</td>' +
+             '<td><span class="pill-id">'+checkNA(i.casperId)+'</span></td>' +
+             '<td><button class="btn-exit" '+(isPending?'disabled':'')+' onclick="showExitModal(\''+escHtml(i.casperId)+'\')">Exit</button></td></tr>'
     }).join('');
+    
+    const allChecked = document.querySelectorAll('.row-checkbox:not(:disabled)').length > 0 && Array.from(document.querySelectorAll('.row-checkbox:not(:disabled)')).every(el => el.checked);
+    document.getElementById('selectAllCheckbox').checked = allChecked;
   }
 }
 
@@ -364,24 +406,48 @@ function toggleSelectAll(cb) {
   document.querySelectorAll('.row-checkbox:not(:disabled)').forEach(el => el.checked = cb.checked);
   updateBatchExitBtn();
 }
+
 function updateBatchExitBtn() {
   const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
   const btn = document.getElementById('btnBatchExit');
   if (selectedCount > 0) {
     btn.style.display = 'inline-block';
-    btn.textContent = 'Batch Exit Selected (' + selectedCount + ')';
+    btn.textContent = `Batch Exit Selected (${selectedCount})`;
   } else {
     btn.style.display = 'none';
   }
 }
+
 function showBatchExitModal() {
   const selected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(el => el.value);
   if (selected.length === 0) return;
+  
   pendingExitId = 'BATCH';
-  document.getElementById('exitModalName').textContent = 'Mark ' + selected.length + ' picker(s) as exited?';
+  document.getElementById('exitModalName').textContent = `Mark ${selected.length} picker(s) as exited?`;
   document.getElementById('exitModal').style.display='flex';
   document.getElementById('exitConfirmBtn').focus();
 }
+
+function showExitModal(id){const p=filtered.find(x=>String(x.casperId)===String(id));const label=(p&&p.name&&p.name.toUpperCase()!=='N/A')?p.name:id;pendingExitId=id;document.getElementById('exitModalName').textContent='Mark "'+label+'" as exited?';document.getElementById('exitModal').style.display='flex';document.getElementById('exitConfirmBtn').focus()}
+function closeExitModal(){document.getElementById('exitModal').style.display='none';pendingExitId=null}
+document.getElementById('exitConfirmBtn').addEventListener('click',function(){if(pendingExitId){const id=pendingExitId;closeExitModal();initiateSubmit(id)}});
+document.getElementById('exitModal').addEventListener('click',function(e){if(e.target===this)closeExitModal()});
+
+function initiateSubmit(id){
+  if (id === 'BATCH') {
+    initiateBatchSubmit();
+    return;
+  }
+  const idStr=String(id);if(pendingRowIds.has(idStr))return;
+  const p=filtered.find(x=>String(x.casperId)===idStr);if(!p)return;
+  pendingRowIds.add(idStr);const backup=[...db];
+  db=db.filter(i=>String(i.casperId)!==idStr);reportedIds.add(idStr);render();showToast('Processing exit...');
+  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'report',n:p.name,id:p.casperId,ds:p.darkStore,c:p.city})})
+  .then(res=>{if(res.status==='Success'){showToast('Exit Processed');try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}}else throw new Error(res.error)})
+  .catch(()=>{db=backup;reportedIds.delete(idStr);render();showToast('Failed. Retry.',true)})
+  .finally(()=>{pendingRowIds.delete(idStr);renderTable()});
+}
+
 function initiateBatchSubmit() {
   const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(el => el.value);
   if (selectedIds.length === 0) return;
@@ -394,6 +460,7 @@ function initiateBatchSubmit() {
       payloadExits.push({ id: p.casperId, n: p.name, ds: p.darkStore, c: p.city, r: 'Exit' });
     }
   });
+  
   if (payloadExits.length === 0) return;
   
   const backup = [...db];
@@ -401,7 +468,7 @@ function initiateBatchSubmit() {
   payloadExits.forEach(ex => reportedIds.add(String(ex.id)));
   
   render();
-  showToast('Processing ' + payloadExits.length + ' exits...');
+  showToast(`Processing ${payloadExits.length} exits...`);
   
   apiFetch(SCRIPT_URL, {
     method: 'POST',
@@ -410,7 +477,7 @@ function initiateBatchSubmit() {
   })
   .then(res => {
     if (res.status === 'Success') {
-      showToast(res.processed + ' Exits Processed');
+      showToast(`${res.processed} Exits Processed`);
       try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({ data: db, ts: Date.now() })); } catch(e) {}
     } else {
       throw new Error(res.error);
@@ -427,22 +494,6 @@ function initiateBatchSubmit() {
     renderTable();
     updateBatchExitBtn();
   });
-}
-function showExitModal(id){const p=filtered.find(x=>String(x.casperId)===String(id));const label=(p&&p.name&&p.name.toUpperCase()!=='N/A')?p.name:id;pendingExitId=id;document.getElementById('exitModalName').textContent='Mark "'+label+'" as exited?';document.getElementById('exitModal').style.display='flex';document.getElementById('exitConfirmBtn').focus()}
-function closeExitModal(){document.getElementById('exitModal').style.display='none';pendingExitId=null}
-document.getElementById('exitConfirmBtn').addEventListener('click',function(){if(pendingExitId){const id=pendingExitId;closeExitModal();initiateSubmit(id)}});
-document.getElementById('exitModal').addEventListener('click',function(e){if(e.target===this)closeExitModal()});
-
-function initiateSubmit(id){
-  if(id==='BATCH'){initiateBatchSubmit();return;}
-  const idStr=String(id);if(pendingRowIds.has(idStr))return;
-  const p=filtered.find(x=>String(x.casperId)===idStr);if(!p)return;
-  pendingRowIds.add(idStr);const backup=[...db];
-  db=db.filter(i=>String(i.casperId)!==idStr);reportedIds.add(idStr);render();showToast('Processing exit...');
-  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'report',n:p.name,id:p.casperId,ds:p.darkStore,c:p.city})})
-  .then(res=>{if(res.status==='Success'){showToast('Exit Processed');try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}}else throw new Error(res.error)})
-  .catch(()=>{db=backup;reportedIds.delete(idStr);render();showToast('Failed. Retry.',true)})
-  .finally(()=>{pendingRowIds.delete(idStr);renderTable()});
 }
 
 const _ls={};
@@ -515,6 +566,15 @@ function initSnow(){
   rz();sd();tk();
 }
 if('requestIdleCallback'in window)requestIdleCallback(initSnow,{timeout:1500});else setTimeout(initSnow,300);
+</script>
+
+<!-- Clean Service Worker Script -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.error('SW registration failed:', err));
+    });
+  }
 </script>
 </body>
 </html>
