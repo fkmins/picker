@@ -6,8 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
+
+<!-- PWA / Manifest Links (Required for Install App) -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-<!-- PWA Manifest link dynamically added, but placeholder here is fine -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -60,6 +64,7 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
 
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
 /* Skeleton Loaders */
@@ -82,7 +87,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .header-wrapper{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:26px;width:100%;gap:12px;flex-wrap:wrap}
 .brand-header{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0}
 .brand-logo{width:80px;height:44px;border-radius:12px;object-fit:cover;box-shadow:0 4px 14px rgba(40,116,240,.3);flex-shrink:0}
-.dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+/* Fixed missing glow animation */
+.dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
 .dash-subtitle{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s ease;font-family:Inter,sans-serif;line-height:1}
@@ -97,18 +103,15 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
 .filter-col{flex:1 1 260px;max-width:420px;text-align:center}
 
-/* TomSelect Strict Absolute Centering Overrides */
-.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
-.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; flex: 1 1 auto !important; }
-.ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
-.ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
-.ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
+/* Fully Corrected TomSelect Overrides (Proper Layout & Highlights) */
+.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 600 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; align-items: center !important; text-align: left !important; min-height: 48px !important; box-shadow: none !important; }
+.ts-wrapper .ts-control > input { color: var(--text-main) !important; font-weight: 600 !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
 .ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
-.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; z-index: 9999 !important;}
-.ts-dropdown .ts-dropdown-content { display: flex; flex-direction: column; text-align: center !important; }
-.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; width: 100% !important; justify-content: center !important; }
+.ts-dropdown { z-index: 9999 !important; padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: left !important; margin-top: 4px !important; }
+.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-bottom: 1px solid var(--border-color) !important; cursor: pointer !important; }
 .ts-dropdown .option:last-child { border-bottom: none !important; }
 .ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
+.ts-dropdown .highlight { background: var(--fk-yellow) !important; color: #000 !important; font-weight: 800 !important; padding: 0 4px !important; border-radius: 3px !important; display: inline-block !important; }
 
 .search-wrapper{position:relative;width:100%;margin-bottom:20px}
 .search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:Inter,sans-serif;background:var(--card-bg);color:var(--text-main);text-align:center}
@@ -191,7 +194,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">☢</button>
+      <!-- Fixed Tooltips! -->
+      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Damage Your Eyes">☢</button>
     </div>
   </div>
   <hr class="divider">
@@ -238,45 +242,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
-// PWA Setup
-(function setupPWA() {
-  const manifestJSON = {
-    "name": "Picker Dashboard",
-    "short_name": "Picker Dash",
-    "start_url": location.href,
-    "display": "standalone",
-    "background_color": "#0f172a",
-    "theme_color": "#2874F0",
-    "icons": [
-      {
-        "src": "https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp",
-        "sizes": "192x192",
-        "type": "image/webp"
-      },
-      {
-        "src": "https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp",
-        "sizes": "512x512",
-        "type": "image/webp"
-      }
-    ]
-  };
-  const manifestBlob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/manifest+json'});
-  const manifestURL = URL.createObjectURL(manifestBlob);
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = manifestURL;
-  document.head.appendChild(link);
-
-  const swCode = "self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('activate', e => e.waitUntil(self.clients.claim())); self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });";
-  const swBlob = new Blob([swCode], {type: 'text/javascript'});
-  const swURL = URL.createObjectURL(swBlob);
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register(swURL).catch(err => console.log('SW registration failed (expected on some domains)', err));
-    });
-  }
-})();
-
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
 const LOCAL_CACHE_KEY='pickerDash_v8';
 const CACHE_TTL=10*60*1000;
@@ -306,9 +271,17 @@ async function apiFetch(url,opts={}){
   }
 }
 
+// Tooltip Logic Added Here
+function updateThemeTooltip() {
+  const isDark = document.documentElement.classList.contains('dark-mode');
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.title = isDark ? "Save Your Eyes" : "Damage Your Eyes";
+}
+
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark-mode');
   try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
+  updateThemeTooltip();
 }
 
 function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
@@ -348,6 +321,7 @@ function loadData(showErr){
 }
 
 window.onload=()=>{
+  updateThemeTooltip(); // Run tooltip on load
   cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'}});
   storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'}});
   const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
@@ -589,6 +563,15 @@ function initSnow(){
   rz();sd();tk();
 }
 if('requestIdleCallback'in window)requestIdleCallback(initSnow,{timeout:1500});else setTimeout(initSnow,300);
+</script>
+
+<!-- Clean Service Worker Script for PWA -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.error('SW registration failed:', err));
+    });
+  }
 </script>
 </body>
 </html>
