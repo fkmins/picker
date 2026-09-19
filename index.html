@@ -7,11 +7,11 @@
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 
-<!-- PWA Links for App Installation -->
+<!-- PWA Manifest & App Icons -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-<link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 
+<link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -20,13 +20,10 @@
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js" as="script">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
 
-<!-- Default to Dark Mode instantly to prevent flash -->
+<!-- Check and Default to Dark Mode instantly -->
 <script>
 (function(){
-  try{
-    var theme = localStorage.getItem('theme');
-    if(theme !== 'light') { document.documentElement.classList.add('dark-mode'); }
-  }catch(e){}
+  try{if(localStorage.getItem('theme')!=='light')document.documentElement.classList.add('dark-mode')}catch(e){}
   var w=['https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg','https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'];
   var c=w[Math.floor(Math.random()*w.length)];
   var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
@@ -54,28 +51,23 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-panel:0 24px 64px rgba(0,0,0,0.20);
   --shadow-card:0 4px 16px rgba(0,0,0,0.07);
   --blur:blur(22px);
-  --dropdown-bg: #ffffff;
 }
 :root.dark-mode{
-  --dropdown-bg: #1e293b;
   --bg-panel:rgba(15,23,42,0.88);--card-bg:rgba(15,23,42,0.98);
   --table-header:rgba(8,14,31,0.98);--table-hover:rgba(30,41,59,0.98);
   --dropdown-hover:rgba(40,116,240,0.18);
   --text-main:#f1f5f9;--text-muted:#94a3b8;
   --border-color:rgba(51,65,85,0.8);
-  --shadow-panel:0 24px 64px rgba(0,0,0,0.55);
-  --shadow-card:0 4px 16px rgba(0,0,0,0.3);
 }
 
 body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;background-repeat:no-repeat;z-index:0;animation:wallFadeIn .8s ease both}
 body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1;transition:background .3s ease}
-:root.dark-mode body::after{background:rgba(5,10,25,0.65)}
+:root.dark-mode body::after{background:rgba(5,10,25,0.75)}
 
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
-@keyframes shimmer{0%{background-position:-200% auto}100%{background-position:200% auto}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
-/* Dynamic Skeleton Loaders */
+/* Skeleton Loaders Styling */
 .skeleton-box {
   background: linear-gradient(90deg, var(--table-hover) 25%, var(--border-color) 50%, var(--table-hover) 75%);
   background-size: 200% 100%;
@@ -84,7 +76,6 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 }
 @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .skel-text { height: 16px; width: 60%; margin: 4px auto; }
-.skel-btn { height: 32px; width: 70px; border-radius: 10px; margin: 0 auto; }
 .skel-id { height: 26px; width: 100px; border-radius: 50px; margin: 0 auto; }
 
 body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 48px;position:relative;z-index:3;text-align:center;transition:color .3s ease}
@@ -95,7 +86,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .header-wrapper{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:26px;width:100%;gap:12px;flex-wrap:wrap}
 .brand-header{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0}
 .brand-logo{width:80px;height:44px;border-radius:12px;object-fit:cover;box-shadow:0 4px 14px rgba(40,116,240,.3);flex-shrink:0}
-.dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
+.dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .dash-subtitle{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s ease;font-family:Inter,sans-serif;line-height:1}
@@ -110,15 +101,18 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
 .filter-col{flex:1 1 260px;max-width:420px;text-align:center}
 
-/* Clean TomSelect Overrides */
-.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 600 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; align-items: center !important; text-align: left !important; min-height: 48px !important; box-shadow: none !important; }
-.ts-wrapper .ts-control > input { color: var(--text-main) !important; font-weight: 600 !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+/* TomSelect Strict Absolute Centering Overrides */
+.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
+.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; flex: 1 1 auto !important; }
+.ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
+.ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
+.ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
 .ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
-.ts-dropdown { z-index: 9999 !important; padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--dropdown-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: left !important; margin-top: 4px !important; }
-.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-bottom: 1px solid var(--border-color) !important; cursor: pointer !important; }
+.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; z-index: 9999 !important;}
+.ts-dropdown .ts-dropdown-content { display: flex; flex-direction: column; text-align: center !important; }
+.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; width: 100% !important; justify-content: center !important; }
 .ts-dropdown .option:last-child { border-bottom: none !important; }
 .ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
-.ts-dropdown .highlight { background: var(--fk-yellow) !important; color: #000 !important; font-weight: 800 !important; padding: 0 4px !important; border-radius: 3px !important; display: inline-block !important; }
 
 .search-wrapper{position:relative;width:100%;margin-bottom:20px}
 .search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:Inter,sans-serif;background:var(--card-bg);color:var(--text-main);text-align:center}
@@ -201,7 +195,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
-      <!-- Tooltips update in JS -->
       <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Damage Your Eyes">☢</button>
     </div>
   </div>
@@ -225,7 +218,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     <div class="action-buttons">
       <button class="btn-action btn-pdf" id="btnPdf" onclick="exportData()">Export PDF</button>
       <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open as G-Sheet</button>
-      <!-- BATCH EXIT BUTTON -->
       <button id="btnBatchExit" class="btn-action btn-batch-exit" onclick="showBatchExitModal()">Batch Exit Selected (0)</button>
     </div>
     <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
@@ -282,9 +274,8 @@ async function apiFetch(url,opts={}){
 function updateThemeTooltip() {
   const isDark = document.documentElement.classList.contains('dark-mode');
   const btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.title = isDark ? "Save Your Eyes" : "Damage Your Eyes";
+  if (btn) btn.title = isDark ? 'Save Your Eyes' : 'Damage Your Eyes';
 }
-
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark-mode');
   try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
@@ -294,7 +285,7 @@ function toggleTheme(){
 function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
 function setUILock(on){isProcessing=on;document.getElementById('mainPanel').classList.toggle('ui-locked',on)}
 
-// Dynamic Skeleton Render instead of Full-Screen Loader
+// Rendering Native Skeleton Loaders
 function renderSkeleton() {
   const tH=document.getElementById('tableHead'),tB=document.getElementById('tableBody'),pB=document.getElementById('paginationBar');
   tH.innerHTML='<tr><th><input type="checkbox" disabled></th><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
@@ -326,7 +317,7 @@ function loadData(){
     populateCityOptions();
     if(cityTS.getValue()){if(!managerMode)onCityChange(true);render()}
   } else {
-    renderSkeleton(); // Fast Perceived Load
+    renderSkeleton(); // Display skeleton instantly while fetching
     apiFetch(SCRIPT_URL+'?action=getData').then(d=>{
       if(d?.error){showToast('Error: '+d.error,true);return}
       db=Array.isArray(d)?d.map(normalizeRow):[];
@@ -409,7 +400,6 @@ function renderTable(){
   }
 }
 
-// BATCH EXIT LOGIC: Select Checkboxes
 function toggleSelectAll(cb) {
   document.querySelectorAll('.row-checkbox:not(:disabled)').forEach(el => el.checked = cb.checked);
   updateBatchExitBtn();
@@ -452,7 +442,6 @@ function initiateSubmit(id){
   .finally(()=>{pendingRowIds.delete(idStr);renderTable()});
 }
 
-// BATCH EXIT LOGIC: Submit to Backend
 function initiateBatchSubmit() {
   const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(el => el.value);
   if (selectedIds.length === 0) return;
@@ -572,7 +561,7 @@ function initSnow(){
 if('requestIdleCallback'in window)requestIdleCallback(initSnow,{timeout:1500});else setTimeout(initSnow,300);
 </script>
 
-<!-- PWA Service Worker Registration -->
+<!-- Clean Service Worker Registration -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
