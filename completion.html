@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
+
+<!-- PWA / Manifest Links -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,6 +67,13 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-i
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
+/* Loader explicitly hidden until auth succeeds to stop shadow vanishing */
+#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
+#appLoader.hidden{opacity:0;pointer-events:none}
+.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
+.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
+@keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
+
 /* Skeleton Loaders */
 .skeleton-box {
   background: linear-gradient(90deg, var(--table-hover) 25%, var(--border-color) 50%, var(--table-hover) 75%);
@@ -96,18 +108,16 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 .filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;width:100%}
 .filter-col{flex:1 1 320px;max-width:480px;text-align:center}
 
-/* TomSelect Strict Absolute Centering Overrides for completion too */
-.ts-wrapper .ts-control { border-radius: 14px !important; padding: 13px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 700 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
-.ts-wrapper .ts-control > input { text-align: center !important; color: var(--text-main) !important; width: 100% !important; margin: 0 !important; padding: 0 !important; flex: 1 1 auto !important; }
-.ts-wrapper .ts-control > input::placeholder { text-align: center !important; color: var(--text-muted) !important; }
-.ts-wrapper .ts-control .item { flex-grow: 1 !important; text-align: center !important; width: 100% !important; display: block !important; }
-.ts-wrapper.has-items .ts-control > input { width: 0 !important; opacity: 0 !important; position: absolute !important; }
+/* Fully Corrected TomSelect Overrides (Proper Layout & Highlights) */
+.ts-wrapper .ts-control { border-radius: 14px !important; padding: 10px 18px !important; border: 1.5px solid var(--border-color) !important; font-weight: 600 !important; font-size: 14px !important; font-family: Inter, sans-serif !important; background: var(--card-bg) !important; color: var(--text-main) !important; display: flex !important; align-items: center !important; text-align: left !important; min-height: 48px !important; box-shadow: none !important; }
+.ts-wrapper .ts-control > input { color: var(--text-main) !important; font-weight: 600 !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
 .ts-wrapper .ts-control.focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px var(--gold-glow) !important; }
-.ts-dropdown { padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: center !important; }
-.ts-dropdown .ts-dropdown-content { display: flex; flex-direction: column; text-align: center !important; }
-.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; text-align: center !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-radius: 0 !important; margin: 0 !important; border: none !important; border-bottom: 1px solid var(--border-color) !important; box-shadow: none !important; width: 100% !important; justify-content: center !important; }
+.ts-dropdown { z-index: 9999 !important; padding: 0 !important; border-radius: 14px !important; border: 1px solid var(--border-color) !important; background: var(--card-bg) !important; overflow: hidden !important; box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important; text-align: left !important; margin-top: 4px !important; }
+.ts-dropdown .option { background: transparent !important; color: var(--text-main) !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 14px !important; border-bottom: 1px solid var(--border-color) !important; cursor: pointer !important; }
 .ts-dropdown .option:last-child { border-bottom: none !important; }
 .ts-dropdown .option:hover, .ts-dropdown .option.active { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; font-weight: 800 !important; }
+.ts-dropdown .highlight { background: var(--fk-yellow) !important; color: #000 !important; font-weight: 800 !important; padding: 0 4px !important; border-radius: 3px !important; display: inline-block !important; }
+.item { background: var(--dropdown-hover) !important; color: var(--fk-blue) !important; border-radius: 6px !important; padding: 4px 10px !important; font-weight: 800 !important; border: 1px solid rgba(40,116,240,0.2) !important; margin: 2px 4px 2px 0 !important; display: inline-block !important; font-size: 13px !important; }
 
 #results{display:none;animation:fadeIn .4s ease both}
 .section{margin-bottom:28px}
@@ -122,7 +132,7 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 .normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
 .total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important}
 
-.btn-export{border:none;padding:14px 30px;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer;background:linear-gradient(135deg,#334155,#1e293b);color:#fff;margin:6px 0 24px}
+.btn-export{border:none;padding:14px 30px;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer;background:linear-gradient(135deg,#334155,#1e293b);color:#fff;margin:6px 0 24px;display:none;margin-left:auto;margin-right:auto;}
 
 @media(max-width:768px){
   body{padding:16px 10px 36px}
@@ -135,13 +145,19 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 
-<div id="authOverlay" class="auth-overlay" style="display:flex;">
+<!-- Fixed Clean Auth Overlay -->
+<div id="authOverlay" class="auth-overlay">
   <div class="auth-modal">
     <div class="auth-icon">🔐</div>
     <input type="password" id="authInput" class="auth-input" placeholder="Enter Password" autocomplete="off">
     <button class="auth-btn-secondary" onclick="window.location.href='index.html'">Homepage</button>
     <div id="authError" class="auth-error">Incorrect Password</div>
   </div>
+</div>
+
+<div id="appLoader">
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
+  <div class="loading-text">Please wait, loading report</div>
 </div>
 
 <div class="glass-panel">
@@ -155,16 +171,16 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
     </div>
     <div class="hdr-actions">
       <a href="index.html" class="icon-btn">Dashboard</a>
-      <!-- Icon locked to ☢ -->
-      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☢</button>
+      <!-- Fixed Tooltips! -->
+      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Damage Your Eyes">☢</button>
     </div>
   </div>
   <hr class="divider">
   <div class="filter-area">
     <div class="filter-col"><select id="trainerSelect" autocomplete="off" multiple></select></div>
   </div>
+  <button class="btn-export" id="btnPdf" onclick="exportPdf()">Export Full PDF Report</button>
   <div id="results">
-    <button class="btn-export" id="btnPdf" onclick="exportPdf()">Export Full PDF Report</button>
     <div class="section"><div class="section-title">~ : Store Name Wise Pendency : ~</div><div class="tbl-wrap"><table class="tbl"><thead id="th1"></thead><tbody id="tb1"></tbody></table></div></div>
     <div class="section"><div class="section-title">~ : Cluster Manager Wise Pendency : ~</div><div class="tbl-wrap"><table class="tbl"><thead id="th2"></thead><tbody id="tb2"></tbody></table></div></div>
     <div class="section"><div class="section-title">~ : City Wise Pendency : ~</div><div class="tbl-wrap"><table class="tbl"><thead id="th3"></thead><tbody id="tb3"></tbody></table></div></div>
@@ -178,12 +194,16 @@ const CACHE_TTL=10*60*1000;
 
 let rawData=[],trainerTS;
 
+function showLoader(){document.getElementById('appLoader').style.display='flex';setTimeout(()=>document.getElementById('appLoader').classList.remove('hidden'),10)}
 function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
 
+// Cleaned up duplicate auth check (Kitkat and Disprz@2024 both work)
 function checkAuth() {
   const pwd = document.getElementById('authInput').value;
-  if(pwd === "Kitkat") document.getElementById('authOverlay').style.display = 'none';
-  else {
+  if(pwd === "Kitkat" || pwd === "Disprz@2024") {
+    document.getElementById('authOverlay').style.display = 'none';
+    fetchData(); // Load data only AFTER auth to fix the shadow glitch
+  } else {
     document.getElementById('authError').style.display = 'block';
     document.getElementById('authInput').value = '';
     setTimeout(() => document.getElementById('authError').style.display = 'none', 2500);
@@ -199,7 +219,19 @@ const pad=n=>String(n).padStart(2,'0');
 
 function todayStr(){const d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
 function toTitleCase(str) { return str ? String(str).toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : str; }
-function toggleTheme(){const d=document.documentElement.classList.toggle('dark-mode');try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
+
+// Tooltip Logic Added Here
+function updateThemeTooltip() {
+  const isDark = document.documentElement.classList.contains('dark-mode');
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.title = isDark ? "Save Your Eyes" : "Damage Your Eyes";
+}
+
+function toggleTheme(){
+  const d=document.documentElement.classList.toggle('dark-mode');
+  try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
+  updateThemeTooltip();
+}
 
 async function apiFetch(url){
   const MAX=2;
@@ -239,6 +271,7 @@ function renderSkeleton() {
 }
 
 function fetchData(){
+  showLoader();
   renderSkeleton();
   const c=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(r){const p=JSON.parse(r);if(Date.now()-p.ts<CACHE_TTL)return p.data}}catch(e){}return null})();
   if(c){
@@ -265,14 +298,15 @@ function populateTrainers(){
 }
 
 window.onload=()=>{
-  trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer(s)',create:false,maxItems:null,sortField:{field:'text'},onChange:onTrainerChange});
-  if(cached){
-    rawData = cached.data;
-    populateTrainers();
-    hideLoader();
-  } else {
-    loadData();
-  }
+  updateThemeTooltip(); // Run tooltip on load
+  trainerTS=new TomSelect('#trainerSelect',{
+    plugins: ['remove_button'], // Added remove_button for usability
+    placeholder:'Select Trainer(s)',
+    create:false,
+    maxItems:null,
+    sortField:{field:'text'},
+    onChange:onTrainerChange
+  });
 };
 
 function onTrainerChange(val){
@@ -387,6 +421,15 @@ function initSnow(){
   rz();sd();tk();
 }
 if('requestIdleCallback'in window)requestIdleCallback(initSnow,{timeout:1500});else setTimeout(initSnow,300);
+</script>
+
+<!-- Clean Service Worker Script for PWA -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.error('SW registration failed:', err));
+    });
+  }
 </script>
 </body>
 </html>
