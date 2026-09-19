@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+<!-- PWA Manifest link dynamically added, but placeholder here is fine -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -61,11 +62,17 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
-#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
-#appLoader.hidden{opacity:0;pointer-events:none}
-.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
-.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
-@keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
+/* Skeleton Loaders */
+.skeleton-box {
+  background: linear-gradient(90deg, var(--table-hover) 25%, var(--border-color) 50%, var(--table-hover) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel-text { height: 16px; width: 60%; margin: 4px auto; }
+.skel-btn { height: 32px; width: 70px; border-radius: 10px; margin: 0 auto; }
+.skel-id { height: 26px; width: 100px; border-radius: 50px; margin: 0 auto; }
 
 body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 48px;position:relative;z-index:3;text-align:center;transition:color .3s ease}
 .glass-panel{background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-radius:28px;padding:36px 32px;width:100%;max-width:920px;border:1px solid var(--border-color);box-shadow:var(--shadow-panel);position:relative;z-index:10;text-align:center;transition:background .3s ease,border-color .3s ease;animation:panelSlideUp .5s cubic-bezier(.22,1,.36,1) both}
@@ -121,6 +128,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-action:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
 .btn-pdf{background:linear-gradient(135deg,#334155,#1e293b);color:#fff}
 .btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669);color:#fff}
+.btn-batch-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;display:none}
 
 .table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:460px;overflow-y:auto;overflow-x:auto;box-shadow:var(--shadow-card)}
 .table{border-collapse:collapse;width:100%;min-width:460px;color:var(--text-main);text-align:center}
@@ -173,10 +181,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </head>
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
-<div id="appLoader">
-  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
-  <div class="loading-text">Please wait, synchronizing Picker Data</div>
-</div>
 <div class="glass-panel" id="mainPanel">
   <div class="header-wrapper">
     <div class="brand-header">
@@ -187,7 +191,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
-      <!-- Icon explicitly locked to ☢ -->
       <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">☢</button>
     </div>
   </div>
@@ -211,6 +214,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     <div class="action-buttons">
       <button class="btn-action btn-pdf" id="btnPdf" onclick="exportData()">Export PDF</button>
       <button id="btnGSheet" class="btn-action btn-sheet" onclick="exportToGSheet()">Open as G-Sheet</button>
+      <button id="btnBatchExit" class="btn-action btn-batch-exit" onclick="showBatchExitModal()">Batch Exit Selected (0)</button>
     </div>
     <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
     <div id="paginationBar">
@@ -234,6 +238,45 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
+// PWA Setup
+(function setupPWA() {
+  const manifestJSON = {
+    "name": "Picker Dashboard",
+    "short_name": "Picker Dash",
+    "start_url": location.href,
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#2874F0",
+    "icons": [
+      {
+        "src": "https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp",
+        "sizes": "192x192",
+        "type": "image/webp"
+      },
+      {
+        "src": "https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp",
+        "sizes": "512x512",
+        "type": "image/webp"
+      }
+    ]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/manifest+json'});
+  const manifestURL = URL.createObjectURL(manifestBlob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestURL;
+  document.head.appendChild(link);
+
+  const swCode = "self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('activate', e => e.waitUntil(self.clients.claim())); self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });";
+  const swBlob = new Blob([swCode], {type: 'text/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register(swURL).catch(err => console.log('SW registration failed (expected on some domains)', err));
+    });
+  }
+})();
+
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
 const LOCAL_CACHE_KEY='pickerDash_v8';
 const CACHE_TTL=10*60*1000;
@@ -268,9 +311,26 @@ function toggleTheme(){
   try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
 }
 
-function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
 function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
 function setUILock(on){isProcessing=on;document.getElementById('mainPanel').classList.toggle('ui-locked',on)}
+
+function renderSkeleton() {
+  const tH=document.getElementById('tableHead'),tB=document.getElementById('tableBody'),pB=document.getElementById('paginationBar');
+  tH.innerHTML='<tr><th><input type="checkbox" disabled></th><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
+  let skelHtml = '';
+  for(let i=0; i<5; i++) {
+    skelHtml += `<tr>
+      <td><input type="checkbox" disabled></td>
+      <td><div class="skeleton-box skel-text" style="width:20px"></div></td>
+      <td><div class="skeleton-box skel-text"></div></td>
+      <td><div class="skeleton-box skel-id"></div></td>
+      <td><div class="skeleton-box skel-btn"></div></td>
+    </tr>`;
+  }
+  tB.innerHTML = skelHtml;
+  pB.style.display='none';
+  document.getElementById('resultArea').style.display='flex';
+}
 
 function populateCityOptions(){
   const cur=cityTS.getValue();cityTS.clearOptions();
@@ -279,20 +339,24 @@ function populateCityOptions(){
 }
 function loadData(showErr){
   return apiFetch(SCRIPT_URL+'?action=getData').then(d=>{
-    hideLoader();
     if(d?.error){showToast('Error: '+d.error,true);return}
     db=Array.isArray(d)?d.map(normalizeRow):[];
     populateCityOptions();
     try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}
     if(cityTS.getValue()){if(!managerMode)onCityChange(true);render()}
-  }).catch(e=>{hideLoader();if(showErr||!db.length)showToast('Network Error: '+(e.message||'Refresh.'),true)});
+  }).catch(e=>{if(showErr||!db.length)showToast('Network Error: '+(e.message||'Refresh.'),true)});
 }
 
 window.onload=()=>{
   cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'}});
   storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'}});
   const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
-  if(cached){db=cached.data;populateCityOptions();hideLoader()}
+  if(cached){
+    db=cached.data;
+    populateCityOptions();
+  } else {
+    renderSkeleton();
+  }
   loadData(!cached);
 };
 
@@ -307,12 +371,14 @@ function render(){
   filtered=db.filter(i=>{if(i.city!==c)return false;if(!managerMode&&i.darkStore!==s)return false;if(reportedIds.has(String(i.casperId)))return false;if(searchQuery&&!managerMode)return String(i.name).toLowerCase().includes(searchQuery)||String(i.casperId).toLowerCase().includes(searchQuery);return true});
   document.getElementById('countBadge').textContent=filtered.length;
   document.getElementById('totalReportedBadge').textContent=reportedIds.size;
-  document.getElementById('resultArea').style.display='flex';renderTable();
+  document.getElementById('resultArea').style.display='flex';
+  updateBatchExitBtn();
+  renderTable();
 }
 
 function renderTable(){
   const tH=document.getElementById('tableHead'),tB=document.getElementById('tableBody'),pB=document.getElementById('paginationBar');
-  if(!filtered.length){tH.innerHTML='';tB.innerHTML='<tr><td colspan="'+(managerMode?2:4)+'" style="padding:32px;color:var(--text-muted);font-weight:700">No Records Found</td></tr>';pB.style.display='none';return}
+  if(!filtered.length){tH.innerHTML='';tB.innerHTML='<tr><td colspan="'+(managerMode?2:5)+'" style="padding:32px;color:var(--text-muted);font-weight:700">No Records Found</td></tr>';pB.style.display='none';return}
   
   if(managerMode){
     pB.style.display='none';
@@ -332,24 +398,57 @@ function renderTable(){
     currentPage=Math.min(currentPage,tot);
     const st=(currentPage-1)*PAGE_SIZE,end=Math.min(st+PAGE_SIZE,filtered.length);
     
-    /* Strict Pagination text */
     document.getElementById('pageInfo').textContent = (st+1) + ' - ' + end + ' of ' + filtered.length;
     
     document.getElementById('btnPrev').disabled=(currentPage===1);
     document.getElementById('btnNext').disabled=(currentPage===tot);
     pB.style.display='flex';
     
-    /* Headers updated exactly to user requirement */
-    tH.innerHTML='<tr><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
+    tH.innerHTML='<tr><th><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th><th>Sl.</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
     
     tB.innerHTML=filtered.slice(st,end).map((i,idx)=> {
       let statusHtml = '';
       if(i.ts === 'Not Started') statusHtml = '<span class="status-not-started">(Not Started)</span>';
       else if(i.ts === 'In-Progress' || i.ts === 'In Progress') statusHtml = '<span class="status-in-progress">(In-Progress)</span>';
       
-      return '<tr id="row-'+escHtml(i.casperId)+'"><td style="color:var(--text-muted);font-size:12px;font-weight:700">'+(st+idx+1)+'</td><td>'+checkNA(i.name)+statusHtml+'</td><td><span class="pill-id">'+checkNA(i.casperId)+'</span></td><td><button class="btn-exit" '+(pendingRowIds.has(String(i.casperId))?'disabled':'')+' onclick="showExitModal(\''+escHtml(i.casperId)+'\')">Exit</button></td></tr>'
+      const isPending = pendingRowIds.has(String(i.casperId));
+      return '<tr id="row-'+escHtml(i.casperId)+'">' + 
+             '<td><input type="checkbox" class="row-checkbox" value="'+escHtml(i.casperId)+'" onchange="updateBatchExitBtn()" '+(isPending?'disabled':'')+'></td>' +
+             '<td style="color:var(--text-muted);font-size:12px;font-weight:700">'+(st+idx+1)+'</td>' +
+             '<td>'+checkNA(i.name)+statusHtml+'</td>' +
+             '<td><span class="pill-id">'+checkNA(i.casperId)+'</span></td>' +
+             '<td><button class="btn-exit" '+(isPending?'disabled':'')+' onclick="showExitModal(\''+escHtml(i.casperId)+'\')">Exit</button></td></tr>'
     }).join('');
+    
+    const allChecked = document.querySelectorAll('.row-checkbox:not(:disabled)').length > 0 && Array.from(document.querySelectorAll('.row-checkbox:not(:disabled)')).every(el => el.checked);
+    document.getElementById('selectAllCheckbox').checked = allChecked;
   }
+}
+
+function toggleSelectAll(cb) {
+  document.querySelectorAll('.row-checkbox:not(:disabled)').forEach(el => el.checked = cb.checked);
+  updateBatchExitBtn();
+}
+
+function updateBatchExitBtn() {
+  const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
+  const btn = document.getElementById('btnBatchExit');
+  if (selectedCount > 0) {
+    btn.style.display = 'inline-block';
+    btn.textContent = `Batch Exit Selected (${selectedCount})`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function showBatchExitModal() {
+  const selected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(el => el.value);
+  if (selected.length === 0) return;
+  
+  pendingExitId = 'BATCH';
+  document.getElementById('exitModalName').textContent = `Mark ${selected.length} picker(s) as exited?`;
+  document.getElementById('exitModal').style.display='flex';
+  document.getElementById('exitConfirmBtn').focus();
 }
 
 function showExitModal(id){const p=filtered.find(x=>String(x.casperId)===String(id));const label=(p&&p.name&&p.name.toUpperCase()!=='N/A')?p.name:id;pendingExitId=id;document.getElementById('exitModalName').textContent='Mark "'+label+'" as exited?';document.getElementById('exitModal').style.display='flex';document.getElementById('exitConfirmBtn').focus()}
@@ -358,6 +457,10 @@ document.getElementById('exitConfirmBtn').addEventListener('click',function(){if
 document.getElementById('exitModal').addEventListener('click',function(e){if(e.target===this)closeExitModal()});
 
 function initiateSubmit(id){
+  if (id === 'BATCH') {
+    initiateBatchSubmit();
+    return;
+  }
   const idStr=String(id);if(pendingRowIds.has(idStr))return;
   const p=filtered.find(x=>String(x.casperId)===idStr);if(!p)return;
   pendingRowIds.add(idStr);const backup=[...db];
@@ -366,6 +469,54 @@ function initiateSubmit(id){
   .then(res=>{if(res.status==='Success'){showToast('Exit Processed');try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}}else throw new Error(res.error)})
   .catch(()=>{db=backup;reportedIds.delete(idStr);render();showToast('Failed. Retry.',true)})
   .finally(()=>{pendingRowIds.delete(idStr);renderTable()});
+}
+
+function initiateBatchSubmit() {
+  const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(el => el.value);
+  if (selectedIds.length === 0) return;
+  
+  const payloadExits = [];
+  selectedIds.forEach(idStr => {
+    const p = filtered.find(x => String(x.casperId) === idStr);
+    if (p && !pendingRowIds.has(idStr)) {
+      pendingRowIds.add(idStr);
+      payloadExits.push({ id: p.casperId, n: p.name, ds: p.darkStore, c: p.city, r: 'Exit' });
+    }
+  });
+  
+  if (payloadExits.length === 0) return;
+  
+  const backup = [...db];
+  db = db.filter(i => !payloadExits.some(ex => String(ex.id) === String(i.casperId)));
+  payloadExits.forEach(ex => reportedIds.add(String(ex.id)));
+  
+  render();
+  showToast(`Processing ${payloadExits.length} exits...`);
+  
+  apiFetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'batch_report', exits: payloadExits })
+  })
+  .then(res => {
+    if (res.status === 'Success') {
+      showToast(`${res.processed} Exits Processed`);
+      try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify({ data: db, ts: Date.now() })); } catch(e) {}
+    } else {
+      throw new Error(res.error);
+    }
+  })
+  .catch(() => {
+    db = backup;
+    payloadExits.forEach(ex => reportedIds.delete(String(ex.id)));
+    render();
+    showToast('Failed. Retry.', true);
+  })
+  .finally(() => {
+    payloadExits.forEach(ex => pendingRowIds.delete(String(ex.id)));
+    renderTable();
+    updateBatchExitBtn();
+  });
 }
 
 const _ls={};
