@@ -62,11 +62,16 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-i
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
 
-#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
-#appLoader.hidden{opacity:0;pointer-events:none}
-.loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
-.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
-@keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
+/* Skeleton Loaders */
+.skeleton-box {
+  background: linear-gradient(90deg, var(--table-hover) 25%, var(--border-color) 50%, var(--table-hover) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel-text { height: 16px; width: 60%; margin: 4px auto; }
+.skel-id { height: 26px; width: 100px; border-radius: 50px; margin: 0 auto; }
 
 .auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease}
 .auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
@@ -137,11 +142,6 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text-main);min-height:10
     <button class="auth-btn-secondary" onclick="window.location.href='index.html'">Homepage</button>
     <div id="authError" class="auth-error">Incorrect Password</div>
   </div>
-</div>
-
-<div id="appLoader">
-  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
-  <div class="loading-text">Please wait, loading report</div>
 </div>
 
 <div class="glass-panel">
@@ -218,13 +218,43 @@ function normalizeRow(r){
   return{id:clean(r.id),name:toTitleCase(clean(r.nm)),trainer:toTitleCase(clean(r.tn)),store:toTitleCase(clean(r.ds)),city:toTitleCase(clean(r.ct)),cm:toTitleCase(clean(r.cm)),status:clean(r.ts)};
 }
 
-function loadData(){
+function renderSkeleton() {
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('btnPdf').style.display = 'none';
+  
+  const headers = [
+    {h:'th1', b:'tb1', cols:['Store Name','Pendency']},
+    {h:'th2', b:'tb2', cols:['Cluster Manager','Pendency']},
+    {h:'th3', b:'tb3', cols:['City','Pendency']}
+  ];
+  
+  headers.forEach(grp => {
+    document.getElementById(grp.h).innerHTML = `<tr>${grp.cols.map(c=>`<th>${c}</th>`).join('')}</tr>`;
+    let skelHtml = '';
+    for(let i=0; i<3; i++){
+      skelHtml += `<tr><td><div class="skeleton-box skel-text"></div></td><td><div class="skeleton-box skel-text" style="width:40px"></div></td></tr>`;
+    }
+    document.getElementById(grp.b).innerHTML = skelHtml;
+  });
+}
+
+function fetchData(){
+  renderSkeleton();
+  const c=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(r){const p=JSON.parse(r);if(Date.now()-p.ts<CACHE_TTL)return p.data}}catch(e){}return null})();
+  if(c){
+    rawData=c;
+    populateTrainers();
+    hideLoader();
+    document.getElementById('btnPdf').style.display='block';
+    return;
+  }
   apiFetch(SCRIPT_URL+'?action=getData').then(d=>{
     hideLoader();
     if(d?.error) return;
     rawData=Array.isArray(d) ? d.map(normalizeRow).filter(x=>x&&x.trainer) : [];
     try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:rawData,ts:Date.now()}))}catch(e){}
     populateTrainers();
+    document.getElementById('btnPdf').style.display='block';
   }).catch(()=>{ hideLoader(); });
 }
 
@@ -236,9 +266,6 @@ function populateTrainers(){
 
 window.onload=()=>{
   trainerTS=new TomSelect('#trainerSelect',{placeholder:'Select Trainer(s)',create:false,maxItems:null,sortField:{field:'text'},onChange:onTrainerChange});
-  
-  const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
-  
   if(cached){
     rawData = cached.data;
     populateTrainers();
