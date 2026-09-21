@@ -10,7 +10,6 @@
 <!-- PWA Registration -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +67,7 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
 
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
-#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
+#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999} /* Z-index pushed to top */
 
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
@@ -184,6 +183,9 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)!important}
 .exit-btn-cancel:hover{border-color:var(--gold)!important;color:var(--gold)}
 
+.pwa-install-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;box-shadow:0 12px 32px rgba(40,116,240,0.4);z-index:999999;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;animation:panelSlideUp 0.5s ease}
+.pwa-install-btn.hidden{display:none}
+
 @media(max-width:768px){
   body{padding:16px 10px 36px}
   body::before{background-attachment:scroll}
@@ -218,6 +220,12 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </head>
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
+
+<!-- PWA Custom Install Button -->
+<div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
+  📲 Install Flipkart Minutes
+</div>
+
 <div id="appLoader">
   <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
   <div class="loading-text">Please wait, loading your data</div>
@@ -291,6 +299,21 @@ let db=[],filtered=[],reportedIds=new Set(),pendingRowIds=new Set();
 let cityTS,storeTS,managerMode=false,currentPage=1,isProcessing=false;
 let searchQuery='',searchTimer=null,toastTimer=null,pendingExitId=null;
 
+/* PWA INSTALL LOGIC */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('pwaInstallPrompt').classList.remove('hidden');
+});
+async function installPWA() {
+  if(!deferredPrompt) return;
+  document.getElementById('pwaInstallPrompt').classList.add('hidden');
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+}
+
 const escHtml=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const checkNA=str=>{const v=String(str??'').trim().toUpperCase();return(!v||v==='N/A'||v==='#N/A'||v==='#NA')?'<span class="na-bg">N/A</span>':escHtml(str)};
 
@@ -303,9 +326,9 @@ function normalizeRow(r){
   return { casperId: r.id, name: toTitleCase(r.nm), darkStore: toTitleCase(r.ds), city: toTitleCase(r.ct), clusterManager: toTitleCase(r.cm) };
 }
 
-/* NETWORK */
+/* NETWORK (Increased timeout for mobile speed issues) */
 async function apiFetch(url,opts={}){
-  const MAX=2,TM=opts.method==='POST'?90000:15000;
+  const MAX=2,TM=opts.method==='POST'?45000:25000; 
   for(let a=0;a<=MAX;a++){
     try{
       const c=new AbortController(),t=setTimeout(()=>c.abort(),TM);
@@ -346,7 +369,10 @@ function loadData(showErr){
     populateCityOptions();
     try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}
     if(cityTS.getValue()){if(!managerMode)onCityChange(true);render()}
-  }).catch(e=>{hideLoader();if(showErr||!db.length)showToast('Network Error: '+(e.message||'Refresh.'),true)});
+  }).catch(e=>{
+    hideLoader();
+    if(showErr||!db.length)showToast('Network Error: Please check your connection.',true);
+  });
 }
 
 const tsRender={
@@ -358,9 +384,11 @@ window.onload=()=>{
   if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeToggleBtn').textContent='Damage Your Eyes (😁)';
   cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'},render:tsRender});
   storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'},render:tsRender});
-  const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch(e){return null}})();
-  if(cached){db=cached.data;populateCityOptions();hideLoader()}
-  loadData(!cached);
+  
+  // Stale-While-Revalidate caching pattern
+  const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return p;}catch(e){return null}})();
+  if(cached){db=cached.data;populateCityOptions();hideLoader();} // Instant load from cache
+  loadData(!cached); // Background refresh
 };
 
 /* MODE / FILTERS */
@@ -389,7 +417,6 @@ function renderTable(){
     filtered.forEach(i=>{sm[i.clusterManager]=(sm[i.clusterManager]||0)+1; total++});
     tH.innerHTML='<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
     
-    // NORMAL TEXT implementation instead of pill badges
     let html = Object.entries(sm).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0])).map(([n,v])=>{
       return '<tr><td>'+checkNA(n)+'</td><td><span class="normal-count">'+v+'</span></td></tr>';
     }).join('');
