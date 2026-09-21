@@ -168,11 +168,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 
-<!-- PWA Custom Install Button -->
-<div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
-  📲 Install Flipkart Minutes
-</div>
-
 <div id="authOverlay" class="auth-overlay" style="display:flex;">
   <div class="auth-modal">
     <div class="auth-icon">🔐</div>
@@ -330,7 +325,7 @@ window.onload=()=>{
   if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeBtn').textContent='Damage Your Eyes (😁)';
   
   trainerTS=new TomSelect('#trainerSelect',{
-    placeholder:'Select Trainer(s)',
+    placeholder:'Choose a Trainer',
     create:false,
     maxItems:null,
     sortField:{field:'text'},
