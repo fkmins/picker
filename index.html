@@ -381,7 +381,7 @@ const tsRender={
 };
 
 window.onload=()=>{
-  if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeToggleBtn').textContent='Damage Your Eyes (😁)';
+  if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeToggleBtn').textContent='Damage Your Eyes';
   cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'},render:tsRender});
   storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'},render:tsRender});
   
