@@ -67,7 +67,7 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-i
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
 
 @keyframes wallFadeIn{from{opacity:0}to{opacity:1}}
-#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999} /* Z-index pushed to top */
+#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999} 
 
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
@@ -183,7 +183,9 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)!important}
 .exit-btn-cancel:hover{border-color:var(--gold)!important;color:var(--gold)}
 
-.pwa-install-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;box-shadow:0 12px 32px rgba(40,116,240,0.4);z-index:999999;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;animation:panelSlideUp 0.5s ease}
+/* GOLDEN PWA GLOW & ANIMATION */
+.pwa-install-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;z-index:999999;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;border: 2px solid var(--gold);box-shadow: 0 0 15px var(--gold-glow), 0 12px 32px rgba(40,116,240,0.5);animation: panelSlideUp 0.5s ease, glowPulse 2s infinite alternate;}
+@keyframes glowPulse { from { box-shadow: 0 0 10px var(--gold-glow), 0 12px 32px rgba(40,116,240,0.4); } to { box-shadow: 0 0 25px var(--gold), 0 12px 32px rgba(40,116,240,0.6); } }
 .pwa-install-btn.hidden{display:none}
 
 @media(max-width:768px){
@@ -223,7 +225,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 <!-- PWA Custom Install Button -->
 <div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
-  Install Flipkart Minutes App
+  📲 Install Flipkart Minutes App
 </div>
 
 <div id="appLoader">
@@ -290,7 +292,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbynl1HXEawZ2fJ0Ff440dz6db0MYOpjyJCoH9TA4-VuNqFKlaXwuKNLtSd2GxefsuQk/exec';
 const LOCAL_CACHE_KEY='pickerDash_v5';
 const CACHE_TTL=10*60*1000;
 const PAGE_SIZE=50;
@@ -299,12 +301,16 @@ let db=[],filtered=[],reportedIds=new Set(),pendingRowIds=new Set();
 let cityTS,storeTS,managerMode=false,currentPage=1,isProcessing=false;
 let searchQuery='',searchTimer=null,toastTimer=null,pendingExitId=null;
 
-/* PWA INSTALL LOGIC */
+/* AUTO-HIDE PWA INSTALL LOGIC (10 SECONDS) */
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById('pwaInstallPrompt').classList.remove('hidden');
+  const btn = document.getElementById('pwaInstallPrompt');
+  btn.classList.remove('hidden');
+  setTimeout(() => {
+    btn.classList.add('hidden');
+  }, 10000);
 });
 async function installPWA() {
   if(!deferredPrompt) return;
@@ -326,7 +332,7 @@ function normalizeRow(r){
   return { casperId: r.id, name: toTitleCase(r.nm), darkStore: toTitleCase(r.ds), city: toTitleCase(r.ct), clusterManager: toTitleCase(r.cm) };
 }
 
-/* NETWORK (Increased timeout for mobile speed issues) */
+/* NETWORK */
 async function apiFetch(url,opts={}){
   const MAX=2,TM=opts.method==='POST'?45000:25000; 
   for(let a=0;a<=MAX;a++){
@@ -385,10 +391,9 @@ window.onload=()=>{
   cityTS=new TomSelect('#citySelect',{placeholder:'Select City',create:false,sortField:{field:'text'},render:tsRender});
   storeTS=new TomSelect('#storeSelect',{placeholder:'Select Dark Store',create:false,sortField:{field:'text'},render:tsRender});
   
-  // Stale-While-Revalidate caching pattern
   const cached=(()=>{try{const r=localStorage.getItem(LOCAL_CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return p;}catch(e){return null}})();
-  if(cached){db=cached.data;populateCityOptions();hideLoader();} // Instant load from cache
-  loadData(!cached); // Background refresh
+  if(cached){db=cached.data;populateCityOptions();hideLoader();} 
+  loadData(!cached); 
 };
 
 /* MODE / FILTERS */
