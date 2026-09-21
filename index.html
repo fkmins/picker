@@ -223,7 +223,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 <!-- PWA Custom Install Button -->
 <div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
-  📲 Install Flipkart Minutes
+  Install Flipkart Minutes App
 </div>
 
 <div id="appLoader">
@@ -342,7 +342,7 @@ async function apiFetch(url,opts={}){
 /* THEME */
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark-mode');
-  document.getElementById('themeToggleBtn').textContent=d?'Damage Your Eyes (😁)':'Save Your Eyes';
+  document.getElementById('themeToggleBtn').textContent=d?'Damage Your Eyes':'Save Your Eyes';
   try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}
 }
 
@@ -432,7 +432,7 @@ function renderTable(){
     document.getElementById('btnPrev').disabled=(currentPage===1);
     document.getElementById('btnNext').disabled=(currentPage===tot);
     pB.style.display='flex';
-    tH.innerHTML='<tr><th>#</th><th>User Name</th><th>User ID</th><th>Action</th></tr>';
+    tH.innerHTML='<tr><th>Sl. No</th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
     tB.innerHTML=filtered.slice(st,end).map((i,idx)=>'<tr id="row-'+escHtml(i.casperId)+'"><td style="color:var(--text-muted);font-size:12px;font-weight:700">'+(st+idx+1)+'</td><td>'+checkNA(i.name)+'</td><td><span class="pill-id">'+checkNA(i.casperId)+'</span></td><td><button class="btn-exit" '+(pendingRowIds.has(String(i.casperId))?'disabled':'')+' onclick="showExitModal(\''+escHtml(i.casperId)+'\')">Exit</button></td></tr>').join('')
   }
 }
