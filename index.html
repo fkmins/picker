@@ -496,7 +496,7 @@ async function exportData(){
       })
     }
     else{
-      doc.autoTable({head:[['#','Name','ID']],body:filtered.map((i,idx)=>[idx+1,i.name||'',i.casperId||'']),startY:22,headStyles:hd,styles:bd,theme:'grid'})
+      doc.autoTable({head:[['Sl. No','Picker Name','Casper ID']],body:filtered.map((i,idx)=>[idx+1,i.name||'',i.casperId||'']),startY:22,headStyles:hd,styles:bd,theme:'grid'})
     }
     doc.save(((managerMode?c+'_Summary':(s||c)+'_Pendency')+'.pdf').replace(/[^a-zA-Z0-9_.-]/g,'_'));
     showToast('PDF Downloaded');
