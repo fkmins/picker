@@ -1,6 +1,6 @@
 {
-  "name": "FK Minutes Dashboards",
-  "short_name": "FK Dash",
+  "name": "Flipkart Minutes",
+  "short_name": "Flipkart Minutes",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -10,11 +10,13 @@
     {
       "src": "https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp",
       "sizes": "192x192",
+      "type": "image/webp",
       "purpose": "any maskable"
     },
     {
       "src": "https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp",
       "sizes": "512x512",
+      "type": "image/webp",
       "purpose": "any maskable"
     }
   ]
