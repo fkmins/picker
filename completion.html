@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Completion Report</title>
+<title>Completion Report - Flipkart Minutes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
@@ -75,22 +75,19 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-i
 @keyframes panelUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
-#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2}
+#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999} /* Z-index pushed to top */
 
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
 .loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
-.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease}
+.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease;transition:opacity .3s ease;}
 .auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
 .auth-icon{font-size:48px;margin-bottom:12px;line-height:1}
 .auth-title{font-weight:900;font-size:20px;color:var(--text-main);margin-bottom:24px;letter-spacing:-.3px}
 .auth-input{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:700;font-size:16px;font-family:Inter,sans-serif;background:var(--bg-panel);color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s;margin-bottom:20px;letter-spacing:4px}
 .auth-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
-.auth-btn{width:100%;padding:14px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:Inter,sans-serif;transition:all .2s;background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;letter-spacing:.5px;margin-bottom:10px}
-.auth-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(40,116,240,.3)}
-.auth-btn:active{transform:scale(.97)}
 .auth-btn-secondary{width:100%;padding:14px;border-radius:14px;font-weight:800;font-size:14px;border:1.5px solid var(--border-color);cursor:pointer;font-family:Inter,sans-serif;transition:all .2s;background:transparent;color:var(--text-main)}
 .auth-btn-secondary:hover{border-color:var(--danger);color:var(--danger)}
 .auth-error{color:var(--danger);font-size:13px;font-weight:800;margin-top:16px;display:none;animation:fadeIn .3s ease}
@@ -145,6 +142,9 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .toast-msg{background:var(--text-main);color:var(--card-bg);padding:13px 28px;border-radius:50px;font-weight:700;font-size:13px;font-family:Inter,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.25);text-align:center;transition:opacity .3s,transform .3s}
 .toast-msg.hidden{opacity:0;transform:translateY(8px);pointer-events:none}
 
+.pwa-install-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;box-shadow:0 12px 32px rgba(40,116,240,0.4);z-index:999999;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;animation:panelUp 0.5s ease}
+.pwa-install-btn.hidden{display:none}
+
 @media(max-width:768px){
   body{padding:16px 10px 36px}
   body::before{background-attachment:scroll}
@@ -167,6 +167,11 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 </head>
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
+
+<!-- PWA Custom Install Button -->
+<div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
+  📲 Install Flipkart Minutes
+</div>
 
 <div id="authOverlay" class="auth-overlay" style="display:flex;">
   <div class="auth-modal">
@@ -222,26 +227,45 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
-const CACHE_KEY='completionReport_v1';
+const CACHE_KEY='completionReport_v2';
 const CACHE_TTL=10*60*1000;
+const AUTH_PASS = "EW410018293IN";
 
 let rawData=[],trainerTS,toastTimer=null;
 
-function checkAuth() {
-  const pwd = document.getElementById('authInput').value;
-  if(pwd === "Kitkat") {
-    document.getElementById('authOverlay').style.display = 'none';
-  } else {
-    document.getElementById('authError').style.display = 'block';
-    document.getElementById('authInput').value = '';
-    setTimeout(() => document.getElementById('authError').style.display = 'none', 2500);
+/* PASSWORD AUTO-CAPTURE & REDIRECT LOGIC */
+document.getElementById('authInput').addEventListener('input', function(e) {
+  if(this.value.trim() === AUTH_PASS) {
+    document.getElementById('authOverlay').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('authInput').blur();
+    }, 300);
   }
-}
-
+});
 document.getElementById('authInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') checkAuth();
+  if (e.key === 'Enter') {
+    if (this.value.trim() !== AUTH_PASS) {
+      window.location.href = 'index.html'; // Kick out if incorrect
+    }
+  }
 });
 document.getElementById('authInput').focus();
+
+/* PWA INSTALL LOGIC */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('pwaInstallPrompt').classList.remove('hidden');
+});
+async function installPWA() {
+  if(!deferredPrompt) return;
+  document.getElementById('pwaInstallPrompt').classList.add('hidden');
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+}
 
 const isNA=v=>{if(v==null)return true;const s=String(v).trim().toUpperCase();return !s||s==='N/A'||s==='#N/A'||s==='#NA'};
 const clean=v=>isNA(v)?null:String(v).trim();
@@ -258,10 +282,11 @@ function toggleTheme(){const d=document.documentElement.classList.toggle('dark-m
 function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
 function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
 
+/* NETWORK (Increased timeout for mobile speed issues) */
 async function apiFetch(url){
   for(let a=0;a<=2;a++){
     try{
-      const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);
+      const c=new AbortController(),t=setTimeout(()=>c.abort(),25000); // Increased to 25s
       const r=await fetch(url,{redirect:'follow',signal:c.signal});
       clearTimeout(t);const txt=await r.text();
       try{return JSON.parse(txt)}catch{throw new Error('Invalid response.')}
@@ -284,7 +309,10 @@ function loadData(){
     rawData=d.map(normalizeRow).filter(x=>x&&x.trainer);
     try{localStorage.setItem(CACHE_KEY,JSON.stringify({data:rawData,ts:Date.now()}))}catch(e){}
     populateTrainers();
-  }).catch(e=>{hideLoader();showToast('Network Error: '+(e.message||'Refresh.'),true)});
+  }).catch(e=>{
+    hideLoader();
+    showToast('Network Error: Please check your connection.',true)
+  });
 }
 
 function populateTrainers(){
@@ -310,9 +338,10 @@ window.onload=()=>{
     onChange:onTrainerChange
   });
   
-  const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return(Date.now()-p.ts<=CACHE_TTL)?p:null}catch{return null}})();
-  if(cached){rawData=cached.data;populateTrainers();hideLoader()}
-  loadData();
+  // Stale-While-Revalidate caching pattern
+  const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return p;}catch{return null}})();
+  if(cached){rawData=cached.data;populateTrainers();hideLoader();} // Instant Load
+  loadData(); // Background Refresh
 };
 
 function onTrainerChange(val){
@@ -353,7 +382,6 @@ const _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=()=>{delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 async function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return;await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');if(!window.jspdf)throw new Error('PDF library failed.')}
 
-/* Fixed: Auto-page breaking PDF exporter prevents silent browser blocks from multi-downloads */
 async function exportPdf(){
   const trainers=trainerTS.getValue();
   if(!trainers || trainers.length===0)return;
