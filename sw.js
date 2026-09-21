@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fk-dash-cache-v3';
+const CACHE_NAME = 'fk-minutes-cache-v4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -17,15 +17,22 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
   
-  // Network-First Strategy: Fetch from the internet, update cache. Fall back to cache if offline.
+  // Bypass Service Worker caching for the Google Apps Script API.
+  // The frontend localStorage handles this much more efficiently!
+  if (url.hostname.includes('script.google.com')) {
+    return; 
+  }
+
+  // Stale-While-Revalidate for UI Assets (Instant loading on phones)
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const resClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+    caches.match(event.request).then(cachedResponse => {
+      const fetchPromise = fetch(event.request).then(networkResponse => {
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
+        return networkResponse;
+      }).catch(() => {}); // Ignore network errors on background asset updates
+      return cachedResponse || fetchPromise;
+    })
   );
 });
