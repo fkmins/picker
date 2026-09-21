@@ -19,16 +19,16 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   
-  // Bypass Service Worker caching for the Google Apps Script API & Browser Extensions
+  // Bypass caching for Apps Script API and extensions
   if (url.hostname.includes('script.google.com') || !url.protocol.startsWith('http')) {
     return; 
   }
 
-  // Stale-While-Revalidate for UI Assets (Instant loading on phones)
+  // Stale-While-Revalidate caching pattern
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       const fetchPromise = fetch(event.request).then(networkResponse => {
-        // FIX: Clone the response IMMEDIATELY before doing any async cache operations
+        // Clone IMMEDIATELY before async put to fix "Response body is already used" error
         if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
