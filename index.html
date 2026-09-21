@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
+
+<!-- PWA Registration -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +26,10 @@
   var c=w[Math.floor(Math.random()*w.length)];
   var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
 })();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
 </script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +63,6 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --shadow-card:0 4px 16px rgba(0,0,0,0.3);
 }
 
-/* Strictly Auto-Fit Background Image */
 body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;background-repeat:no-repeat;z-index:0;animation:wallFadeIn .8s ease both}
 body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1;transition:background .3s ease}
 :root.dark-mode body::after{background:rgba(5,10,25,0.65)}
@@ -142,7 +150,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-exit:hover:not(:disabled){transform:translateY(-2px);opacity:.9}
 .btn-exit:disabled{opacity:.45;cursor:wait}
 
-/* Removing Round Styles for Pendency counts too to match normal design requests */
 .normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
 
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
