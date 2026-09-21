@@ -10,7 +10,6 @@
 <!-- PWA Registration -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-
 <link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -310,7 +309,8 @@ function normalizeRow(r){
 }
 
 function loadData(){
-  return apiFetch(SCRIPT_URL+'?action=getData').then(d=>{
+  // ALIGNMENT FIX: Actually fetch the "Completed" pickers using the upgraded Apps Script parameter!
+  return apiFetch(SCRIPT_URL+'?action=getData&type=Completed').then(d=>{
     hideLoader();
     if(d?.error){showToast('Error: '+d.error,true);return}
     if(!Array.isArray(d)){showToast('Invalid data.',true);return}
