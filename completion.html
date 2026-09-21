@@ -227,7 +227,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9zhgvcvgP00sLBrNksUB5L0h2E30hyjywQmK5n8N3e92bVKlSKrt_mS-5mQXFy_XA/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbynl1HXEawZ2fJ0Ff440dz6db0MYOpjyJCoH9TA4-VuNqFKlaXwuKNLtSd2GxefsuQk/exec';
 const CACHE_KEY='completionReport_v2';
 const CACHE_TTL=10*60*1000;
 const AUTH_PASS = "Kitkat";
@@ -260,8 +260,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredPrompt = e;
   const btn = document.getElementById('pwaInstallPrompt');
   btn.classList.remove('hidden');
-  
-  // Auto-hide the button after exactly 10 seconds
   setTimeout(() => {
      btn.classList.add('hidden');
   }, 10000);
@@ -293,7 +291,7 @@ function showToast(msg,err){const t=document.getElementById('toastText');t.textC
 async function apiFetch(url){
   for(let a=0;a<=2;a++){
     try{
-      const c=new AbortController(),t=setTimeout(()=>c.abort(),25000); // Increased to 25s
+      const c=new AbortController(),t=setTimeout(()=>c.abort(),25000); 
       const r=await fetch(url,{redirect:'follow',signal:c.signal});
       clearTimeout(t);const txt=await r.text();
       try{return JSON.parse(txt)}catch{throw new Error('Invalid response.')}
@@ -309,7 +307,6 @@ function normalizeRow(r){
 }
 
 function loadData(){
-  // ALIGNMENT FIX: Actually fetch the "Completed" pickers using the upgraded Apps Script parameter!
   return apiFetch(SCRIPT_URL+'?action=getData&type=Completed').then(d=>{
     hideLoader();
     if(d?.error){showToast('Error: '+d.error,true);return}
@@ -346,10 +343,9 @@ window.onload=()=>{
     onChange:onTrainerChange
   });
   
-  // Stale-While-Revalidate caching pattern
   const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return p;}catch{return null}})();
-  if(cached){rawData=cached.data;populateTrainers();hideLoader();} // Instant Load
-  loadData(); // Background Refresh
+  if(cached){rawData=cached.data;populateTrainers();hideLoader();} 
+  loadData(); 
 };
 
 function onTrainerChange(val){
