@@ -6,11 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
-
-<!-- PWA Registration -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-<link rel="icon" type="image/jpeg" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+<link rel="icon" type="image/webp" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -28,10 +26,7 @@
   var c=w[Math.floor(Math.random()*w.length)];
   var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
 })();
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
-}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js')})}
 </script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -74,17 +69,16 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-i
 @keyframes panelUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
-#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999} 
+#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999}
 
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
 .loader-svg{width:110px;height:110px;background:transparent;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
-.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease;transition:opacity .3s ease;}
+.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease;transition:opacity .3s ease}
 .auth-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
 .auth-icon{font-size:48px;margin-bottom:12px;line-height:1}
-.auth-title{font-weight:900;font-size:20px;color:var(--text-main);margin-bottom:24px;letter-spacing:-.3px}
 .auth-input{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:700;font-size:16px;font-family:Inter,sans-serif;background:var(--bg-panel);color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s;margin-bottom:20px;letter-spacing:4px}
 .auth-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
 .auth-btn-secondary{width:100%;padding:14px;border-radius:14px;font-weight:800;font-size:14px;border:1.5px solid var(--border-color);cursor:pointer;font-family:Inter,sans-serif;transition:all .2s;background:transparent;color:var(--text-main)}
@@ -141,11 +135,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .toast-msg{background:var(--text-main);color:var(--card-bg);padding:13px 28px;border-radius:50px;font-weight:700;font-size:13px;font-family:Inter,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.25);text-align:center;transition:opacity .3s,transform .3s}
 .toast-msg.hidden{opacity:0;transform:translateY(8px);pointer-events:none}
 
-/* GOLDEN PWA GLOW & ANIMATION */
-.pwa-install-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;z-index:999999;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.3s ease;border: 2px solid var(--gold);box-shadow: 0 0 15px var(--gold-glow), 0 12px 32px rgba(40,116,240,0.5);animation: panelUp 0.5s ease, glowPulse 2s infinite alternate;}
-@keyframes glowPulse { from { box-shadow: 0 0 10px var(--gold-glow), 0 12px 32px rgba(40,116,240,0.4); } to { box-shadow: 0 0 25px var(--gold), 0 12px 32px rgba(40,116,240,0.6); } }
-.pwa-install-btn.hidden{display:none}
-
 @media(max-width:768px){
   body{padding:16px 10px 36px}
   body::before{background-attachment:scroll}
@@ -169,14 +158,9 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 
-<!-- PWA Custom Install Button -->
-<div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
-  📲 Install Flipkart Minutes App
-</div>
-
 <div id="authOverlay" class="auth-overlay" style="display:flex;">
   <div class="auth-modal">
-    <div class="auth-icon">🔐</div>
+    <div class="auth-icon">&#x1F510;</div>
     <input type="password" id="authInput" class="auth-input" placeholder="Enter Password" autocomplete="off">
     <button class="auth-btn-secondary" onclick="window.location.href='index.html'">Homepage</button>
     <div id="authError" class="auth-error">Incorrect Password</div>
@@ -193,7 +177,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
       <div>
         <h2 class="hdr-title">Completion Report</h2>
-        <div class="hdr-sub">East - L&D [Flipkart Minutes]</div>
+        <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
       </div>
     </div>
     <div class="hdr-actions">
@@ -207,17 +191,17 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
   </div>
   <div id="results">
     <button class="btn-export" id="btnPdf" onclick="exportPdf()">Export PDF</button>
-    
+
     <div class="section" id="sec1">
       <div class="section-title">~ : Store Name Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th1"></thead><tbody id="tb1"></tbody></table></div>
     </div>
-    
+
     <div class="section" id="sec2">
       <div class="section-title">~ : Cluster Manager Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th2"></thead><tbody id="tb2"></tbody></table></div>
     </div>
-    
+
     <div class="section" id="sec3">
       <div class="section-title">~ : City Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th3"></thead><tbody id="tb3"></tbody></table></div>
@@ -227,113 +211,98 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbynl1HXEawZ2fJ0Ff440dz6db0MYOpjyJCoH9TA4-VuNqFKlaXwuKNLtSd2GxefsuQk/exec';
-const CACHE_KEY='completionReport_v2';
-const CACHE_TTL=10*60*1000;
-const AUTH_PASS = "Kitkat";
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbwJkm7uFa922mi2p2PHjsbtGMNBYvrikYm-RM3VRCn5gZ9Ift0fvctsbErONjneUgar/exec';
+var CACHE_KEY='completionReport_v3';
+var AUTH_PASS='Kitkat';
 
-let rawData=[],trainerTS,toastTimer=null;
+var rawData=[],trainerTS,toastTimer=null;
 
-/* PASSWORD AUTO-CAPTURE & REDIRECT LOGIC */
-document.getElementById('authInput').addEventListener('input', function(e) {
-  if(this.value.trim() === AUTH_PASS) {
-    document.getElementById('authOverlay').style.opacity = '0';
-    setTimeout(() => {
-      document.getElementById('authOverlay').style.display = 'none';
-      document.getElementById('authInput').blur();
-    }, 300);
+document.getElementById('authInput').addEventListener('input',function(){
+  if(this.value.trim()===AUTH_PASS){
+    document.getElementById('authOverlay').style.opacity='0';
+    var overlay=document.getElementById('authOverlay');
+    setTimeout(function(){overlay.style.display='none'},300);
+    document.getElementById('authInput').blur();
   }
 });
-document.getElementById('authInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    if (this.value.trim() !== AUTH_PASS) {
-      window.location.href = 'index.html'; // Kick out if incorrect
-    }
-  }
+document.getElementById('authInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&this.value.trim()!==AUTH_PASS){window.location.href='index.html'}
 });
 document.getElementById('authInput').focus();
 
-/* AUTO-HIDE PWA INSTALL LOGIC (10 SECONDS) */
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById('pwaInstallPrompt');
-  btn.classList.remove('hidden');
-  setTimeout(() => {
-     btn.classList.add('hidden');
-  }, 10000);
-});
-async function installPWA() {
-  if(!deferredPrompt) return;
-  document.getElementById('pwaInstallPrompt').classList.add('hidden');
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
+var isNA=function(v){if(v==null)return true;var s=String(v).trim().toUpperCase();return!s||s==='N/A'||s==='#N/A'||s==='#NA'};
+var clean=function(v){return isNA(v)?null:String(v).trim()};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})};
+var pad=function(n){return String(n).padStart(2,'0')};
+
+function todayStr(){var d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
+
+function toTitleCase(str){
+  if(!str)return str;
+  return String(str).toLowerCase().replace(/(^|[\s_\-])\w/g,function(m){return m.toUpperCase()});
 }
 
-const isNA=v=>{if(v==null)return true;const s=String(v).trim().toUpperCase();return !s||s==='N/A'||s==='#N/A'||s==='#NA'};
-const clean=v=>isNA(v)?null:String(v).trim();
-const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const pad=n=>String(n).padStart(2,'0');
+function toggleTheme(){var d=document.documentElement.classList.toggle('dark-mode');document.getElementById('themeBtn').textContent=d?'Damage Your Eyes':'Save Your Eyes';try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
+function hideLoader(){var l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(function(){l.style.display='none'},450)}
+function showToast(msg,err){var t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.add('hidden')},3500)}
 
-function todayStr(){const d=new Date();return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()}
-function toTitleCase(str) {
-  if (!str) return str;
-  return String(str).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function toggleTheme(){const d=document.documentElement.classList.toggle('dark-mode');document.getElementById('themeBtn').textContent=d?'Damage Your Eyes':'Save Your Eyes';try{localStorage.setItem('theme',d?'dark':'light')}catch(e){}}
-function hideLoader(){const l=document.getElementById('appLoader');if(!l)return;l.classList.add('hidden');setTimeout(()=>l.style.display='none',450)}
-function showToast(msg,err){const t=document.getElementById('toastText');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text-main)';t.style.color=err?'#fff':'var(--card-bg)';t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3500)}
-
-/* NETWORK (Increased timeout for mobile speed issues) */
-async function apiFetch(url){
-  for(let a=0;a<=2;a++){
-    try{
-      const c=new AbortController(),t=setTimeout(()=>c.abort(),25000); 
-      const r=await fetch(url,{redirect:'follow',signal:c.signal});
-      clearTimeout(t);const txt=await r.text();
-      try{return JSON.parse(txt)}catch{throw new Error('Invalid response.')}
-    }catch(e){if(a===2)throw e;await new Promise(r=>setTimeout(r,1000*(a+1)))}
+function apiFetch(url){
+  var MAX=3,TM=30000;
+  function attempt(a){
+    return new Promise(function(resolve,reject){
+      var c=new AbortController();
+      var t=setTimeout(function(){c.abort()},TM);
+      fetch(url,{redirect:'follow',signal:c.signal})
+        .then(function(r){clearTimeout(t);return r.text()})
+        .then(function(txt){
+          try{resolve(JSON.parse(txt))}catch(e){reject(new Error('Invalid response'))}
+        })
+        .catch(function(e){
+          clearTimeout(t);
+          if(a<MAX){setTimeout(function(){attempt(a+1).then(resolve).catch(reject)},1200*(a+1))}
+          else{reject(e)}
+        });
+    });
   }
+  return attempt(0);
 }
 
 function normalizeRow(r){
-  if(isNA(r.cm)) return null; 
-  const nm=toTitleCase(clean(r.nm)),tn=toTitleCase(clean(r.tn)),ds=toTitleCase(clean(r.ds)),ct=toTitleCase(clean(r.ct)),cm=toTitleCase(clean(r.cm)),ts=clean(r.ts),id=clean(r.id);
+  var nm=toTitleCase(clean(r.nm)),tn=toTitleCase(clean(r.tn)),ds=toTitleCase(clean(r.ds)),ct=toTitleCase(clean(r.ct)),cm=toTitleCase(clean(r.cm)),ts=clean(r.ts),id=clean(r.id);
   if(!id)return null;
-  return{id,name:nm||'N/A',trainer:tn,store:ds,city:ct,cm:cm,status:ts};
+  return{id:id,name:nm||'N/A',trainer:tn,store:ds||'N/A',city:ct||'N/A',cm:cm||'N/A',status:ts};
 }
 
 function loadData(){
-  return apiFetch(SCRIPT_URL+'?action=getData&type=Completed').then(d=>{
+  return apiFetch(SCRIPT_URL+'?action=getData&type=Completed').then(function(d){
     hideLoader();
-    if(d?.error){showToast('Error: '+d.error,true);return}
+    if(d&&d.error){showToast('Error: '+d.error,true);return}
     if(!Array.isArray(d)){showToast('Invalid data.',true);return}
-    rawData=d.map(normalizeRow).filter(x=>x&&x.trainer);
+    rawData=d.map(normalizeRow).filter(function(x){return x&&x.trainer});
     try{localStorage.setItem(CACHE_KEY,JSON.stringify({data:rawData,ts:Date.now()}))}catch(e){}
     populateTrainers();
-  }).catch(e=>{
+  }).catch(function(){
     hideLoader();
-    showToast('Network Error: Please check your connection.',true)
+    showToast('Network Error. Retrying...',true);
   });
 }
 
 function populateTrainers(){
-  const trainers=[...new Set(rawData.map(r=>r.trainer))].filter(Boolean).sort();
+  var trainers=[],seen={};
+  rawData.forEach(function(r){if(r.trainer&&!seen[r.trainer]){seen[r.trainer]=1;trainers.push(r.trainer)}});
+  trainers.sort();
   trainerTS.clearOptions();
-  trainers.forEach(t=>trainerTS.addOption({value:t,text:t}));
+  trainers.forEach(function(t){trainerTS.addOption({value:t,text:t})});
 }
 
-const tsRender={
+var tsRender={
   item:function(d,e){return'<div>'+e(d.text)+'</div>'},
   option:function(d,e){return'<div style="text-align:center">'+e(d.text)+'</div>'}
 };
 
-window.onload=()=>{
+window.onload=function(){
   if(document.documentElement.classList.contains('dark-mode'))document.getElementById('themeBtn').textContent='Damage Your Eyes';
-  
+
   trainerTS=new TomSelect('#trainerSelect',{
     placeholder:'Choose a Trainer',
     create:false,
@@ -342,18 +311,17 @@ window.onload=()=>{
     render:tsRender,
     onChange:onTrainerChange
   });
-  
-  const cached=(()=>{try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const p=JSON.parse(r);return p;}catch{return null}})();
-  if(cached){rawData=cached.data;populateTrainers();hideLoader();} 
-  loadData(); 
+
+  var cached=null;
+  try{var r=localStorage.getItem(CACHE_KEY);if(r){cached=JSON.parse(r)}}catch(e){}
+  if(cached&&cached.data){rawData=cached.data;populateTrainers();hideLoader()}
+  loadData();
 };
 
 function onTrainerChange(val){
-  if(!val || val.length === 0){document.getElementById('results').style.display='none';return}
-  
-  const data=rawData.filter(r=>val.includes(r.trainer));
+  if(!val||val.length===0){document.getElementById('results').style.display='none';return}
+  var data=rawData.filter(function(r){return val.indexOf(r.trainer)!==-1});
   if(!data.length){document.getElementById('results').style.display='none';showToast('No records for selected trainer(s).',true);return}
-  
   renderSection('th1','tb1',['Store Name','Pendency'],groupBy(data,'store'));
   renderSection('th2','tb2',['Cluster Manager','Pendency'],groupBy(data,'cm'));
   renderSection('th3','tb3',['City','Pendency'],groupBy(data,'city'));
@@ -361,125 +329,100 @@ function onTrainerChange(val){
 }
 
 function groupBy(arr,key){
-  const map={};let total=0;
-  arr.forEach(r=>{const v=r[key];if(isNA(v))return;map[v]=(map[v]||0)+1;total++});
-  const entries=Object.entries(map).sort((a,b)=> b[1] - a[1] || a[0].localeCompare(b[0]));
-  return{entries,total};
+  var map={},total=0;
+  arr.forEach(function(r){var v=r[key];if(isNA(v))return;map[v]=(map[v]||0)+1;total++});
+  var entries=Object.entries(map).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0])});
+  return{entries:entries,total:total};
 }
 
-function renderSection(thId,tbId,headers,{entries,total}){
-  document.getElementById(thId).innerHTML='<tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr>';
-  if(!entries.length){
+function renderSection(thId,tbId,headers,data){
+  document.getElementById(thId).innerHTML='<tr>'+headers.map(function(h){return'<th>'+esc(h)+'</th>'}).join('')+'</tr>';
+  if(!data.entries.length){
     document.getElementById(tbId).innerHTML='<tr><td colspan="2" style="padding:24px;color:var(--text-muted);font-weight:700">No Data</td></tr>';
     return;
   }
-  
-  let html=entries.map(([name,count])=>{
-    return '<tr><td>'+esc(name)+'</td><td><span class="normal-count">'+count+'</span></td></tr>';
+  var html=data.entries.map(function(e){
+    return'<tr><td>'+esc(e[0])+'</td><td><span class="normal-count">'+e[1]+'</span></td></tr>';
   }).join('');
-  
-  html+='<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+total+'</strong></td></tr>';
+  html+='<tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>'+data.total+'</strong></td></tr>';
   document.getElementById(tbId).innerHTML=html;
 }
 
-const _ls={};
-function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=()=>{delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
-async function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return;await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');if(!window.jspdf)throw new Error('PDF library failed.')}
+var _ls={};
+function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=function(){delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
+function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return Promise.resolve();return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js').then(function(){return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js')}).then(function(){if(!window.jspdf)throw new Error('PDF library failed.')})}
 
-async function exportPdf(){
-  const trainers=trainerTS.getValue();
-  if(!trainers || trainers.length===0)return;
-  const btn=document.getElementById('btnPdf');
+function exportPdf(){
+  var trainers=trainerTS.getValue();
+  if(!trainers||trainers.length===0)return;
+  var btn=document.getElementById('btnPdf');
   btn.disabled=true;btn.textContent='Generating...';
-  try{
-    await ensureJsPdf();
-    const{jsPDF}=window.jspdf;
-    const data=rawData.filter(r=>trainers.includes(r.trainer));
-    const byStore=groupBy(data,'store');
-    const byCM=groupBy(data,'cm');
-    const byCity=groupBy(data,'city');
-    
-    const hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
-    const bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
-    const dt = todayStr();
+  ensureJsPdf().then(function(){
+    var jsPDF=window.jspdf.jsPDF;
+    var data=rawData.filter(function(r){return trainers.indexOf(r.trainer)!==-1});
+    var byStore=groupBy(data,'store');
+    var byCM=groupBy(data,'cm');
+    var byCity=groupBy(data,'city');
 
-    const cellStyleMap = function(data) {
-      if (data.section === 'body' && data.column.index === 1) {
-        const val = parseInt(data.cell.raw);
-        if (!isNaN(val)) {
-          if (val > 20) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27]; }
-          else if (val >= 10) { data.cell.styles.fillColor = [254, 240, 138]; data.cell.styles.textColor = [133, 77, 14]; }
-          else { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; }
+    var hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
+    var bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
+    var dt=todayStr();
+
+    var cellStyleMap=function(data){
+      if(data.section==='body'&&data.column.index===1){
+        var val=parseInt(data.cell.raw);
+        if(!isNaN(val)){
+          if(val>20){data.cell.styles.fillColor=[254,226,226];data.cell.styles.textColor=[153,27,27]}
+          else if(val>=10){data.cell.styles.fillColor=[254,240,138];data.cell.styles.textColor=[133,77,14]}
+          else{data.cell.styles.fillColor=[220,252,231];data.cell.styles.textColor=[22,101,52]}
         }
-        if (data.row.raw[0] === 'TOTAL') data.cell.styles.fontStyle = 'bold';
+        if(data.row.raw[0]==='TOTAL')data.cell.styles.fontStyle='bold';
       }
-      if (data.section === 'body' && data.column.index === 0 && data.row.raw[0] === 'TOTAL') {
-         data.cell.styles.fontStyle = 'bold';
-      }
+      if(data.section==='body'&&data.column.index===0&&data.row.raw[0]==='TOTAL')data.cell.styles.fontStyle='bold';
     };
 
-    let doc = new jsPDF({compress:true});
-    let pw = doc.internal.pageSize.getWidth();
-    let hasPages = false;
+    var doc=new jsPDF({compress:true});
+    var pw=doc.internal.pageSize.getWidth();
+    var hasPages=false;
 
-    if(byStore.entries.length) {
-      doc.setFontSize(14).setTextColor(0,0,0).text('~ : Store Name Wise Pendency : ~', pw/2, 14, {align:'center'});
-      doc.autoTable({
-        head:[['Store Name','Pendency']], 
-        body:[...byStore.entries,['TOTAL',byStore.total]], 
-        startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
-        didParseCell: cellStyleMap
-      });
-      hasPages = true;
+    if(byStore.entries.length){
+      doc.setFontSize(14).setTextColor(0,0,0).text('~ : Store Name Wise Pendency : ~',pw/2,14,{align:'center'});
+      doc.autoTable({head:[['Store Name','Pendency']],body:byStore.entries.concat([['TOTAL',byStore.total]]),startY:20,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14},didParseCell:cellStyleMap});
+      hasPages=true;
     }
-
-    if(byCM.entries.length) {
-      if(hasPages) doc.addPage();
-      doc.setFontSize(14).setTextColor(0,0,0).text('~ : Cluster Manager Wise Pendency : ~', pw/2, 14, {align:'center'});
-      doc.autoTable({
-        head:[['Cluster Manager','Pendency']], 
-        body:[...byCM.entries,['TOTAL',byCM.total]], 
-        startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
-        didParseCell: cellStyleMap
-      });
-      hasPages = true;
+    if(byCM.entries.length){
+      if(hasPages)doc.addPage();
+      doc.setFontSize(14).setTextColor(0,0,0).text('~ : Cluster Manager Wise Pendency : ~',pw/2,14,{align:'center'});
+      doc.autoTable({head:[['Cluster Manager','Pendency']],body:byCM.entries.concat([['TOTAL',byCM.total]]),startY:20,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14},didParseCell:cellStyleMap});
+      hasPages=true;
     }
-
-    if(byCity.entries.length) {
-      if(hasPages) doc.addPage();
-      doc.setFontSize(14).setTextColor(0,0,0).text('~ : City Wise Pendency : ~', pw/2, 14, {align:'center'});
-      doc.autoTable({
-        head:[['City','Pendency']], 
-        body:[...byCity.entries,['TOTAL',byCity.total]], 
-        startY:20, headStyles:hd, styles:bd, theme:'grid', margin:{left:14,right:14},
-        didParseCell: cellStyleMap
-      });
+    if(byCity.entries.length){
+      if(hasPages)doc.addPage();
+      doc.setFontSize(14).setTextColor(0,0,0).text('~ : City Wise Pendency : ~',pw/2,14,{align:'center'});
+      doc.autoTable({head:[['City','Pendency']],body:byCity.entries.concat([['TOTAL',byCity.total]]),startY:20,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14},didParseCell:cellStyleMap});
     }
-    
-    doc.save('Completion_Report_' + dt + '.pdf');
+    doc.save('Completion_Report_'+dt+'.pdf');
     showToast('PDF Downloaded successfully');
-  }catch(e){
+  }).catch(function(e){
     showToast('PDF failed: '+e.message,true);
-  }
-  finally{
-    btn.disabled=false;
-    btn.innerHTML='Export PDF';
-  }
+  }).finally(function(){
+    btn.disabled=false;btn.textContent='Export PDF';
+  });
 }
 
 function initSnow(){
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-  const cvs=document.getElementById('snowCanvas');if(!cvs)return;const ctx=cvs.getContext('2d');
-  let w,h,fl=[],on=true;const N=innerWidth<768?12:35;
+  var cvs=document.getElementById('snowCanvas');if(!cvs)return;var ctx=cvs.getContext('2d');
+  var w,h,fl=[],on=true;var N=innerWidth<768?12:35;
   function rz(){w=cvs.width=innerWidth;h=cvs.height=innerHeight}
   function mk(){return{x:Math.random()*w,y:Math.random()*h,r:Math.random()*2.5+.7,sp:Math.random()*.8+.18,dr:Math.random()*.5-.25,op:Math.random()*.4+.18,wb:Math.random()*Math.PI*2,ws:Math.random()*.02+.005}}
   function sd(){fl=Array.from({length:N},mk)}
-  function tk(){if(!on)return;ctx.clearRect(0,0,w,h);for(let k=0;k<fl.length;k++){const f=fl[k];f.wb+=f.ws;f.y+=f.sp;f.x+=f.dr+Math.sin(f.wb)*.35;if(f.y>h+5)Object.assign(f,mk(),{y:-5,x:Math.random()*w});if(f.x>w+5)f.x=-5;else if(f.x<-5)f.x=w+5;ctx.globalAlpha=f.op;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill()}ctx.globalAlpha=1;requestAnimationFrame(tk)}
-  addEventListener('resize',()=>{rz();sd()},{passive:true});
-  document.addEventListener('visibilitychange',()=>{on=!document.hidden;if(on)tk()});
+  function tk(){if(!on)return;ctx.clearRect(0,0,w,h);for(var k=0;k<fl.length;k++){var f=fl[k];f.wb+=f.ws;f.y+=f.sp;f.x+=f.dr+Math.sin(f.wb)*.35;if(f.y>h+5)Object.assign(f,mk(),{y:-5,x:Math.random()*w});if(f.x>w+5)f.x=-5;else if(f.x<-5)f.x=w+5;ctx.globalAlpha=f.op;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill()}ctx.globalAlpha=1;requestAnimationFrame(tk)}
+  addEventListener('resize',function(){rz();sd()},{passive:true});
+  document.addEventListener('visibilitychange',function(){on=!document.hidden;if(on)tk()});
   rz();sd();tk();
 }
-if('requestIdleCallback'in window)requestIdleCallback(initSnow,{timeout:1500});else setTimeout(initSnow,300);
+if('requestIdleCallback' in window)requestIdleCallback(initSnow,{timeout:1500});else setTimeout(initSnow,300);
 </script>
 </body>
 </html>
