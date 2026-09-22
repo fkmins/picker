@@ -211,8 +211,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
-var SCRIPT_URL='https://script.google.com/macros/s/AKfycbynl1HXEawZ2fJ0Ff440dz6db0MYOpjyJCoH9TA4-VuNqFKlaXwuKNLtSd2GxefsuQk/exec';
-var CACHE_KEY='completionReport_v3';
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbwJkm7uFa922mi2p2PHjsbtGMNBYvrikYm-RM3VRCn5gZ9Ift0fvctsbErONjneUgar/exec';
+var CACHE_KEY='completionReport_v6'; 
 var AUTH_PASS='Kitkat';
 
 var rawData=[],trainerTS,toastTimer=null;
@@ -274,11 +274,21 @@ function normalizeRow(r){
 }
 
 function loadData(){
-  return apiFetch(SCRIPT_URL+'?action=getData&type=Completed').then(function(d){
+  // ⭐ CAUTION: If you want to see PENDING pickers here, change "type=Completed" to "type=Pending" below!
+  var url = SCRIPT_URL + '?action=getData&type=Pending&nocache=' + Date.now();
+  
+  return apiFetch(url).then(function(d){
     hideLoader();
     if(d&&d.error){showToast('Error: '+d.error,true);return}
     if(!Array.isArray(d)){showToast('Invalid data.',true);return}
+    
     rawData=d.map(normalizeRow).filter(function(x){return x&&x.trainer});
+    
+    // Warn the user explicitly if the database returns 0 records
+    if(rawData.length === 0){
+      showToast('Notice: No Completed pickers found for any trainer.', false);
+    }
+    
     try{localStorage.setItem(CACHE_KEY,JSON.stringify({data:rawData,ts:Date.now()}))}catch(e){}
     populateTrainers();
   }).catch(function(){
