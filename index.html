@@ -23,7 +23,17 @@
   var c=w[Math.floor(Math.random()*w.length)];
   var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
 })();
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js')})}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      setInterval(function(){reg.update()},60000);
+    });
+    var refreshing=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(!refreshing){refreshing=true;window.location.reload()}
+    });
+  });
+}
 </script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -81,7 +91,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .dash-title{font-weight:900;font-size:24px;letter-spacing:-.6px;line-height:1.2;text-align:center;background:linear-gradient(105deg,var(--text-main) 35%,var(--gold) 50%,var(--text-main) 65%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
 .dash-subtitle{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;letter-spacing:1px;margin-top:2px;text-align:center}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s ease;text-align:center;white-space:nowrap;letter-spacing:.3px;font-family:Inter,sans-serif}
+.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s ease;text-align:center;white-space:nowrap;letter-spacing:.3px;font-family:Inter,sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
 .icon-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px var(--gold-glow);border-color:var(--gold)}
 .icon-btn:active{transform:scale(.96)}
 .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
@@ -148,10 +158,12 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 .normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
-.pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .2s ease;user-select:all}
-.pill-id:hover{background:rgba(40,116,240,.2);border-color:var(--fk-blue);transform:scale(1.05)}
-.pill-id:active{transform:scale(.97)}
-.pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important}
+.pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);user-select:all}
+.pill-id:hover{background:rgba(40,116,240,.2);border-color:var(--fk-blue);transform:scale(1.08)}
+.pill-id:active{transform:scale(.95)}
+@keyframes copyPulse{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes copyCheck{0%{opacity:0;transform:translateY(4px)}30%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+.pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important;animation:copyPulse .35s cubic-bezier(.22,1,.36,1)}
 
 .row-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
 .select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
@@ -175,7 +187,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 .exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .2s ease}
 .exit-modal{background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 28px 28px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelSlideUp .3s cubic-bezier(.22,1,.36,1)}
-.exit-modal-icon{font-size:52px;margin-bottom:14px;line-height:1}
 .exit-modal-title{font-weight:900;font-size:20px;margin-bottom:6px;color:var(--text-main)}
 .exit-modal-name{font-weight:800;font-size:16px;color:var(--fk-blue);margin-bottom:20px;word-break:break-word}
 .exit-modal-actions{display:flex;gap:12px;justify-content:center}
@@ -186,10 +197,21 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)!important}
 .exit-btn-cancel:hover{border-color:var(--gold)!important;color:var(--gold)}
 
-.pwa-install-btn{position:fixed;bottom:24px;left:50%;background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;z-index:999999;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .3s ease;border:2px solid var(--gold);transform:translateX(-50%);animation:pwaEnter .5s cubic-bezier(.22,1,.36,1) both,glowPulse 2s .5s infinite alternate}
-@keyframes pwaEnter{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes glowPulse{from{box-shadow:0 0 10px var(--gold-glow),0 12px 32px rgba(40,116,240,0.4)}to{box-shadow:0 0 25px var(--gold),0 12px 32px rgba(40,116,240,0.6)}}
-.pwa-install-btn.hidden{display:none}
+/* GitHub-style PWA Install Card */
+.pwa-install-card{position:fixed;top:20px;right:20px;z-index:999999;background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:20px;padding:24px 28px;width:320px;box-shadow:0 16px 48px rgba(0,0,0,.25);animation:pwaCardIn .4s cubic-bezier(.22,1,.36,1) both;text-align:left}
+@keyframes pwaCardIn{from{opacity:0;transform:translateY(-16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.pwa-install-card.hidden{display:none}
+.pwa-card-title{font-weight:900;font-size:16px;color:var(--text-main);margin-bottom:16px}
+.pwa-card-info{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.pwa-card-icon{width:44px;height:44px;border-radius:10px;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.pwa-card-name{font-weight:800;font-size:14px;color:var(--text-main)}
+.pwa-card-origin{font-size:12px;color:var(--text-muted);font-weight:600}
+.pwa-card-actions{display:flex;gap:10px;justify-content:center}
+.pwa-card-btn{flex:1;padding:10px 20px;border-radius:50px;font-weight:800;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;transition:all .2s ease;text-align:center;letter-spacing:.3px}
+.pwa-card-btn:hover{transform:translateY(-1px)}
+.pwa-card-install{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border:none;box-shadow:0 4px 12px rgba(40,116,240,.3)}
+.pwa-card-cancel{background:transparent;color:var(--text-main);border:1.5px solid var(--border-color)}
+.pwa-card-cancel:hover{border-color:var(--danger);color:var(--danger)}
 
 @media(max-width:768px){
   body{padding:16px 10px 36px}
@@ -218,6 +240,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
   #announcementPopup{bottom:14px;right:12px;width:160px;padding:14px 14px 12px}
   .popup-img{width:60px;height:60px}
   .exit-modal{padding:28px 22px 22px;border-radius:20px}
+  .pwa-install-card{top:auto;bottom:20px;right:10px;left:10px;width:auto}
 }
 @media(max-width:400px){.glass-panel{padding:22px 14px;border-radius:18px}.table{min-width:300px}.btn-tab{padding:12px 10px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -226,8 +249,20 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 <body>
 <canvas id="snowCanvas" aria-hidden="true"></canvas>
 
-<div id="pwaInstallPrompt" class="pwa-install-btn hidden" onclick="installPWA()">
-  &#x1F4F2; Install Flipkart Minutes App
+<!-- GitHub-style PWA Install Card -->
+<div id="pwaInstallCard" class="pwa-install-card hidden">
+  <div class="pwa-card-title">Install app</div>
+  <div class="pwa-card-info">
+    <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="pwa-card-icon" alt="FK Minutes">
+    <div>
+      <div class="pwa-card-name">Flipkart Minutes</div>
+      <div class="pwa-card-origin">FK Minutes Dashboard</div>
+    </div>
+  </div>
+  <div class="pwa-card-actions">
+    <button class="pwa-card-btn pwa-card-install" onclick="installPWA()">Install</button>
+    <button class="pwa-card-btn pwa-card-cancel" onclick="dismissInstall()">Cancel</button>
+  </div>
 </div>
 
 <div id="appLoader">
@@ -244,6 +279,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
+      <a href="completion.html" class="icon-btn">Report</a>
       <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">Save Your Eyes</button>
     </div>
   </div>
@@ -280,7 +316,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 <div id="exitModal" class="exit-overlay" style="display:none">
   <div class="exit-modal">
-    <div class="exit-modal-icon">&#x26A0;&#xFE0F;</div>
     <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
     <div class="exit-modal-name" id="exitModalName"></div>
     <div class="exit-modal-actions">
@@ -297,27 +332,39 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 <script>
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxH_jWtTRoLLJHZc7N2JHzfkq7n1virJkuYQbS3mx_onClfwac0UuIsn5jltaA2X4kn/exec';
-var LOCAL_CACHE_KEY='pickerDash_v6';
+var LOCAL_CACHE_KEY='pickerDash_v7';
 var PAGE_SIZE=50;
 
 var db=[],filtered=[],reportedIds=new Set(),pendingRowIds=new Set(),selectedIds=new Set();
 var cityTS,storeTS,managerMode=false,currentPage=1,isProcessing=false;
 var searchQuery='',searchTimer=null,toastTimer=null,pendingExitId=null,isBatchMode=false;
 
+/* ── PWA Install (GitHub-style card) ── */
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){
   e.preventDefault();deferredPrompt=e;
-  var btn=document.getElementById('pwaInstallPrompt');
-  btn.classList.remove('hidden');
-  setTimeout(function(){btn.classList.add('hidden')},10000);
+  document.getElementById('pwaInstallCard').classList.remove('hidden');
 });
 function installPWA(){
   if(!deferredPrompt)return;
-  document.getElementById('pwaInstallPrompt').classList.add('hidden');
+  document.getElementById('pwaInstallCard').classList.add('hidden');
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(function(){deferredPrompt=null});
+  deferredPrompt.userChoice.then(function(choice){
+    if(choice.outcome==='accepted')showToast('App installed successfully!');
+    deferredPrompt=null;
+  });
 }
+function dismissInstall(){
+  document.getElementById('pwaInstallCard').classList.add('hidden');
+  deferredPrompt=null;
+}
+window.addEventListener('appinstalled',function(){
+  document.getElementById('pwaInstallCard').classList.add('hidden');
+  deferredPrompt=null;
+  showToast('App installed successfully!');
+});
 
+/* ── Utilities ── */
 var escHtml=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})};
 var checkNA=function(str){var v=String(str==null?'':str).trim().toUpperCase();return(!v||v==='N/A'||v==='#N/A'||v==='#NA')?'<span class="na-bg">N/A</span>':escHtml(str)};
 
@@ -352,6 +399,7 @@ function apiFetch(url,opts){
   return attempt(0);
 }
 
+/* ── Copy Casper ID with animation ── */
 function copyId(id){
   var text=String(id).trim();
   if(!text)return;
@@ -374,14 +422,14 @@ function fallbackCopy(text,pill){
   document.body.removeChild(ta);
 }
 function flashCopied(pill,text){
-  showToast('Copied: '+text);
+  showToast('\u2705 Copied: '+text);
   if(!pill)return;
   pill.classList.add('pill-id-copied');
-  pill.textContent='Copied!';
+  pill.innerHTML='\u2714 Copied!';
   setTimeout(function(){
     pill.classList.remove('pill-id-copied');
     pill.textContent=text;
-  },1200);
+  },1400);
 }
 
 function toggleTheme(){
@@ -406,7 +454,7 @@ function populateCityOptions(){
 }
 
 function loadData(showErr){
-  return apiFetch(SCRIPT_URL+'?action=getData').then(function(d){
+  return apiFetch(SCRIPT_URL+'?action=getData&nocache='+Date.now()).then(function(d){
     hideLoader();
     if(d&&d.error){showToast('Error: '+d.error,true);return}
     db=Array.isArray(d)?d.map(normalizeRow):[];
@@ -512,12 +560,12 @@ function renderTable(){
     var allOnPageSelected=pageItems.length>0;
 
     tH.innerHTML='<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" onchange="toggleSelectAll(this)"></th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
-    tB.innerHTML=pageItems.map(function(i,idx){
+    tB.innerHTML=pageItems.map(function(i){
       var idStr=String(i.casperId);
       var checked=selectedIds.has(idStr);
       if(!checked)allOnPageSelected=false;
       var rowClass=checked?' class="tr-selected"':'';
-      return'<tr id="row-'+escHtml(idStr)+'"'+rowClass+'><td><input type="checkbox" class="row-check" data-id="'+escHtml(idStr)+'" '+(checked?'checked':'')+' '+(pendingRowIds.has(idStr)?'disabled':'')+' onchange="toggleRowCheck(this)"></td><td>'+checkNA(i.name)+'</td><td><span class="pill-id" data-copy-id="'+escHtml(idStr)+'" onclick="copyId(\''+escHtml(idStr)+'\')" title="Click to copy">'+checkNA(i.casperId)+'</span></td><td><button class="btn-exit" '+(pendingRowIds.has(idStr)?'disabled':'')+' onclick="showExitModal(\''+escHtml(idStr)+'\')" aria-label="Exit '+escHtml(idStr)+'">Exit</button></td></tr>';
+      return'<tr id="row-'+escHtml(idStr)+'"'+rowClass+'><td><input type="checkbox" class="row-check" data-id="'+escHtml(idStr)+'" '+(checked?'checked':'')+' '+(pendingRowIds.has(idStr)?'disabled':'')+' onchange="toggleRowCheck(this)"></td><td>'+checkNA(i.name)+'</td><td><span class="pill-id" data-copy-id="'+escHtml(idStr)+'" onclick="copyId(\''+escHtml(idStr)+'\')">'+checkNA(i.casperId)+'</span></td><td><button class="btn-exit" '+(pendingRowIds.has(idStr)?'disabled':'')+' onclick="showExitModal(\''+escHtml(idStr)+'\')">Exit</button></td></tr>';
     }).join('');
 
     var selAll=document.getElementById('selectAllCheck');
@@ -541,7 +589,6 @@ function toggleRowCheck(el){
   if(el.checked)selectedIds.add(id);else selectedIds.delete(id);
   var row=document.getElementById('row-'+id);
   if(row){if(el.checked)row.classList.add('tr-selected');else row.classList.remove('tr-selected')}
-
   var st=(currentPage-1)*PAGE_SIZE,end=Math.min(st+PAGE_SIZE,filtered.length);
   var pageItems=filtered.slice(st,end);
   var allChecked=pageItems.length>0;
@@ -558,6 +605,7 @@ function updateBatchUI(){
   if(count>0&&!managerMode)btn.classList.add('visible');else btn.classList.remove('visible');
 }
 
+/* ── Exit modal (no warning emoji) ── */
 function showExitModal(id){
   isBatchMode=false;
   var p=filtered.find(function(x){return String(x.casperId)===String(id)});
@@ -614,7 +662,6 @@ function initiateBatchSubmit(){
   selectedIds.clear();updateBatchUI();render();
   showToast('Processing '+ids.length+' exit(s)...');
   setUILock(true);
-
   apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'batch_report',ids:ids})})
   .then(function(res){
     if(res.status==='Success'){showToast(ids.length+' Exits Processed');try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}}
@@ -633,6 +680,80 @@ function initiateBatchSubmit(){
 var _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=function(){delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return Promise.resolve();return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js').then(function(){return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js')}).then(function(){if(!window.jspdf)throw new Error('PDF library failed.')})}
+
+function addLoginGuidePage(doc){
+  doc.addPage();
+  var pw=doc.internal.pageSize.getWidth();
+  var y=18;
+
+  /* Title */
+  doc.setFontSize(20);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(40,116,240);
+  doc.text('Login Guide for Picker',pw/2,y,{align:'center'});
+  y+=14;
+
+  doc.setDrawColor(212,175,55);
+  doc.setLineWidth(0.5);
+  doc.line(30,y,pw-30,y);
+  y+=14;
+
+  /* Step 1 */
+  doc.setFontSize(13);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('Step 1: Download the Disprz App (Blue one)',pw/2,y,{align:'center'});
+  y+=10;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(40,116,240);
+  doc.text('Play Store:',pw/2-30,y,{align:'right'});
+  doc.setTextColor(0,0,180);
+  doc.textWithLink('https://play.google.com/store/apps/details?id=com.disprz',pw/2-26,y,{url:'https://play.google.com/store/apps/details?id=com.disprz'});
+  y+=8;
+  doc.setTextColor(40,116,240);
+  doc.text('App Store:',pw/2-30,y,{align:'right'});
+  doc.setTextColor(0,0,180);
+  doc.textWithLink('https://apps.apple.com/in/app/disprz/id1458716803',pw/2-26,y,{url:'https://apps.apple.com/in/app/disprz/id1458716803'});
+  y+=16;
+
+  /* Step 2 - Org URL */
+  doc.setFillColor(254,226,226);
+  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
+  doc.setFontSize(13);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('Organisational URL :  edl.disprz.com',pw/2,y+4,{align:'center'});
+  y+=24;
+
+  /* Step 3 - Username */
+  doc.setFillColor(254,226,226);
+  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
+  doc.setFontSize(13);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('Username: Casper ID (e.g. 42534) without ca.',pw/2,y+4,{align:'center'});
+  y+=24;
+
+  /* Step 4 - Password */
+  doc.setFillColor(254,226,226);
+  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
+  doc.setFontSize(13);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('Password :  Edl@123',pw/2,y+4,{align:'center'});
+  y+=20;
+
+  doc.setDrawColor(212,175,55);
+  doc.line(30,y,pw-30,y);
+  y+=10;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(100,116,139);
+  doc.text('Flipkart Minutes \u2014 East L&D',pw/2,y,{align:'center'});
+}
 
 function exportData(){
   if(!filtered.length||isProcessing)return;setUILock(true);
@@ -663,6 +784,8 @@ function exportData(){
     }else{
       doc.autoTable({head:[['Picker Name','Casper ID']],body:filtered.map(function(i){return[i.name||'',i.casperId||'']}),startY:22,headStyles:hd,styles:bd,theme:'grid'});
     }
+    /* Login Guide page */
+    addLoginGuidePage(doc);
     doc.save(((managerMode?c+'_Summary':(s||c)+'_Pendency')+'.pdf').replace(/[^a-zA-Z0-9_.\-]/g,'_'));
     showToast('PDF Downloaded');
   }).catch(function(e){showToast('PDF failed: '+e.message,true)}).finally(function(){
