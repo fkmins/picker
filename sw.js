@@ -22,13 +22,9 @@ self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
   var url = new URL(event.request.url);
 
-  // Never cache Google Apps Script calls or non-HTTP
   if (url.hostname.includes('script.google.com') || !url.protocol.startsWith('http')) return;
-
-  // Never cache manifest.json so icon changes propagate immediately
   if (url.pathname.endsWith('manifest.json')) return;
 
-  // Network-first for HTML navigation (fixes stale page cache)
   if (event.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
     event.respondWith(
       fetch(event.request).then(function(networkResponse) {
@@ -46,7 +42,6 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // Stale-while-revalidate for static assets (fonts, images, CSS, JS)
   event.respondWith(
     caches.match(event.request).then(function(cachedResponse) {
       var fetchPromise = fetch(event.request).then(function(networkResponse) {
