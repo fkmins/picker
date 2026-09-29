@@ -1,7 +1,7 @@
 {
   "name": "Flipkart Minutes",
   "short_name": "FK Minutes",
-  "description": "Picker Pendency and Completion Dashboard",
+  "description": "Picker Pendency, Training & Completion Dashboard",
   "start_url": "./index.html",
   "scope": ".",
   "id": "fk-minutes-pwa",
