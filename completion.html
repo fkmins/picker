@@ -4,21 +4,172 @@
 <meta charset="utf-8">
 <title>Completion Report - Flipkart Minutes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2874F0">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
+<script>
+(function(){
+  try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}
+  var w=['https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg'];
+  var c=w[Math.floor(Math.random()*w.length)];
+  var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
+})();
+</script>
 <style>
-body { font-family: Inter, sans-serif; background: #0f172a; color: #f1f5f9; text-align: center; padding: 40px; }
-.card { background: rgba(30,41,59,0.95); padding: 40px; border-radius: 20px; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-h1 { color: #FFB400; font-weight: 900; }
-p { color: #94a3b8; font-size: 15px; margin-top: 20px; line-height: 1.6; }
-.btn { display: inline-block; margin-top: 30px; padding: 12px 24px; background: #2874F0; color: #fff; text-decoration: none; border-radius: 12px; font-weight: 800; }
+/* CSS Reset and Variables exactly like index.html */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{display:none}
+html,body{scrollbar-width:none;-ms-overflow-style:none}
+:root{
+  --fk-blue:#2874F0;--fk-yellow:#FFB400;
+  --gold:#D4AF37;--gold-light:#F5E6B8;--gold-glow:rgba(212,175,55,0.25);
+  --bg-panel:rgba(255,255,255,0.82);--card-bg:rgba(255,255,255,0.97);
+  --table-header:rgba(248,250,252,0.99);--table-hover:rgba(241,245,249,0.99);
+  --dropdown-hover:rgba(40,116,240,0.10);
+  --text-main:#0f172a;--text-muted:#64748b;
+  --border-color:rgba(203,213,225,0.8);
+  --shadow-panel:0 24px 64px rgba(0,0,0,0.20);
+  --blur:blur(22px);
+}
+:root.dark-mode{
+  --bg-panel:rgba(15,23,42,0.88);--card-bg:rgba(15,23,42,0.98);
+  --table-header:rgba(8,14,31,0.98);--table-hover:rgba(30,41,59,0.98);
+  --dropdown-hover:rgba(40,116,240,0.18);
+  --text-main:#f1f5f9;--text-muted:#94a3b8;
+  --border-color:rgba(51,65,85,0.8);
+  --shadow-panel:0 24px 64px rgba(0,0,0,0.55);
+}
+body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;z-index:0;animation:wallIn .8s ease both}
+body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:1;transition:background .3s}
+:root.dark-mode body::after{background:rgba(5,10,25,0.75)}
+@keyframes wallIn{from{opacity:0}to{opacity:1}}
+
+#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;}
+
+body{font-family:Inter,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;position:relative;z-index:3;text-align:center;}
+.glass-panel{background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-radius:28px;padding:36px 32px;width:100%;max-width:960px;border:1px solid var(--border-color);box-shadow:var(--shadow-panel);position:relative;z-index:10;text-align:center;}
+
+.hdr{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+.hdr-brand{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;}
+.hdr-logo{width:80px;height:44px;border-radius:12px;box-shadow:0 4px 14px rgba(40,116,240,.3);}
+.hdr-title{font-weight:900;font-size:24px;letter-spacing:-.6px;color:var(--text-main);}
+.hdr-sub{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;margin-top:2px}
+.hdr-actions{display:flex;gap:8px;}
+.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.icon-btn:hover{border-color:var(--gold)}
+.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
+
+.filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;width:100%}
+.filter-col{flex:1 1 320px;max-width:480px;text-align:center;position:relative;z-index:30}
+.ts-wrapper .ts-control{border-radius:14px!important;padding:11px 16px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;background:var(--card-bg)!important;color:var(--text-main)!important;}
+.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;}
+
+#results{display:none;}
+.tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;max-height:460px;margin-bottom:28px;}
+.tbl{border-collapse:collapse;width:100%;min-width:400px;color:var(--text-main);text-align:center}
+.tbl th,.tbl td{padding:14px 16px;border-bottom:1px solid var(--border-color)}
+.tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:11px;font-weight:800;text-transform:uppercase;position:sticky;top:0;}
+.tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
+
+@media(max-width:768px){
+  body{padding:16px 10px}
+  .glass-panel{padding:28px 16px;border-radius:22px;}
+  .hdr-brand{flex-direction:column;gap:8px}
+  .hdr-logo{width:60px;height:38px}
+}
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Completion Report Updated</h1>
-    <p>Completions are now seamlessly tracked and retained for exactly 2 months in the Google Sheet named <b>Completion daily</b>.</p>
-    <p>Whenever a Picker achieves "Yes" status for Induction or BBD Refresher, they are automatically logged in the daily tracker and cleared from the Mix Up Pendency queue immediately upon the next 4-hour sync cycle.</p>
-    <a href="index.html" class="btn">Return to Dashboard</a>
+
+<div id="appLoader">
+  <div class="loading-text">Loading Completion Data...</div>
+</div>
+
+<div class="glass-panel">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
+      <div>
+        <h2 class="hdr-title">Completion Report</h2>
+        <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <a href="index.html" class="icon-btn">Dashboard</a>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">Save Your Eyes</button>
+    </div>
   </div>
+  <hr class="divider">
+  <div class="filter-area">
+    <div class="filter-col"><select id="trainerSelect" autocomplete="off" multiple></select></div>
+  </div>
+  <div id="results">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr><th>Employee Code</th><th>Trained Employee Name</th><th>Training Type</th><th>Completed On</th><th>Trainer</th><th>City</th><th>Dark Store</th></tr>
+        </thead>
+        <tbody id="tb1"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxH_jWtTRoLLJHZc7N2JHzfkq7n1virJkuYQbS3mx_onClfwac0UuIsn5jltaA2X4kn/exec';
+var db=[], trainerTS=null;
+
+function toggleTheme(){
+  var d=document.documentElement.classList.toggle('dark-mode');
+  document.getElementById('themeBtn').textContent=d?'Damage Your Eyes':'Save Your Eyes';
+}
+
+function loadData(){
+  fetch(SCRIPT_URL+'?action=getCompletion').then(function(r){return r.json()}).then(function(d){
+    document.getElementById('appLoader').style.display='none';
+    if(!d.error) { db=d; populateTrainers(); }
+  }).catch(function(){
+    document.getElementById('appLoader').style.display='none'; alert("Network Error");
+  });
+}
+
+window.onload=function(){
+  trainerTS=new TomSelect('#trainerSelect',{
+    placeholder:'Choose a Trainer', plugins:['remove_button'], onChange:onTrainerChange
+  });
+  loadData();
+};
+
+function populateTrainers(){
+  var trainers=[], seen={};
+  db.forEach(function(r){
+    if(r.tn && !seen[r.tn]){ seen[r.tn]=1; trainers.push(r.tn); }
+  });
+  trainers.sort().forEach(function(t){trainerTS.addOption({value:t,text:t})});
+}
+
+function onTrainerChange(){
+  var val=trainerTS.getValue();
+  if(!val||val.length===0){document.getElementById('results').style.display='none';return}
+  var selected=Array.isArray(val)?val:val.split(',');
+  var filtered=db.filter(function(r){ return selected.indexOf(r.tn)!==-1; });
+  
+  var tB=document.getElementById('tb1');
+  if(!filtered.length){
+    tB.innerHTML='<tr><td colspan="7" style="padding:24px; font-weight:700">No Data</td></tr>';
+  } else {
+    tB.innerHTML=filtered.map(function(i){
+      return '<tr><td><b>'+i.id+'</b></td><td>'+i.nm+'</td><td>'+i.type+'</td><td>'+i.date+'</td><td>'+i.tn+'</td><td>'+i.ct+'</td><td>'+i.ds+'</td></tr>';
+    }).join('');
+  }
+  document.getElementById('results').style.display='block';
+}
+</script>
 </body>
 </html>
