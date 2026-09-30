@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-<link rel="icon" type="image/webp" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+<link rel="apple-touch-icon" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
+<link rel="icon" type="image/png" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -279,7 +279,6 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
       </div>
     </div>
     <div class="header-actions">
-      <a href="completion.html" class="icon-btn">Report</a>
       <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">Save Your Eyes</button>
     </div>
   </div>
@@ -318,6 +317,15 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
   <div class="exit-modal">
     <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
     <div class="exit-modal-name" id="exitModalName"></div>
+    <div style="margin-bottom: 20px;">
+      <label for="exitReasonSelect" style="display:block; font-size:13px; margin-bottom:8px; color:var(--text-muted); font-weight:700;">Reason for Exit</label>
+      <select id="exitReasonSelect" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-main); font-family:Inter,sans-serif; outline:none;">
+        <option value="Absconding">Absconding</option>
+        <option value="Resigned">Resigned</option>
+        <option value="Terminated">Terminated</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
     <div class="exit-modal-actions">
       <button class="exit-modal-btn exit-btn-confirm" id="exitConfirmBtn">Yes, Exit</button>
       <button class="exit-modal-btn exit-btn-cancel" onclick="closeExitModal()">Cancel</button>
@@ -374,7 +382,7 @@ function toTitleCase(str){
 }
 
 function normalizeRow(r){
-  return{casperId:r.id,name:toTitleCase(r.nm),darkStore:toTitleCase(r.ds),city:toTitleCase(r.ct),clusterManager:toTitleCase(r.cm)};
+  return{casperId:r.id,name:toTitleCase(r.nm),darkStore:toTitleCase(r.ds),city:toTitleCase(r.ct),clusterManager:toTitleCase(r.cm),ind:r.ind,ref:r.ref,e404:r.e404};
 }
 
 function apiFetch(url,opts){
@@ -454,7 +462,7 @@ function populateCityOptions(){
 }
 
 function loadData(showErr){
-  return apiFetch(SCRIPT_URL+'?action=getData&nocache='+Date.now()).then(function(d){
+  return apiFetch(SCRIPT_URL+'?action=getData').then(function(d){
     hideLoader();
     if(d&&d.error){showToast('Error: '+d.error,true);return}
     db=Array.isArray(d)?d.map(normalizeRow):[];
@@ -559,13 +567,15 @@ function renderTable(){
     var pageItems=filtered.slice(st,end);
     var allOnPageSelected=pageItems.length>0;
 
-    tH.innerHTML='<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" onchange="toggleSelectAll(this)"></th><th>Picker Name</th><th>Casper ID</th><th>Action</th></tr>';
+    tH.innerHTML='<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" onchange="toggleSelectAll(this)"></th><th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th><th>Action</th></tr>';
     tB.innerHTML=pageItems.map(function(i){
       var idStr=String(i.casperId);
       var checked=selectedIds.has(idStr);
       if(!checked)allOnPageSelected=false;
       var rowClass=checked?' class="tr-selected"':'';
-      return'<tr id="row-'+escHtml(idStr)+'"'+rowClass+'><td><input type="checkbox" class="row-check" data-id="'+escHtml(idStr)+'" '+(checked?'checked':'')+' '+(pendingRowIds.has(idStr)?'disabled':'')+' onchange="toggleRowCheck(this)"></td><td>'+checkNA(i.name)+'</td><td><span class="pill-id" data-copy-id="'+escHtml(idStr)+'" onclick="copyId(\''+escHtml(idStr)+'\')">'+checkNA(i.casperId)+'</span></td><td><button class="btn-exit" '+(pendingRowIds.has(idStr)?'disabled':'')+' onclick="showExitModal(\''+escHtml(idStr)+'\')">Exit</button></td></tr>';
+      var errLabel=i.e404&&i.e404!=='All Match'?'<div style="font-size:11px;color:var(--danger);font-weight:700;margin-top:4px;">'+escHtml(i.e404)+'</div>':'';
+      var mkBadge=function(v){return v==='Completed'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:var(--success);color:#fff;font-size:11px;font-weight:700;">\u2714 Completed</span>':(v==='Pending'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;">\u2716 Pending</span>':checkNA(v))};
+      return'<tr id="row-'+escHtml(idStr)+'"'+rowClass+'><td><input type="checkbox" class="row-check" data-id="'+escHtml(idStr)+'" '+(checked?'checked':'')+' '+(pendingRowIds.has(idStr)?'disabled':'')+' onchange="toggleRowCheck(this)"></td><td>'+checkNA(i.name)+errLabel+'</td><td><span class="pill-id" data-copy-id="'+escHtml(idStr)+'" onclick="copyId(\''+escHtml(idStr)+'\')">'+checkNA(i.casperId)+'</span></td><td>'+mkBadge(i.ind)+'</td><td>'+mkBadge(i.ref)+'</td><td><button class="btn-exit" '+(pendingRowIds.has(idStr)?'disabled':'')+' onclick="showExitModal(\''+escHtml(idStr)+'\')">Exit</button></td></tr>';
     }).join('');
 
     var selAll=document.getElementById('selectAllCheck');
@@ -643,7 +653,8 @@ function initiateSubmit(id){
   pendingRowIds.add(idStr);var backup=db.slice();
   db=db.filter(function(i){return String(i.casperId)!==idStr});
   reportedIds.add(idStr);selectedIds.delete(idStr);render();showToast('Processing exit...');
-  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'report',n:p.name,id:p.casperId,ds:p.darkStore,c:p.city})})
+  var reason = document.getElementById('exitReasonSelect').value;
+  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'report',n:p.name,id:p.casperId,ds:p.darkStore,c:p.city,reason:reason})})
   .then(function(res){
     if(res.status==='Success'){showToast('Exit Processed');try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}}
     else throw new Error(res.error||'Failed');
@@ -662,7 +673,8 @@ function initiateBatchSubmit(){
   selectedIds.clear();updateBatchUI();render();
   showToast('Processing '+ids.length+' exit(s)...');
   setUILock(true);
-  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'batch_report',ids:ids})})
+  var reason = document.getElementById('exitReasonSelect').value;
+  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'batch_report',ids:ids,reason:reason})})
   .then(function(res){
     if(res.status==='Success'){showToast(ids.length+' Exits Processed');try{localStorage.setItem(LOCAL_CACHE_KEY,JSON.stringify({data:db,ts:Date.now()}))}catch(e){}}
     else throw new Error(res.error||'Failed');
@@ -681,78 +693,19 @@ var _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=function(){delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return Promise.resolve();return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js').then(function(){return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js')}).then(function(){if(!window.jspdf)throw new Error('PDF library failed.')})}
 
-function addLoginGuidePage(doc){
-  doc.addPage();
+function drawLoginGuide(doc){
   var pw=doc.internal.pageSize.getWidth();
-  var y=18;
-
-  /* Title */
-  doc.setFontSize(20);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(40,116,240);
-  doc.text('Login Guide for Picker',pw/2,y,{align:'center'});
-  y+=14;
-
-  doc.setDrawColor(212,175,55);
-  doc.setLineWidth(0.5);
-  doc.line(30,y,pw-30,y);
-  y+=14;
-
-  /* Step 1 */
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Step 1: Download the Disprz App (Blue one)',pw/2,y,{align:'center'});
-  y+=10;
-
-  doc.setFontSize(11);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(40,116,240);
-  doc.text('Play Store:',pw/2-30,y,{align:'right'});
-  doc.setTextColor(0,0,180);
-  doc.textWithLink('https://play.google.com/store/apps/details?id=com.disprz',pw/2-26,y,{url:'https://play.google.com/store/apps/details?id=com.disprz'});
-  y+=8;
-  doc.setTextColor(40,116,240);
-  doc.text('App Store:',pw/2-30,y,{align:'right'});
-  doc.setTextColor(0,0,180);
-  doc.textWithLink('https://apps.apple.com/in/app/disprz/id1458716803',pw/2-26,y,{url:'https://apps.apple.com/in/app/disprz/id1458716803'});
-  y+=16;
-
-  /* Step 2 - Org URL */
-  doc.setFillColor(254,226,226);
-  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Organisational URL :  edl.disprz.com',pw/2,y+4,{align:'center'});
-  y+=24;
-
-  /* Step 3 - Username */
-  doc.setFillColor(254,226,226);
-  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Username: Casper ID (e.g. 42534) without ca.',pw/2,y+4,{align:'center'});
-  y+=24;
-
-  /* Step 4 - Password */
-  doc.setFillColor(254,226,226);
-  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Password :  Edl@123',pw/2,y+4,{align:'center'});
-  y+=20;
-
-  doc.setDrawColor(212,175,55);
-  doc.line(30,y,pw-30,y);
-  y+=10;
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(100,116,139);
-  doc.text('Flipkart Minutes \u2014 East L&D',pw/2,y,{align:'center'});
+  var startY=12;
+  doc.setFontSize(14).setFont('helvetica','bold').setTextColor(40,116,240).text('Login Guide for Picker (Disprz)',pw/2,startY,{align:'center'});
+  
+  doc.setFontSize(9).setFont('helvetica','normal').setTextColor(0,0,0);
+  doc.text('1. App: Disprz (Play Store / App Store)', 14, startY+8);
+  doc.text('2. URL: edl.disprz.com', 14, startY+14);
+  doc.text('3. Username: Casper ID (without ca)', pw/2, startY+8);
+  doc.text('4. Password: Edl@123', pw/2, startY+14);
+  
+  doc.setDrawColor(212,175,55).setLineWidth(0.5).line(14, startY+18, pw-14, startY+18);
+  return startY+24;
 }
 
 function exportData(){
@@ -764,12 +717,17 @@ function exportData(){
     var pw=doc.internal.pageSize.getWidth();
     var hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
     var bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
+    
+    var tableStartY = drawLoginGuide(doc);
+    
     var c=cityTS?cityTS.getValue():'',s=storeTS?storeTS.getValue():'';
-    doc.setFontSize(14).setTextColor(0,0,0).text(managerMode?'Pendency Summary \u2014 '+c:'Picker Pendency \u2014 '+(s||c),pw/2,14,{align:'center'});
+    doc.setFontSize(12).setTextColor(0,0,0).text(managerMode?'Pendency Summary \u2014 '+c:'Picker Pendency \u2014 '+(s||c),pw/2,tableStartY,{align:'center'});
+    tableStartY += 6;
+
     if(managerMode){
       var sm={};filtered.forEach(function(i){sm[i.clusterManager]=(sm[i.clusterManager]||0)+1});
       var sortedEntries=Object.entries(sm).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0])});
-      doc.autoTable({head:[['Cluster Manager','Count']],body:sortedEntries,startY:22,headStyles:hd,styles:bd,theme:'grid',
+      doc.autoTable({head:[['Cluster Manager','Count']],body:sortedEntries,startY:tableStartY,headStyles:hd,styles:bd,theme:'grid',
         didParseCell:function(data){
           if(data.section==='body'&&data.column.index===1){
             var val=parseInt(data.cell.raw);
@@ -782,11 +740,12 @@ function exportData(){
         }
       });
     }else{
-      doc.autoTable({head:[['Picker Name','Casper ID']],body:filtered.map(function(i){return[i.name||'',i.casperId||'']}),startY:22,headStyles:hd,styles:bd,theme:'grid'});
+      doc.autoTable({head:[['Picker Name','Casper ID','Ind.','Ref.']],body:filtered.map(function(i){return[i.name||'',i.casperId||'',i.ind||'',i.ref||'']}),startY:tableStartY,headStyles:hd,styles:bd,theme:'grid'});
     }
-    /* Login Guide page */
-    addLoginGuidePage(doc);
-    doc.save(((managerMode?c+'_Summary':(s||c)+'_Pendency')+'.pdf').replace(/[^a-zA-Z0-9_.\-]/g,'_'));
+    
+    var d = new Date(); var pad = function(n){return String(n).padStart(2,'0')};
+    var dateStr = pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear();
+    doc.save('Disprz_Pendency_data_(' + dateStr + ').pdf');
     showToast('PDF Downloaded');
   }).catch(function(e){showToast('PDF failed: '+e.message,true)}).finally(function(){
     setUILock(false);document.getElementById('btnPdf').textContent='Export PDF';
@@ -798,7 +757,7 @@ function exportToGSheet(){
   var btn=document.getElementById('btnGSheet');btn.textContent='Generating...';setUILock(true);
   var smMap={};filtered.forEach(function(i){smMap[i.clusterManager]=(smMap[i.clusterManager]||0)+1});
   var sm=[['Cluster Manager','Total Pendency']].concat(Object.entries(smMap).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0])}));
-  var dt=[['CMSM','Dark Store','Name','Casper ID']].concat(filtered.map(function(i){return[i.clusterManager||'',i.darkStore||'',i.name||'',i.casperId||'']}));
+  var dt=[['CMSM','Dark Store','Name','Casper ID','Induction','Refresher','404 Error']].concat(filtered.map(function(i){return[i.clusterManager||'',i.darkStore||'',i.name||'',i.casperId||'',i.ind||'',i.ref||'',i.e404||'']}));
   var c=cityTS?cityTS.getValue():'',s=storeTS?storeTS.getValue():'';
   var fTitle=((managerMode?c+'_Pendency':(s||c)+'_Pendency')).replace(/[^a-zA-Z0-9_\-]/g,'_');
   apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'export',f:fTitle,summaryData:sm,detailData:dt})})

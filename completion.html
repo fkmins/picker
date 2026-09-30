@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
-<link rel="icon" type="image/webp" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+<link rel="apple-touch-icon" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
+<link rel="icon" type="image/png" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -198,8 +198,11 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     <div class="filter-col"><select id="trainerSelect" autocomplete="off" multiple></select></div>
   </div>
   <div id="results">
-    <button class="btn-export" id="btnPdf" onclick="exportPdf()">Export PDF</button>
-
+    <div style="display:flex; gap:10px; justify-content:center; margin-bottom:20px; flex-wrap:wrap;">
+      <button class="btn-export" id="btnPdfStore" onclick="exportPdf('store')">Export Store Wise PDF</button>
+      <button class="btn-export" id="btnPdfCm" onclick="exportPdf('cm')">Export CM Wise PDF</button>
+      <button class="btn-export" id="btnPdfCity" onclick="exportPdf('city')">Export City Wise PDF</button>
+    </div>
     <div class="section" id="sec1">
       <div class="section-title">~ : Store Name Wise Pendency : ~</div>
       <div class="tbl-wrap"><table class="tbl"><thead id="th1"></thead><tbody id="tb1"></tbody></table></div>
@@ -285,7 +288,7 @@ function normalizeRow(r){
 }
 
 function loadData(){
-  var url=SCRIPT_URL+'?action=getData&type=Pending&nocache='+Date.now();
+  var url=SCRIPT_URL+'?action=getData&type=Pending';
 
   return apiFetch(url).then(function(d){
     hideLoader();
@@ -426,73 +429,32 @@ var _ls={};
 function loadScript(src){if(_ls[src])return _ls[src];_ls[src]=new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=function(){delete _ls[src];rej(new Error('Failed: '+src))};document.head.appendChild(s)});return _ls[src]}
 function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')return Promise.resolve();return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js').then(function(){return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js')}).then(function(){if(!window.jspdf)throw new Error('PDF library failed.')})}
 
-function addLoginGuidePage(doc){
-  doc.addPage();
+function drawLoginGuide(doc){
   var pw=doc.internal.pageSize.getWidth();
-  var y=18;
-  doc.setFontSize(20);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(40,116,240);
-  doc.text('Login Guide for Picker',pw/2,y,{align:'center'});
-  y+=14;
-  doc.setDrawColor(212,175,55);
-  doc.setLineWidth(0.5);
-  doc.line(30,y,pw-30,y);
-  y+=14;
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Step 1: Download the Disprz App (Blue one)',pw/2,y,{align:'center'});
-  y+=10;
-  doc.setFontSize(11);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(40,116,240);
-  doc.text('Play Store:',pw/2-30,y,{align:'right'});
-  doc.setTextColor(0,0,180);
-  doc.textWithLink('https://play.google.com/store/apps/details?id=com.disprz',pw/2-26,y,{url:'https://play.google.com/store/apps/details?id=com.disprz'});
-  y+=8;
-  doc.setTextColor(40,116,240);
-  doc.text('App Store:',pw/2-30,y,{align:'right'});
-  doc.setTextColor(0,0,180);
-  doc.textWithLink('https://apps.apple.com/in/app/disprz/id1458716803',pw/2-26,y,{url:'https://apps.apple.com/in/app/disprz/id1458716803'});
-  y+=16;
-  doc.setFillColor(254,226,226);
-  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Organisational URL :  edl.disprz.com',pw/2,y+4,{align:'center'});
-  y+=24;
-  doc.setFillColor(254,226,226);
-  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Username: Casper ID (e.g. 42534) without ca.',pw/2,y+4,{align:'center'});
-  y+=24;
-  doc.setFillColor(254,226,226);
-  doc.roundedRect(30,y-6,pw-60,16,3,3,'F');
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(0,0,0);
-  doc.text('Password :  Edl@123',pw/2,y+4,{align:'center'});
-  y+=20;
-  doc.setDrawColor(212,175,55);
-  doc.line(30,y,pw-30,y);
-  y+=10;
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(100,116,139);
-  doc.text('Flipkart Minutes \u2014 East L&D',pw/2,y,{align:'center'});
+  var startY=12;
+  doc.setFontSize(14).setFont('helvetica','bold').setTextColor(40,116,240).text('Login Guide for Picker (Disprz)',pw/2,startY,{align:'center'});
+  
+  doc.setFontSize(9).setFont('helvetica','normal').setTextColor(0,0,0);
+  doc.text('1. App: Disprz (Play Store / App Store)', 14, startY+8);
+  doc.text('2. URL: edl.disprz.com', 14, startY+14);
+  doc.text('3. Username: Casper ID (without ca)', pw/2, startY+8);
+  doc.text('4. Password: Edl@123', pw/2, startY+14);
+  
+  doc.setDrawColor(212,175,55).setLineWidth(0.5).line(14, startY+18, pw-14, startY+18);
+  return startY+24;
 }
 
-function exportPdf(){
+function exportPdf(sectionMode){
   if(!trainerTS)return;
   var trainers=trainerTS.getValue();
   if(!trainers||trainers.length===0){showToast('Select a trainer first.',true);return}
   var selected=Array.isArray(trainers)?trainers:trainers.split(',');
-  var btn=document.getElementById('btnPdf');
+  
+  var btnId = sectionMode === 'store' ? 'btnPdfStore' : (sectionMode === 'cm' ? 'btnPdfCm' : 'btnPdfCity');
+  var btn=document.getElementById(btnId);
+  var origText=btn.textContent;
   btn.disabled=true;btn.textContent='Generating...';
+  
   ensureJsPdf().then(function(){
     var jsPDF=window.jspdf.jsPDF;
     var data=rawData.filter(function(r){
@@ -500,13 +462,12 @@ function exportPdf(){
       return selected.indexOf(matchField)!==-1;
     });
     if(!data.length){showToast('No data to export.',true);return}
-    var byStore=groupBy(data,'store');
-    var byCM=groupBy(data,'cm');
-    var byCity=groupBy(data,'city');
-
+    
+    var groupData = groupBy(data, sectionMode);
+    var doc=new jsPDF({compress:true});
+    var pw=doc.internal.pageSize.getWidth();
     var hd={fillColor:[230,230,230],textColor:[0,0,0],fontStyle:'bold',halign:'center',lineWidth:0.8,lineColor:[0,0,0]};
     var bd={halign:'center',textColor:[0,0,0],fontSize:9,lineWidth:0.8,lineColor:[0,0,0]};
-    var dt=todayStr();
 
     var cellStyleMap=function(data){
       if(data.section==='body'&&data.column.index===1){
@@ -520,35 +481,28 @@ function exportPdf(){
       }
       if(data.section==='body'&&data.column.index===0&&data.row.raw[0]==='TOTAL')data.cell.styles.fontStyle='bold';
     };
-
-    var doc=new jsPDF({compress:true});
-    var pw=doc.internal.pageSize.getWidth();
-    var hasPages=false;
-
-    if(byStore.entries.length){
-      doc.setFontSize(14).setTextColor(0,0,0).text('~ : Store Name Wise Pendency : ~',pw/2,14,{align:'center'});
-      doc.autoTable({head:[['Store Name','Pendency']],body:byStore.entries.concat([['TOTAL',byStore.total]]),startY:20,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14},didParseCell:cellStyleMap});
-      hasPages=true;
+    
+    var tableStartY = drawLoginGuide(doc);
+    var title = sectionMode === 'store' ? 'Store Name Wise Pendency' : (sectionMode === 'cm' ? 'Cluster Manager Wise Pendency' : 'City Wise Pendency');
+    doc.setFontSize(14).setTextColor(0,0,0).text(title, pw/2, tableStartY, {align:'center'});
+    
+    var arr=groupData.entries.map(function(e){return[e[0],e[1]]});
+    arr.push(['TOTAL',String(groupData.total)]);
+    doc.autoTable({head:[[sectionMode==='store'?'Store Name':(sectionMode==='cm'?'Cluster Manager':'City'),'Pendency']],body:arr,startY:tableStartY+6,headStyles:hd,styles:bd,theme:'grid',didParseCell:cellStyleMap});
+    
+    var d = new Date(); var pad = function(n){return String(n).padStart(2,'0')};
+    var dateStr = pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear();
+    var fileName = 'Disprz_Pendency_data_(' + dateStr + ').pdf';
+    doc.save(fileName);
+    showToast('PDF Downloaded');
+    
+    if (confirm('PDF generated successfully!\n\nWould you like to share this on WhatsApp now? (You will need to manually attach the PDF after WhatsApp opens)')) {
+      var waText = "Hello team, please find the " + title + " attached for your reference.";
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(waText), '_blank');
     }
-    if(byCM.entries.length){
-      if(hasPages)doc.addPage();
-      doc.setFontSize(14).setTextColor(0,0,0).text('~ : Cluster Manager Wise Pendency : ~',pw/2,14,{align:'center'});
-      doc.autoTable({head:[['Cluster Manager','Pendency']],body:byCM.entries.concat([['TOTAL',byCM.total]]),startY:20,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14},didParseCell:cellStyleMap});
-      hasPages=true;
-    }
-    if(byCity.entries.length){
-      if(hasPages)doc.addPage();
-      doc.setFontSize(14).setTextColor(0,0,0).text('~ : City Wise Pendency : ~',pw/2,14,{align:'center'});
-      doc.autoTable({head:[['City','Pendency']],body:byCity.entries.concat([['TOTAL',byCity.total]]),startY:20,headStyles:hd,styles:bd,theme:'grid',margin:{left:14,right:14},didParseCell:cellStyleMap});
-    }
-    /* Login Guide page */
-    addLoginGuidePage(doc);
-    doc.save('Completion_Report_'+dt+'.pdf');
-    showToast('PDF Downloaded successfully');
-  }).catch(function(e){
-    showToast('PDF failed: '+e.message,true);
-  }).finally(function(){
-    btn.disabled=false;btn.textContent='Export PDF';
+    
+  }).catch(function(e){showToast('PDF failed: '+e.message,true)}).finally(function(){
+    btn.disabled=false;btn.textContent=origText;
   });
 }
 

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'fk-minutes-cache-v7';
+var CACHE_NAME = 'fk-minutes-cache-v8';
 
 self.addEventListener('install', function(event) {
   self.skipWaiting();
