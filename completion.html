@@ -1,175 +1,577 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Completion Report - Flipkart Minutes</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#2874F0">
-<meta name="color-scheme" content="dark light">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
-<script>
-(function(){
-  try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}
-  var w=['https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg'];
-  var c=w[Math.floor(Math.random()*w.length)];
-  var s=document.createElement('style');s.textContent='body::before{background-image:url("'+c+'")}';document.head.appendChild(s);
-})();
-</script>
-<style>
-/* CSS Reset and Variables exactly like index.html */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-::-webkit-scrollbar{display:none}
-html,body{scrollbar-width:none;-ms-overflow-style:none}
-:root{
-  --fk-blue:#2874F0;--fk-yellow:#FFB400;
-  --gold:#D4AF37;--gold-light:#F5E6B8;--gold-glow:rgba(212,175,55,0.25);
-  --bg-panel:rgba(255,255,255,0.82);--card-bg:rgba(255,255,255,0.97);
-  --table-header:rgba(248,250,252,0.99);--table-hover:rgba(241,245,249,0.99);
-  --dropdown-hover:rgba(40,116,240,0.10);
-  --text-main:#0f172a;--text-muted:#64748b;
-  --border-color:rgba(203,213,225,0.8);
-  --shadow-panel:0 24px 64px rgba(0,0,0,0.20);
-  --blur:blur(22px);
-}
-:root.dark-mode{
-  --bg-panel:rgba(15,23,42,0.88);--card-bg:rgba(15,23,42,0.98);
-  --table-header:rgba(8,14,31,0.98);--table-hover:rgba(30,41,59,0.98);
-  --dropdown-hover:rgba(40,116,240,0.18);
-  --text-main:#f1f5f9;--text-muted:#94a3b8;
-  --border-color:rgba(51,65,85,0.8);
-  --shadow-panel:0 24px 64px rgba(0,0,0,0.55);
-}
-body::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background-size:cover;background-position:center;z-index:0;animation:wallIn .8s ease both}
-body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:1;transition:background .3s}
-:root.dark-mode body::after{background:rgba(5,10,25,0.75)}
-@keyframes wallIn{from{opacity:0}to{opacity:1}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Completion Report | FK Minutes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    
+    <style>
+        :root {
+            --bg1: rgba(255,255,255,0.1);
+            --bg2: rgba(255,255,255,0.2);
+            --bg3: rgba(255,255,255,0.3);
+            --bg-solid: #fff;
+            --txt1: #333;
+            --txt2: #555;
+            --accent: #ffd700;
+            --accent-hover: #ffea00;
+            --glass-border: rgba(255,255,255,0.4);
+            --shimmer: linear-gradient(90deg, #333 0%, #ffd700 50%, #333 100%);
+        }
+        [data-theme="dark"] {
+            --bg1: rgba(0,0,0,0.5);
+            --bg2: rgba(0,0,0,0.6);
+            --bg3: rgba(0,0,0,0.7);
+            --bg-solid: #1a1a1a;
+            --txt1: #f0f0f0;
+            --txt2: #ccc;
+            --glass-border: rgba(255,255,255,0.1);
+            --shimmer: linear-gradient(90deg, #f0f0f0 0%, #ffd700 50%, #f0f0f0 100%);
+        }
 
-#appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,0.96),rgba(5,10,25,0.98));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
-.loading-text{font-family:Inter,sans-serif;font-weight:800;font-size:14px;color:var(--gold-light);text-align:center;}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: var(--txt1);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s;
+        }
 
-body{font-family:Inter,sans-serif;color:var(--text-main);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;position:relative;z-index:3;text-align:center;}
-.glass-panel{background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-radius:28px;padding:36px 32px;width:100%;max-width:960px;border:1px solid var(--border-color);box-shadow:var(--shadow-panel);position:relative;z-index:10;text-align:center;}
+        #bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center; z-index: -2;
+            transition: opacity 1s; opacity: 0;
+        }
+        #snow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        
+        .overlay {
+            background: var(--bg1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
 
-.hdr{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:26px}
-.hdr-brand{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;}
-.hdr-logo{width:80px;height:44px;border-radius:12px;box-shadow:0 4px 14px rgba(40,116,240,.3);}
-.hdr-title{font-weight:900;font-size:24px;letter-spacing:-.6px;color:var(--text-main);}
-.hdr-sub{font-size:12px;font-weight:700;color:var(--fk-blue);text-transform:uppercase;margin-top:2px}
-.hdr-actions{display:flex;gap:8px;}
-.icon-btn{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
-.icon-btn:hover{border-color:var(--gold)}
-.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
+        .container {
+            width: 100%; max-width: 1200px; margin: 0 auto;
+        }
 
-.filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;width:100%}
-.filter-col{flex:1 1 320px;max-width:480px;text-align:center;position:relative;z-index:30}
-.ts-wrapper .ts-control{border-radius:14px!important;padding:11px 16px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;background:var(--card-bg)!important;color:var(--text-main)!important;}
-.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;}
+        .header {
+            text-align: center; margin-bottom: 25px;
+            position: relative;
+        }
+        .title {
+            font-size: 2.5em; font-weight: 700;
+            background: var(--shimmer);
+            background-size: 200% auto;
+            color: transparent; -webkit-background-clip: text;
+            animation: shimmer 3s linear infinite;
+            margin-bottom: 5px;
+        }
+        @keyframes shimmer { to { background-position: 200% center; } }
+        .subtitle { font-size: 1.1em; color: var(--accent); font-weight: 500; }
 
-#results{display:none;}
-.tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;max-height:460px;margin-bottom:28px;}
-.tbl{border-collapse:collapse;width:100%;min-width:400px;color:var(--text-main);text-align:center}
-.tbl th,.tbl td{padding:14px 16px;border-bottom:1px solid var(--border-color)}
-.tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:11px;font-weight:800;text-transform:uppercase;position:sticky;top:0;}
-.tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
+        .nav-controls {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+            gap: 15px; flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: var(--bg2); border: 1px solid var(--glass-border);
+            color: var(--txt1); padding: 8px 16px; border-radius: 20px;
+            text-decoration: none; font-weight: 500; cursor: pointer;
+            transition: all 0.2s; backdrop-filter: blur(5px);
+        }
+        .nav-btn:hover { background: var(--bg3); border-color: var(--accent); }
 
-@media(max-width:768px){
-  body{padding:16px 10px}
-  .glass-panel{padding:28px 16px;border-radius:22px;}
-  .hdr-brand{flex-direction:column;gap:8px}
-  .hdr-logo{width:60px;height:38px}
-}
-</style>
+        .glass-panel {
+            background: var(--bg2);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px; margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-row {
+            display: flex; gap: 15px; align-items: center; margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .ts-wrapper { flex: 1; min-width: 250px; }
+        .ts-control {
+            background: var(--bg2) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--txt1) !important;
+            border-radius: 10px !important;
+            padding: 10px 15px !important;
+        }
+        .ts-dropdown {
+            background: var(--bg-solid) !important;
+            color: var(--txt1) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 10px !important;
+        }
+        
+        .action-btn {
+            background: var(--accent); color: #000;
+            border: none; padding: 10px 20px; border-radius: 10px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+            white-space: nowrap;
+        }
+        .action-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        .section-title {
+            font-size: 1.3em; font-weight: 600; margin-bottom: 15px;
+            color: var(--txt1); border-bottom: 2px solid var(--accent);
+            display: inline-block; padding-bottom: 5px;
+        }
+
+        .tbl-wrap {
+            overflow-x: auto; border-radius: 10px; border: 1px solid var(--glass-border);
+        }
+        .tbl {
+            width: 100%; border-collapse: collapse; min-width: 600px;
+        }
+        .tbl th {
+            background: var(--bg3); color: var(--txt1);
+            padding: 12px; text-align: left; font-weight: 600;
+            white-space: nowrap;
+        }
+        .tbl td {
+            padding: 12px; border-bottom: 1px solid var(--glass-border);
+            color: var(--txt2);
+        }
+        .tbl tr:last-child td { border-bottom: none; }
+        .tbl tbody tr:hover { background: var(--bg1); }
+        
+        #auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .auth-box {
+            background: var(--bg2); border: 1px solid var(--glass-border);
+            padding: 30px; border-radius: 15px; text-align: center;
+        }
+        .auth-input {
+            width: 100%; padding: 10px; margin: 15px 0; border-radius: 8px;
+            border: 1px solid var(--glass-border); background: var(--bg1); color: var(--txt1);
+            outline: none; text-align: center;
+        }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--accent); color: #000; padding: 12px 24px;
+            border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        .loader {
+            display: none; border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--accent); border-radius: 50%;
+            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media(max-width: 768px) {
+            .title { font-size: 2em; }
+            .filter-row { flex-direction: column; align-items: stretch; }
+            .action-btn { width: 100%; }
+        }
+    </style>
 </head>
-<body>
+<body data-theme="dark">
 
-<div id="appLoader">
-  <div class="loading-text">Loading Completion Data...</div>
+<div id="bg"></div>
+<canvas id="snow"></canvas>
+
+<div id="auth-overlay">
+    <div class="auth-box">
+        <h2 style="color:var(--txt1)">Authentication Required</h2>
+        <input type="password" id="auth-input" class="auth-input" placeholder="Enter Password">
+        <button class="action-btn" onclick="checkAuth()">Login</button>
+    </div>
 </div>
 
-<div class="glass-panel">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
-      <div>
-        <h2 class="hdr-title">Completion Report</h2>
-        <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
-      </div>
+<div class="overlay" id="main-content" style="display:none;">
+    <div class="container">
+        
+        <div class="nav-controls">
+            <a href="index.html" class="nav-btn">← Dashboard</a>
+            <button class="nav-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+        </div>
+
+        <div class="header">
+            <div class="title">Completion Report</div>
+            <div class="subtitle">East - L&D [Flipkart Minutes]</div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="filter-row">
+                <select id="trainer-filter" multiple placeholder="Select Trainer(s)..."></select>
+                <button class="action-btn" onclick="exportPDF()">Export PDF</button>
+            </div>
+            <div class="loader" id="loader"></div>
+            
+            <div id="data-sections" style="display:none;">
+                <div class="glass-panel section" id="sec1">
+                    <div class="section-title">~ : Store Name Wise Pendency : ~</div>
+                    <div class="tbl-wrap">
+                        <table class="tbl"><thead id="th1"></thead><tbody id="tb1"></tbody></table>
+                    </div>
+                </div>
+
+                <div class="glass-panel section" id="sec2">
+                    <div class="section-title">~ : Cluster Manager Wise Pendency : ~</div>
+                    <div class="tbl-wrap">
+                        <table class="tbl"><thead id="th2"></thead><tbody id="tb2"></tbody></table>
+                    </div>
+                </div>
+
+                <div class="glass-panel section" id="sec3">
+                    <div class="section-title">~ : City Wise Pendency : ~</div>
+                    <div class="tbl-wrap">
+                        <table class="tbl"><thead id="th3"></thead><tbody id="tb3"></tbody></table>
+                    </div>
+                </div>
+
+                <div class="glass-panel section" id="sec4">
+                    <div class="section-title">~ : Training Type Breakdown : ~</div>
+                    <div class="tbl-wrap">
+                        <table class="tbl"><thead id="th4"></thead><tbody id="tb4"></tbody></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <div class="hdr-actions">
-      <a href="index.html" class="icon-btn">Dashboard</a>
-      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">Save Your Eyes</button>
-    </div>
-  </div>
-  <hr class="divider">
-  <div class="filter-area">
-    <div class="filter-col"><select id="trainerSelect" autocomplete="off" multiple></select></div>
-  </div>
-  <div id="results">
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead>
-          <tr><th>Employee Code</th><th>Trained Employee Name</th><th>Training Type</th><th>Completed On</th><th>Trainer</th><th>City</th><th>Dark Store</th></tr>
-        </thead>
-        <tbody id="tb1"></tbody>
-      </table>
-    </div>
-  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxH_jWtTRoLLJHZc7N2JHzfkq7n1virJkuYQbS3mx_onClfwac0UuIsn5jltaA2X4kn/exec';
-var db=[], trainerTS=null;
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxH_jWtTRoLLJHZc7N2JHzfkq7n1virJkuYQbS3mx_onClfwac0UuIsn5jltaA2X4kn/exec';
+    const CACHE_KEY = 'completionReport_v9';
+    const AUTH_PASS = 'Kitkat';
+    
+    var w = [
+        'https://rukmini1.flixcart.com/image/1500/1500/xif0q/poster/r/h/3/small-demon-slayer-anime-kimetsu-no-yaiba-upper-moon-1-laminated-original-imah847wxzyfzuq2.jpeg',
+        'https://m.media-amazon.com/images/M/MV5BMGVhZTY1YTctOWJlYS00MjcxLTlkNDgtYTUxZTM5MzMzZjI2XkEyXkFqcGc@._V1_.jpg'
+    ];
 
-function toggleTheme(){
-  var d=document.documentElement.classList.toggle('dark-mode');
-  document.getElementById('themeBtn').textContent=d?'Damage Your Eyes':'Save Your Eyes';
-}
+    let allData = [];
+    let tomSelect = null;
 
-function loadData(){
-  fetch(SCRIPT_URL+'?action=getCompletion').then(function(r){return r.json()}).then(function(d){
-    document.getElementById('appLoader').style.display='none';
-    if(!d.error) { db=d; populateTrainers(); }
-  }).catch(function(){
-    document.getElementById('appLoader').style.display='none'; alert("Network Error");
-  });
-}
+    function toTitleCase(str) {
+        if (!str) return '';
+        return str.toString().toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
 
-window.onload=function(){
-  trainerTS=new TomSelect('#trainerSelect',{
-    placeholder:'Choose a Trainer', plugins:['remove_button'], onChange:onTrainerChange
-  });
-  loadData();
-};
+    function initBg() {
+        const bg = document.getElementById('bg');
+        bg.style.backgroundImage = `url(${w[Math.floor(Math.random() * w.length)]})`;
+        setTimeout(() => bg.style.opacity = '1', 100);
+    }
 
-function populateTrainers(){
-  var trainers=[], seen={};
-  db.forEach(function(r){
-    if(r.tn && !seen[r.tn]){ seen[r.tn]=1; trainers.push(r.tn); }
-  });
-  trainers.sort().forEach(function(t){trainerTS.addOption({value:t,text:t})});
-}
+    function toggleTheme() {
+        const body = document.body;
+        const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
 
-function onTrainerChange(){
-  var val=trainerTS.getValue();
-  if(!val||val.length===0){document.getElementById('results').style.display='none';return}
-  var selected=Array.isArray(val)?val:val.split(',');
-  var filtered=db.filter(function(r){ return selected.indexOf(r.tn)!==-1; });
-  
-  var tB=document.getElementById('tb1');
-  if(!filtered.length){
-    tB.innerHTML='<tr><td colspan="7" style="padding:24px; font-weight:700">No Data</td></tr>';
-  } else {
-    tB.innerHTML=filtered.map(function(i){
-      return '<tr><td><b>'+i.id+'</b></td><td>'+i.nm+'</td><td>'+i.type+'</td><td>'+i.date+'</td><td>'+i.tn+'</td><td>'+i.ct+'</td><td>'+i.ds+'</td></tr>';
-    }).join('');
-  }
-  document.getElementById('results').style.display='block';
-}
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function checkAuth() {
+        const inp = document.getElementById('auth-input').value;
+        if(inp === AUTH_PASS) {
+            sessionStorage.setItem('auth_comp', 'true');
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            fetchData();
+        } else {
+            showToast('Invalid Password');
+        }
+    }
+
+    async function fetchData() {
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('data-sections').style.display = 'none';
+
+        try {
+            const res = await fetch(SCRIPT_URL + '?action=getData&type=Pending&nocache=' + Date.now());
+            const json = await res.json();
+            
+            allData = json.data.map(r => ({
+                id: r.id,
+                name: toTitleCase(r.nm),
+                trainer: toTitleCase(r.tn),
+                store: toTitleCase(r.ds),
+                city: toTitleCase(r.ct),
+                cm: toTitleCase(r.cm),
+                induction: r.ind,
+                refresher: r.ref
+            }));
+
+            // Filter out non-pending records just in case, though the endpoint should only return pending
+            allData = allData.filter(r => r.induction === 'No' || r.refresher === 'No');
+
+            populateTrainers();
+            renderTables();
+        } catch(e) {
+            showToast('Error fetching data');
+            console.error(e);
+        } finally {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('data-sections').style.display = 'block';
+        }
+    }
+
+    function populateTrainers() {
+        const trainers = [...new Set(allData.map(d => d.trainer || d.cm).filter(Boolean))].sort();
+        
+        if (tomSelect) tomSelect.destroy();
+        
+        const select = document.getElementById('trainer-filter');
+        select.innerHTML = '';
+        trainers.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t; opt.text = t;
+            select.appendChild(opt);
+        });
+
+        tomSelect = new TomSelect('#trainer-filter', {
+            plugins: ['remove_button'],
+            maxOptions: null,
+            placeholder: 'Select Trainer(s)...'
+        });
+
+        tomSelect.on('change', () => {
+            renderTables();
+        });
+    }
+
+    function renderTables() {
+        const selectedTrainers = tomSelect ? tomSelect.getValue() : [];
+        let filtered = allData;
+
+        if (selectedTrainers.length > 0) {
+            filtered = allData.filter(d => selectedTrainers.includes(d.trainer || d.cm));
+        }
+
+        renderGroupTable('th1', 'tb1', filtered, 'store', 'Store Name');
+        renderGroupTable('th2', 'tb2', filtered, 'cm', 'Cluster Manager');
+        renderGroupTable('th3', 'tb3', filtered, 'city', 'City');
+        renderBreakdownTable('th4', 'tb4', filtered);
+    }
+
+    function renderGroupTable(thId, tbId, data, groupBy, label) {
+        const counts = {};
+        data.forEach(d => {
+            const key = d[groupBy] || 'NA';
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+        
+        document.getElementById(thId).innerHTML = `<tr><th>${label}</th><th>Pending Count</th></tr>`;
+        
+        let html = '';
+        let total = 0;
+        sorted.forEach(([k, v]) => {
+            html += `<tr><td>${k}</td><td>${v}</td></tr>`;
+            total += v;
+        });
+        html += `<tr><td><strong>Grand Total</strong></td><td><strong>${total}</strong></td></tr>`;
+        
+        document.getElementById(tbId).innerHTML = html;
+    }
+
+    function renderBreakdownTable(thId, tbId, data) {
+        let indPending = 0;
+        let refPending = 0;
+        let bothPending = 0;
+
+        data.forEach(d => {
+            const noInd = (d.induction === 'No');
+            const noRef = (d.refresher === 'No');
+            if (noInd && noRef) bothPending++;
+            else if (noInd) indPending++;
+            else if (noRef) refPending++;
+        });
+
+        const total = data.length;
+
+        document.getElementById(thId).innerHTML = `<tr><th>Training Type</th><th>Pending Count</th></tr>`;
+        
+        let html = '';
+        html += `<tr><td>Induction Only Pending</td><td>${indPending}</td></tr>`;
+        html += `<tr><td>Refresher Only Pending</td><td>${refPending}</td></tr>`;
+        html += `<tr><td>Both Pending</td><td>${bothPending}</td></tr>`;
+        html += `<tr><td><strong>Total Pickers</strong></td><td><strong>${total}</strong></td></tr>`;
+
+        document.getElementById(tbId).innerHTML = html;
+    }
+
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const title = "Completion Report - FK Minutes";
+        const subtitle = "East - L&D";
+        const date = new Date().toLocaleString();
+
+        const addHeader = (yPos) => {
+            doc.setFontSize(16); doc.setTextColor(0,0,0);
+            doc.text(title, 14, yPos);
+            doc.setFontSize(11); doc.setTextColor(100,100,100);
+            doc.text(`${subtitle} | ${date}`, 14, yPos + 6);
+            return yPos + 12;
+        };
+
+        let y = addHeader(15);
+        const sel = tomSelect ? tomSelect.getValue() : [];
+        if(sel.length > 0) {
+            doc.setFontSize(10);
+            doc.text(`Filtered by: ${sel.join(', ')}`, 14, y);
+            y += 8;
+        }
+
+        // Store
+        doc.setFontSize(12); doc.setTextColor(0,0,0);
+        doc.text("Store Name Wise Pendency", 14, y);
+        doc.autoTable({
+            html: '#sec1 table',
+            startY: y + 4,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] }
+        });
+        
+        // CM
+        y = doc.lastAutoTable.finalY + 15;
+        if(y > 250) { doc.addPage(); y = addHeader(15); }
+        doc.text("Cluster Manager Wise Pendency", 14, y);
+        doc.autoTable({
+            html: '#sec2 table',
+            startY: y + 4,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] }
+        });
+
+        // City
+        y = doc.lastAutoTable.finalY + 15;
+        if(y > 250) { doc.addPage(); y = addHeader(15); }
+        doc.text("City Wise Pendency", 14, y);
+        doc.autoTable({
+            html: '#sec3 table',
+            startY: y + 4,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] }
+        });
+
+        // Breakdown (New page)
+        doc.addPage();
+        y = addHeader(15);
+        doc.text("Training Type Breakdown", 14, y);
+        doc.autoTable({
+            html: '#sec4 table',
+            startY: y + 4,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] }
+        });
+
+        // Login Guide
+        doc.addPage();
+        y = addHeader(15);
+        doc.setFontSize(14); doc.setTextColor(0,0,0);
+        doc.text("How to mark Induction/Refresher as 'Yes'", 14, y);
+        y += 10;
+        doc.setFontSize(11);
+        const guideLines = [
+            "1. Trainers must access the HR Dashboard.",
+            "2. Navigate to 'Update Data' section.",
+            "3. Search for the Picker ID.",
+            "4. Update the Induction or Refresher status to 'Yes'.",
+            "5. Save the changes. The dashboard will reflect the updates."
+        ];
+        guideLines.forEach(l => {
+            doc.text(l, 14, y);
+            y += 8;
+        });
+
+        doc.save(`Completion_Report_${Date.now()}.pdf`);
+        showToast('PDF Exported Successfully');
+    }
+
+    // Snow animation
+    const canvas = document.getElementById('snow');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let flakes = [];
+
+    function initSnow() {
+        width = window.innerWidth; height = window.innerHeight;
+        canvas.width = width; canvas.height = height;
+        flakes = [];
+        for(let i=0; i<100; i++) {
+            flakes.push({
+                x: Math.random() * width, y: Math.random() * height,
+                r: Math.random() * 3 + 1, d: Math.random() * 1
+            });
+        }
+    }
+    
+    function drawSnow() {
+        ctx.clearRect(0,0,width,height);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.beginPath();
+        flakes.forEach(f => {
+            ctx.moveTo(f.x, f.y);
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
+        });
+        ctx.fill();
+        updateSnow();
+        requestAnimationFrame(drawSnow);
+    }
+    
+    function updateSnow() {
+        flakes.forEach(f => {
+            f.y += Math.pow(f.d, 2) + 1;
+            f.x += Math.sin(f.y * 0.01) * 1;
+            if(f.y > height) { f.y = 0; f.x = Math.random() * width; }
+        });
+    }
+
+    window.addEventListener('resize', initSnow);
+
+    window.onload = () => {
+        initBg();
+        initSnow();
+        drawSnow();
+        if(localStorage.getItem('theme')) {
+            document.body.setAttribute('data-theme', localStorage.getItem('theme'));
+        }
+        if(sessionStorage.getItem('auth_comp') === 'true') {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            fetchData();
+        }
+    };
 </script>
 </body>
 </html>
