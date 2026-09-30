@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
-<link rel="icon" type="image/png" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
+<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+<link rel="icon" type="image/webp" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -574,7 +574,7 @@ function renderTable(){
       if(!checked)allOnPageSelected=false;
       var rowClass=checked?' class="tr-selected"':'';
       var errLabel=i.e404&&i.e404!=='All Match'?'<div style="font-size:11px;color:var(--danger);font-weight:700;margin-top:4px;">'+escHtml(i.e404)+'</div>':'';
-      var mkBadge=function(v){return v==='Completed'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:var(--success);color:#fff;font-size:11px;font-weight:700;">\u2714 Completed</span>':(v==='Pending'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;">\u2716 Pending</span>':checkNA(v))};
+      var mkBadge=function(v){return v==='Completed'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:#fff;color:yellow;font-size:11px;font-weight:700;">\u2714 Completed</span>':(v==='Pending'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:lightgreen;color:red;font-size:11px;font-weight:700;">\u2716 Pending</span>':checkNA(v))};
       return'<tr id="row-'+escHtml(idStr)+'"'+rowClass+'><td><input type="checkbox" class="row-check" data-id="'+escHtml(idStr)+'" '+(checked?'checked':'')+' '+(pendingRowIds.has(idStr)?'disabled':'')+' onchange="toggleRowCheck(this)"></td><td>'+checkNA(i.name)+errLabel+'</td><td><span class="pill-id" data-copy-id="'+escHtml(idStr)+'" onclick="copyId(\''+escHtml(idStr)+'\')">'+checkNA(i.casperId)+'</span></td><td>'+mkBadge(i.ind)+'</td><td>'+mkBadge(i.ref)+'</td><td><button class="btn-exit" '+(pendingRowIds.has(idStr)?'disabled':'')+' onclick="showExitModal(\''+escHtml(idStr)+'\')">Exit</button></td></tr>';
     }).join('');
 
@@ -695,17 +695,53 @@ function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')r
 
 function drawLoginGuide(doc){
   var pw=doc.internal.pageSize.getWidth();
-  var startY=12;
-  doc.setFontSize(14).setFont('helvetica','bold').setTextColor(40,116,240).text('Login Guide for Picker (Disprz)',pw/2,startY,{align:'center'});
+  var y=12;
+  doc.setFontSize(16);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(40,116,240);
+  doc.text('Login Guide for Picker',pw/2,y,{align:'center'});
+  y+=8;
+  doc.setDrawColor(212,175,55);
+  doc.setLineWidth(0.5);
+  doc.line(20,y,pw-20,y);
+  y+=10;
+  doc.setFontSize(11);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('Step 1: Download the Disprz App (Blue one)',pw/2,y,{align:'center'});
+  y+=8;
+  doc.setFontSize(9);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(40,116,240);
+  doc.text('Play Store:',pw/2-26,y,{align:'right'});
+  doc.setTextColor(0,0,180);
+  doc.textWithLink('https://play.google.com/store/apps/details?id=com.disprz',pw/2-24,y,{url:'https://play.google.com/store/apps/details?id=com.disprz'});
+  y+=6;
+  doc.setTextColor(40,116,240);
+  doc.text('App Store:',pw/2-26,y,{align:'right'});
+  doc.setTextColor(0,0,180);
+  doc.textWithLink('https://apps.apple.com/in/app/disprz/id1458716803',pw/2-24,y,{url:'https://apps.apple.com/in/app/disprz/id1458716803'});
+  y+=12;
   
-  doc.setFontSize(9).setFont('helvetica','normal').setTextColor(0,0,0);
-  doc.text('1. App: Disprz (Play Store / App Store)', 14, startY+8);
-  doc.text('2. URL: edl.disprz.com', 14, startY+14);
-  doc.text('3. Username: Casper ID (without ca)', pw/2, startY+8);
-  doc.text('4. Password: Edl@123', pw/2, startY+14);
+  var boxW = (pw-40)/3 - 4;
+  doc.setFillColor(254,226,226);
   
-  doc.setDrawColor(212,175,55).setLineWidth(0.5).line(14, startY+18, pw-14, startY+18);
-  return startY+24;
+  doc.roundedRect(20, y-4, boxW, 12, 2, 2, 'F');
+  doc.setFontSize(9);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('URL :  edl.disprz.com', 20 + boxW/2, y+4, {align:'center'});
+  
+  doc.roundedRect(20 + boxW + 6, y-4, boxW, 12, 2, 2, 'F');
+  doc.text('User: Casper ID (no ca)', 20 + boxW + 6 + boxW/2, y+4, {align:'center'});
+  
+  doc.roundedRect(20 + boxW*2 + 12, y-4, boxW, 12, 2, 2, 'F');
+  doc.text('Password :  Edl@123', 20 + boxW*2 + 12 + boxW/2, y+4, {align:'center'});
+  
+  y+=14;
+  doc.setDrawColor(212,175,55);
+  doc.line(20,y,pw-20,y);
+  return y+8;
 }
 
 function exportData(){

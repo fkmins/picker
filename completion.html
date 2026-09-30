@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
-<link rel="icon" type="image/png" href="https://rukminim2.flixcart.com/www/192/192/promos/20/07/2022/b7cbe3ad-4e67-4224-aeb5-31ce3af2ea18.png">
+<link rel="apple-touch-icon" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
+<link rel="icon" type="image/webp" href="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -219,6 +219,22 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     </div>
   </div>
 </div>
+<div id="waModal" class="wa-modal">
+  <div class="wa-modal-content">
+    <h3 style="margin:0 0 12px 0; color:var(--text-main); font-size:18px;">PDF Generated</h3>
+    <p style="margin:0 0 20px 0; font-size:14px; color:var(--text-muted); line-height:1.5;">Would you like to share this on WhatsApp now? <br>(You will need to manually attach the PDF after WhatsApp opens)</p>
+    <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <button class="icon-btn" onclick="document.getElementById('waModal').style.display='none'" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border)">Cancel</button>
+      <button class="icon-btn" id="btnWaShare" style="background:#25D366; color:#fff; border:none; padding:10px 22px;">Share</button>
+    </div>
+  </div>
+</div>
+<style>
+.wa-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); opacity:0; transition:opacity 0.2s; }
+.wa-modal.show { display:flex; opacity:1; }
+.wa-modal-content { background:var(--card-bg); padding:24px; border-radius:16px; width:100%; max-width:400px; border:1px solid var(--border); box-shadow:0 12px 40px rgba(0,0,0,0.3); transform:scale(0.95); transition:transform 0.2s; }
+.wa-modal.show .wa-modal-content { transform:scale(1); }
+</style>
 <div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
@@ -431,17 +447,57 @@ function ensureJsPdf(){if(window.jspdf&&typeof window.jspdf.jsPDF==='function')r
 
 function drawLoginGuide(doc){
   var pw=doc.internal.pageSize.getWidth();
-  var startY=12;
-  doc.setFontSize(14).setFont('helvetica','bold').setTextColor(40,116,240).text('Login Guide for Picker (Disprz)',pw/2,startY,{align:'center'});
+  var y=12;
+  doc.setFontSize(16);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(40,116,240);
+  doc.text('Login Guide for Picker',pw/2,y,{align:'center'});
+  y+=8;
+  doc.setDrawColor(212,175,55);
+  doc.setLineWidth(0.5);
+  doc.line(20,y,pw-20,y);
+  y+=10;
+  doc.setFontSize(11);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('Step 1: Download the Disprz App (Blue one)',pw/2,y,{align:'center'});
+  y+=8;
+  doc.setFontSize(9);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(40,116,240);
+  doc.text('Play Store:',pw/2-26,y,{align:'right'});
+  doc.setTextColor(0,0,180);
+  doc.textWithLink('https://play.google.com/store/apps/details?id=com.disprz',pw/2-24,y,{url:'https://play.google.com/store/apps/details?id=com.disprz'});
+  y+=6;
+  doc.setTextColor(40,116,240);
+  doc.text('App Store:',pw/2-26,y,{align:'right'});
+  doc.setTextColor(0,0,180);
+  doc.textWithLink('https://apps.apple.com/in/app/disprz/id1458716803',pw/2-24,y,{url:'https://apps.apple.com/in/app/disprz/id1458716803'});
+  y+=12;
   
-  doc.setFontSize(9).setFont('helvetica','normal').setTextColor(0,0,0);
-  doc.text('1. App: Disprz (Play Store / App Store)', 14, startY+8);
-  doc.text('2. URL: edl.disprz.com', 14, startY+14);
-  doc.text('3. Username: Casper ID (without ca)', pw/2, startY+8);
-  doc.text('4. Password: Edl@123', pw/2, startY+14);
+  // Compact 3 boxes side-by-side
+  var boxW = (pw-40)/3 - 4;
+  doc.setFillColor(254,226,226);
   
-  doc.setDrawColor(212,175,55).setLineWidth(0.5).line(14, startY+18, pw-14, startY+18);
-  return startY+24;
+  // Box 1
+  doc.roundedRect(20, y-4, boxW, 12, 2, 2, 'F');
+  doc.setFontSize(9);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(0,0,0);
+  doc.text('URL :  edl.disprz.com', 20 + boxW/2, y+4, {align:'center'});
+  
+  // Box 2
+  doc.roundedRect(20 + boxW + 6, y-4, boxW, 12, 2, 2, 'F');
+  doc.text('User: Casper ID (no ca)', 20 + boxW + 6 + boxW/2, y+4, {align:'center'});
+  
+  // Box 3
+  doc.roundedRect(20 + boxW*2 + 12, y-4, boxW, 12, 2, 2, 'F');
+  doc.text('Password :  Edl@123', 20 + boxW*2 + 12 + boxW/2, y+4, {align:'center'});
+  
+  y+=14;
+  doc.setDrawColor(212,175,55);
+  doc.line(20,y,pw-20,y);
+  return y+8;
 }
 
 function exportPdf(sectionMode){
@@ -496,10 +552,24 @@ function exportPdf(sectionMode){
     doc.save(fileName);
     showToast('PDF Downloaded');
     
-    if (confirm('PDF generated successfully!\n\nWould you like to share this on WhatsApp now? (You will need to manually attach the PDF after WhatsApp opens)')) {
+    var modal = document.getElementById('waModal');
+    var shareBtn = document.getElementById('btnWaShare');
+    modal.style.display = 'flex';
+    setTimeout(function(){ modal.classList.add('show'); }, 10);
+    
+    shareBtn.onclick = function() {
       var waText = "Hello team, please find the " + title + " attached for your reference.";
       window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(waText), '_blank');
-    }
+      modal.classList.remove('show');
+      setTimeout(function(){ modal.style.display='none'; }, 200);
+    };
+    
+    // Close button logic handled in HTML inline (display='none' + classList.remove)
+    var closeBtn = modal.querySelector('button');
+    closeBtn.onclick = function() {
+      modal.classList.remove('show');
+      setTimeout(function(){ modal.style.display='none'; }, 200);
+    };
     
   }).catch(function(e){showToast('PDF failed: '+e.message,true)}).finally(function(){
     btn.disabled=false;btn.textContent=origText;
