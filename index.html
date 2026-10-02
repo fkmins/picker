@@ -101,9 +101,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-tab:hover:not(.active){border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
 .btn-tab.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);box-shadow:0 6px 18px rgba(40,116,240,.35);transform:translateY(-1px)}
 
-.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
-.filter-col{flex:1 1 260px;max-width:420px;text-align:center;position:relative;z-index:20}
-.filter-col:first-child{z-index:30}
+.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%;position:relative;z-index:50}
+.filter-col{flex:1 1 260px;max-width:420px;text-align:center;position:relative}
 
 .ts-wrapper{text-align:center!important;position:relative!important}
 .ts-wrapper .ts-control{border-radius:14px!important;padding:13px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important;transition:border-color .2s,box-shadow .2s!important;display:flex!important;justify-content:center!important;align-items:center!important;text-align:center!important}
@@ -112,8 +111,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .ts-wrapper:not(.has-items) .ts-control>input,.ts-wrapper.single:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
 .ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
 .ts-dropdown-content{max-height:250px!important;overflow-y:auto!important}
-.ts-dropdown{background:transparent!important;border:none!important;box-shadow:none!important;font-family:Inter,sans-serif!important;z-index:10000!important;position:absolute!important}
-.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid var(--border-color)!important;box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
+.ts-dropdown{background:var(--card-bg)!important;border:1px solid var(--border-color)!important;box-shadow:0 12px 32px rgba(0,0,0,0.2)!important;font-family:Inter,sans-serif!important;z-index:99999!important;position:absolute!important;border-radius:12px!important;overflow:hidden;}
+.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid transparent!important;}
 .ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important;border-color:var(--fk-blue)!important}
 .ts-dropdown .no-results{text-align:center!important;color:var(--text-muted)!important;background:var(--card-bg)!important;border-radius:12px!important;padding:10px!important;margin-top:2px!important}
 
@@ -125,7 +124,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 #resultArea{display:none;margin-top:22px;flex-direction:column;align-items:center;width:100%;animation:fadeIn .4s ease both}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;margin-bottom:18px}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;margin-bottom:18px;position:relative;z-index:10;}
 .metric-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:18px;padding:22px 18px;text-align:center;position:relative;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease;box-shadow:var(--shadow-card)}
 .metric-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--fk-yellow),var(--gold))}
 .metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(212,175,55,.18)}
@@ -140,12 +139,12 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .btn-pdf{background:linear-gradient(135deg,#334155,#1e293b);color:#fff}
 .btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669);color:#fff}
 .btn-batch{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;display:none}
-.btn-batch.visible{display:inline-flex;align-items:center;gap:6px}
+.btn-batch.visible{display:inline-flex;align-items:center;gap:6px;justify-content:center;}
 
 .table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:460px;overflow-y:auto;overflow-x:auto;box-shadow:var(--shadow-card)}
 .table{border-collapse:collapse;width:100%;min-width:400px;color:var(--text-main);text-align:center}
 .table th,.table td{text-align:center!important;padding:15px 16px;vertical-align:middle}
-.table thead th{background:var(--table-header);color:var(--text-muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
+.table thead th{background:var(--table-header);color:var(--text-muted);font-size:13px;font-weight:800;text-transform:none;letter-spacing:normal;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
 .table td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color);transition:background .15s ease}
 .table tbody tr:nth-child(even) td{background:var(--table-hover)}
 .table tbody tr:hover td{background:var(--dropdown-hover)}
@@ -158,11 +157,17 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 
 .normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
+
+/* Badge Styles */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; letter-spacing: 0.3px; }
+.badge-pending { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); animation: pulsePending 2s infinite; }
+.badge-completed { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+@keyframes pulsePending { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
 .pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);user-select:all}
 .pill-id:hover{background:rgba(40,116,240,.2);border-color:var(--fk-blue);transform:scale(1.08)}
 .pill-id:active{transform:scale(.95)}
 @keyframes copyPulse{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
-@keyframes copyCheck{0%{opacity:0;transform:translateY(4px)}30%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
 .pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important;animation:copyPulse .35s cubic-bezier(.22,1,.36,1)}
 
 .row-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
@@ -318,8 +323,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
     <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
     <div class="exit-modal-name" id="exitModalName"></div>
     <div style="margin-bottom: 20px;">
-      <label for="exitReasonSelect" style="display:block; font-size:13px; margin-bottom:8px; color:var(--text-muted); font-weight:700;">Reason for Exit</label>
-      <select id="exitReasonSelect" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-main); font-family:Inter,sans-serif; outline:none;">
+      <select id="exitReasonSelect" style="appearance: none; -webkit-appearance: none; width:100%; padding:14px; border-radius:12px; border:1.5px solid var(--border-color); background:var(--card-bg); color:var(--text-main); font-family:Inter,sans-serif; outline:none; font-weight:700; text-align:center; cursor:pointer; font-size: 14px;">
         <option value="Absconding">Absconding</option>
         <option value="Resigned">Resigned</option>
         <option value="Terminated">Terminated</option>
@@ -354,7 +358,11 @@ window.addEventListener('beforeinstallprompt',function(e){
   document.getElementById('pwaInstallCard').classList.remove('hidden');
 });
 function installPWA(){
-  if(!deferredPrompt)return;
+  if(!deferredPrompt) {
+    showToast("Install prompt not available. Try 'Add to Home Screen' from your browser menu.");
+    document.getElementById('pwaInstallCard').classList.add('hidden');
+    return;
+  }
   document.getElementById('pwaInstallCard').classList.add('hidden');
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(function(choice){
@@ -574,7 +582,7 @@ function renderTable(){
       if(!checked)allOnPageSelected=false;
       var rowClass=checked?' class="tr-selected"':'';
       var errLabel=i.e404&&i.e404!=='All Match'?'<div style="font-size:11px;color:var(--danger);font-weight:700;margin-top:4px;">'+escHtml(i.e404)+'</div>':'';
-      var mkBadge=function(v){return v==='Completed'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:#fff;color:yellow;font-size:11px;font-weight:700;">\u2714 Completed</span>':(v==='Pending'?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:lightgreen;color:red;font-size:11px;font-weight:700;">\u2716 Pending</span>':checkNA(v))};
+      var mkBadge=function(v){return v==='Completed'?'<span class="badge badge-completed">\u2714 Completed</span>':(v==='Pending'?'<span class="badge badge-pending">\u2716 Pending</span>':checkNA(v))};
       return'<tr id="row-'+escHtml(idStr)+'"'+rowClass+'><td><input type="checkbox" class="row-check" data-id="'+escHtml(idStr)+'" '+(checked?'checked':'')+' '+(pendingRowIds.has(idStr)?'disabled':'')+' onchange="toggleRowCheck(this)"></td><td>'+checkNA(i.name)+errLabel+'</td><td><span class="pill-id" data-copy-id="'+escHtml(idStr)+'" onclick="copyId(\''+escHtml(idStr)+'\')">'+checkNA(i.casperId)+'</span></td><td>'+mkBadge(i.ind)+'</td><td>'+mkBadge(i.ref)+'</td><td><button class="btn-exit" '+(pendingRowIds.has(idStr)?'disabled':'')+' onclick="showExitModal(\''+escHtml(idStr)+'\')">Exit</button></td></tr>';
     }).join('');
 
@@ -724,18 +732,22 @@ function drawLoginGuide(doc){
   y+=12;
   
   var boxW = (pw-40)/3 - 4;
-  doc.setFillColor(254,226,226);
   
+  doc.setFillColor(254,226,226);
   doc.roundedRect(20, y-4, boxW, 12, 2, 2, 'F');
   doc.setFontSize(9);
   doc.setFont('helvetica','bold');
   doc.setTextColor(0,0,0);
   doc.text('URL :  edl.disprz.com', 20 + boxW/2, y+4, {align:'center'});
   
+  doc.setFillColor(254,226,226);
   doc.roundedRect(20 + boxW + 6, y-4, boxW, 12, 2, 2, 'F');
+  doc.setTextColor(0,0,0);
   doc.text('User: Casper ID (no ca)', 20 + boxW + 6 + boxW/2, y+4, {align:'center'});
   
+  doc.setFillColor(254,226,226);
   doc.roundedRect(20 + boxW*2 + 12, y-4, boxW, 12, 2, 2, 'F');
+  doc.setTextColor(0,0,0);
   doc.text('Password :  Edl@123', 20 + boxW*2 + 12 + boxW/2, y+4, {align:'center'});
   
   y+=14;
@@ -790,16 +802,24 @@ function exportData(){
 
 function exportToGSheet(){
   if(!filtered.length||isProcessing)return;
-  var btn=document.getElementById('btnGSheet');btn.textContent='Generating...';setUILock(true);
-  var smMap={};filtered.forEach(function(i){smMap[i.clusterManager]=(smMap[i.clusterManager]||0)+1});
-  var sm=[['Cluster Manager','Total Pendency']].concat(Object.entries(smMap).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0])}));
-  var dt=[['CMSM','Dark Store','Name','Casper ID','Induction','Refresher','404 Error']].concat(filtered.map(function(i){return[i.clusterManager||'',i.darkStore||'',i.name||'',i.casperId||'',i.ind||'',i.ref||'',i.e404||'']}));
-  var c=cityTS?cityTS.getValue():'',s=storeTS?storeTS.getValue():'';
-  var fTitle=((managerMode?c+'_Pendency':(s||c)+'_Pendency')).replace(/[^a-zA-Z0-9_\-]/g,'_');
-  apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'export',f:fTitle,summaryData:sm,detailData:dt})})
-  .then(function(d){if(d.url){window.open(d.url,'_blank');showToast('G-Sheet Created')}else throw new Error(d.error||'No URL')})
-  .catch(function(e){showToast('Export failed: '+(e.message||'Retry.'),true)})
-  .finally(function(){btn.textContent='Open as G-Sheet';setUILock(false)});
+  var btn=document.getElementById('btnGSheet');
+  btn.textContent='Preparing...';
+  setUILock(true);
+  
+  showToast('Preparing G-Sheet... Please allow popups if blocked by your browser!', false);
+  
+  setTimeout(function() {
+    var smMap={};filtered.forEach(function(i){smMap[i.clusterManager]=(smMap[i.clusterManager]||0)+1});
+    var sm=[['Cluster Manager','Total Pendency']].concat(Object.entries(smMap).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0])}));
+    var dt=[['CMSM','Dark Store','Name','Casper ID','Induction','Refresher','404 Error']].concat(filtered.map(function(i){return[i.clusterManager||'',i.darkStore||'',i.name||'',i.casperId||'',i.ind||'',i.ref||'',i.e404||'']}));
+    var c=cityTS?cityTS.getValue():'',s=storeTS?storeTS.getValue():'';
+    var fTitle=((managerMode?c+'_Pendency':(s||c)+'_Pendency')).replace(/[^a-zA-Z0-9_\-]/g,'_');
+    
+    apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'export',f:fTitle,summaryData:sm,detailData:dt})})
+    .then(function(d){if(d.url){window.open(d.url,'_blank');showToast('G-Sheet Created successfully!')}else throw new Error(d.error||'No URL')})
+    .catch(function(e){showToast('Export failed: '+(e.message||'Retry.'),true)})
+    .finally(function(){btn.textContent='Open as G-Sheet';setUILock(false)});
+  }, 3000);
 }
 
 function initSnow(){
