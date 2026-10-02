@@ -105,8 +105,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .icon-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px var(--gold-glow);border-color:var(--gold)}
 .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
 
-.filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;width:100%; position:relative; z-index:50;}
-.filter-col{flex:1 1 320px;max-width:480px;text-align:center;position:relative;}
+.filter-area{display:flex;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;width:100%}
+.filter-col{flex:1 1 320px;max-width:480px;text-align:center;position:relative;z-index:30}
 
 .ts-wrapper{text-align:center!important;position:relative!important}
 .ts-wrapper .ts-control{border-radius:14px!important;padding:11px 16px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:Inter,sans-serif!important;background:var(--card-bg)!important;color:var(--text-main)!important;display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;text-align:center!important;transition:border-color .2s,box-shadow .2s!important;gap:6px!important}
@@ -114,8 +114,8 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .ts-wrapper:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
 .ts-wrapper .ts-control.focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
 .ts-dropdown-content{max-height:250px!important;overflow-y:auto!important}
-.ts-dropdown{background:var(--card-bg)!important;border:1px solid var(--border-color)!important;box-shadow:0 12px 32px rgba(0,0,0,0.2)!important;font-family:Inter,sans-serif!important;z-index:99999!important;position:absolute!important;border-radius:12px!important;overflow:hidden;}
-.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid transparent!important;}
+.ts-dropdown{background:transparent!important;border:none!important;box-shadow:none!important;font-family:Inter,sans-serif!important;z-index:10000!important;position:absolute!important}
+.ts-dropdown .option{background:var(--card-bg)!important;color:var(--text-main)!important;text-align:center!important;padding:11px 16px!important;font-weight:600!important;font-size:13px!important;border-radius:12px!important;margin:2px 0!important;border:1px solid var(--border-color)!important;box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
 .ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;font-weight:800!important;border-color:var(--fk-blue)!important}
 
 #results{display:none;animation:fadeIn .4s ease both}
@@ -125,7 +125,7 @@ body{font-family:Inter,'Segoe UI',system-ui,sans-serif;color:var(--text-main);mi
 .tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;box-shadow:var(--shadow-card);max-height:380px}
 .tbl{border-collapse:collapse;width:100%;min-width:300px;color:var(--text-main);text-align:center}
 .tbl th,.tbl td{text-align:center!important;padding:14px 16px;vertical-align:middle}
-.tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:13px;font-weight:800;text-transform:none;letter-spacing:normal;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
+.tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
 .tbl td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color)}
 .tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
 .tbl tbody tr:hover td{background:var(--dropdown-hover)}
@@ -477,9 +477,9 @@ function drawLoginGuide(doc){
   
   // Compact 3 boxes side-by-side
   var boxW = (pw-40)/3 - 4;
+  doc.setFillColor(254,226,226);
   
   // Box 1
-  doc.setFillColor(254,226,226);
   doc.roundedRect(20, y-4, boxW, 12, 2, 2, 'F');
   doc.setFontSize(9);
   doc.setFont('helvetica','bold');
@@ -487,15 +487,11 @@ function drawLoginGuide(doc){
   doc.text('URL :  edl.disprz.com', 20 + boxW/2, y+4, {align:'center'});
   
   // Box 2
-  doc.setFillColor(254,226,226);
   doc.roundedRect(20 + boxW + 6, y-4, boxW, 12, 2, 2, 'F');
-  doc.setTextColor(0,0,0);
   doc.text('User: Casper ID (no ca)', 20 + boxW + 6 + boxW/2, y+4, {align:'center'});
   
   // Box 3
-  doc.setFillColor(254,226,226);
   doc.roundedRect(20 + boxW*2 + 12, y-4, boxW, 12, 2, 2, 'F');
-  doc.setTextColor(0,0,0);
   doc.text('Password :  Edl@123', 20 + boxW*2 + 12 + boxW/2, y+4, {align:'center'});
   
   y+=14;
