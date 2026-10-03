@@ -1,77 +1,85 @@
-var CACHE_NAME = 'fk-minutes-cache-v8';
+/* FK Minutes service worker
+ *  - same-origin app files : network-first (updates reach users immediately), cache fallback offline
+ *  - CDN / fonts / images  : stale-while-revalidate
+ *  - Apps Script API calls : never touched
+ */
+var VERSION = 'v9';
+var SHELL_CACHE = 'fk-shell-' + VERSION;
+var STATIC_CACHE = 'fk-static-' + VERSION;
+var SHELL = [
+  './', 'index.html', 'completion.html', 'common.css', 'common.js',
+  'icons/icon-192.png', 'icons/icon-512.png'
+];
 
-self.addEventListener('install', function(event) {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', function(event) {
+self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.keys().then(function(keys) {
-      return Promise.all(
-        keys.map(function(key) {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    }).then(function() {
-      return self.clients.claim();
-    })
+    caches.open(SHELL_CACHE).then(function (cache) {
+      return Promise.all(SHELL.map(function (u) {
+        return cache.add(new Request(u, { cache: 'reload' })).catch(function () { /* a missing file must not block install */ });
+      }));
+    }).then(function () { return self.skipWaiting(); })
   );
 });
 
-self.addEventListener('fetch', function(event) {
-  if (event.request.method !== 'GET') return;
-  var url = new URL(event.request.url);
+self.addEventListener('activate', function (event) {
+  event.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(keys.filter(function (k) { return k !== SHELL_CACHE && k !== STATIC_CACHE; })
+        .map(function (k) { return caches.delete(k); }));
+    }).then(function () { return self.clients.claim(); })
+  );
+});
 
-  // Never cache Google Apps Script calls or non-HTTP
-  if (url.hostname.includes('script.google.com') || !url.protocol.startsWith('http')) return;
+function isApi(url) {
+  return url.hostname.indexOf('script.google.com') !== -1 ||
+         url.hostname.indexOf('googleusercontent.com') !== -1;
+}
 
-  // Never cache manifest.json so icon changes propagate immediately
-  if (url.pathname.endsWith('manifest.json')) return;
+self.addEventListener('fetch', function (event) {
+  var req = event.request;
+  if (req.method !== 'GET') return;
+  var url = new URL(req.url);
+  if (url.protocol.indexOf('http') !== 0 || isApi(url)) return;
+  /* manifest.json: always straight from the network so icon / name changes propagate */
+  if (url.origin === self.location.origin && /manifest\.json$/.test(url.pathname)) return;
 
-  // Network-first for HTML navigation (fixes stale page cache)
-  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+  if (url.origin === self.location.origin) {
     event.respondWith(
-      fetch(event.request).then(function(networkResponse) {
-        if (networkResponse && networkResponse.status === 200) {
-          var clone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, clone);
-          });
+      fetch(req).then(function (res) {
+        if (res && res.status === 200) {
+          var copy = res.clone();
+          event.waitUntil(caches.open(SHELL_CACHE).then(function (c) { return c.put(req, copy); }));
         }
-        return networkResponse;
-      }).catch(function() {
-        return caches.match(event.request);
+        return res;
+      }).catch(function () {
+        return caches.match(req).then(function (hit) {
+          return hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined);
+        });
       })
     );
     return;
   }
 
-  // Stale-while-revalidate for static assets (fonts, images, CSS, JS)
   event.respondWith(
-    caches.match(event.request).then(function(cachedResponse) {
-      var fetchPromise = fetch(event.request).then(function(networkResponse) {
-        if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
-          var responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, responseToCache);
-          });
+    caches.match(req).then(function (cached) {
+      var network = fetch(req).then(function (res) {
+        if (res && (res.status === 200 || res.type === 'opaque')) {
+          var copy = res.clone();
+          event.waitUntil(caches.open(STATIC_CACHE).then(function (c) { return c.put(req, copy); }));
         }
-        return networkResponse;
-      }).catch(function() {
-        return cachedResponse;
-      });
-      return cachedResponse || fetchPromise;
+        return res;
+      }).catch(function () { return cached; });
+      return cached || network;
     })
   );
 });
 
-self.addEventListener('message', function(event) {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    caches.keys().then(function(keys) {
-      return Promise.all(keys.map(function(key) { return caches.delete(key); }));
-    });
+self.addEventListener('message', function (event) {
+  if (!event.data) return;
+  if (event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data.type === 'CLEAR_CACHE') {
+    event.waitUntil(caches.keys().then(function (keys) {
+      return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+    }));
   }
 });
