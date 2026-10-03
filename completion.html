@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Completion Report - Flipkart Minutes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2874F0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FK Minutes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css"
+      integrity="sha512-mNN7o87hQqtNCCGWxFVdlVdaKF6d4S1wVMi3+ftJYnW572YIo0KPjK1Cns5SPlyCtKGp1Nu+z26MJUNXmpbjKA==" crossorigin="anonymous">
+<link rel="stylesheet" href="common.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"
+        integrity="sha512-nSCwMPJuzxtzxg73yUXuSuLmsfecNBt+/7dimMdC7VJisuxdr7XtYoCausZOSS6V5IHUOuJ7nQMXmylVt9+jeg==" crossorigin="anonymous"></script>
+<script defer src="common.js"></script>
+<style>
+/* auth */
+.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;transition:opacity .3s ease}
+.auth-modal{background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;padding:36px 32px;width:90%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:panelUp .4s cubic-bezier(.22,1,.36,1)}
+.auth-icon{font-size:48px;margin-bottom:12px;line-height:1}
+.auth-input{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:700;font-size:16px;font-family:inherit;background:var(--bg-panel);color:var(--text-main);text-align:center;margin-bottom:20px;letter-spacing:4px}
+.auth-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
+.auth-btn{width:100%;padding:14px;border-radius:14px;font-weight:800;font-size:14px;border:1.5px solid var(--border-color);cursor:pointer;font-family:inherit;transition:all .2s;background:transparent;color:var(--text-main)}
+.auth-btn:hover{border-color:var(--danger);color:var(--danger)}
+.auth-error{color:var(--danger);font-size:13px;font-weight:800;margin-top:16px;min-height:18px}
+
+.filter-area{display:flex;justify-content:center;margin-bottom:24px;width:100%}
+.filter-col{flex:1 1 320px;max-width:520px}
+.ts-wrapper.multi .ts-control{flex-wrap:wrap!important;gap:6px!important}
+.ts-wrapper.multi .ts-control>.item{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;border:1px solid rgba(40,116,240,.3)!important;border-radius:8px!important;padding:4px 10px!important;font-weight:800!important;font-size:13px!important;white-space:nowrap!important;display:inline-flex!important;align-items:center!important}
+.ts-wrapper.multi:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
+
+#results{display:none;animation:fadeIn .4s ease both}
+.export-row{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+.btn-export{border:none;padding:14px 26px;border-radius:14px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#334155,#1e293b);color:#fff}
+.btn-export:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.btn-export:disabled{opacity:.55;cursor:wait}
+.section{margin-bottom:28px}
+.section-title{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--fk-yellow);margin-bottom:12px;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tbl-wrap{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);overflow:auto;box-shadow:var(--shadow-card);max-height:380px}
+.tbl{border-collapse:collapse;width:100%;min-width:300px;color:var(--text-main)}
+.tbl th,.tbl td{text-align:center;padding:14px 16px;vertical-align:middle}
+.tbl thead th{background:var(--table-header);color:var(--fk-yellow);font-size:13px;font-weight:800;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
+.tbl td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color)}
+.tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
+.tbl tbody tr:hover td{background:var(--dropdown-hover)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.normal-count{font-weight:800;font-size:15px}
+.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
+.empty-cell{padding:24px!important;color:var(--text-muted);font-weight:700}
+
+.wa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100003;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .2s}
+.wa-modal.show{display:flex;opacity:1}
+.wa-modal-content{background:var(--solid);padding:24px;border-radius:16px;width:100%;max-width:400px;border:1px solid var(--border-color);box-shadow:0 12px 40px rgba(0,0,0,.3);transform:scale(.95);transition:transform .2s}
+.wa-modal.show .wa-modal-content{transform:scale(1)}
+.wa-modal h3{margin-bottom:12px;font-size:18px}
+.wa-modal p{margin-bottom:20px;font-size:14px;color:var(--text-muted);line-height:1.5}
+.wa-actions{display:flex;gap:12px;justify-content:flex-end}
+.wa-share{background:#25D366!important;color:#fff!important;border:none!important;padding:10px 22px!important}
+
+@media(max-width:768px){
+  .btn-export{width:100%}
+  .tbl th,.tbl td{padding:12px 10px;font-size:13px}
+  .section-title{font-size:13px}
+}
+</style>
+</head>
+<body>
+<canvas id="snowCanvas" aria-hidden="true"></canvas>
+
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-modal">
+    <div class="auth-icon">&#x1F510;</div>
+    <input type="password" id="authInput" class="auth-input" placeholder="Enter Password" autocomplete="off">
+    <button class="auth-btn" data-action="goHome">Homepage</button>
+    <div id="authError" class="auth-error" role="alert"></div>
+  </div>
+</div>
+
+<div id="pwaInstallCard" class="pwa-install-card" hidden>
+  <div class="pwa-card-title">Install app</div>
+  <div class="pwa-card-info">
+    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
+    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">FK Minutes Dashboard</div></div>
+  </div>
+  <div class="pwa-card-actions">
+    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
+    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
+  </div>
+</div>
+
+<div id="appLoader">
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
+  <div class="loading-text">Loading Completion Report</div>
+</div>
+
+<main class="glass-panel">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
+      <div>
+        <h1 class="hdr-title">Completion Report</h1>
+        <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <a href="index.html" class="icon-btn">Dashboard</a>
+      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
+      <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
+    </div>
+  </div>
+  <hr class="divider">
+
+  <div class="filter-area"><div class="filter-col"><select id="trainerSelect" autocomplete="off" multiple></select></div></div>
+
+  <div id="results">
+    <div class="export-row">
+      <button class="btn-export" id="btnPdfStore" data-action="pdf" data-mode="store">Export Store Wise PDF</button>
+      <button class="btn-export" id="btnPdfCm" data-action="pdf" data-mode="cm">Export CM Wise PDF</button>
+      <button class="btn-export" id="btnPdfCity" data-action="pdf" data-mode="city">Export City Wise PDF</button>
+    </div>
+    <div class="section"><div class="section-title">~ : Store Name Wise Pendency : ~</div>
+      <div class="tbl-wrap"><table class="tbl"><thead id="th1"></thead><tbody id="tb1"></tbody></table></div></div>
+    <div class="section"><div class="section-title">~ : Cluster Manager Wise Pendency : ~</div>
+      <div class="tbl-wrap"><table class="tbl"><thead id="th2"></thead><tbody id="tb2"></tbody></table></div></div>
+    <div class="section"><div class="section-title">~ : City Wise Pendency : ~</div>
+      <div class="tbl-wrap"><table class="tbl"><thead id="th3"></thead><tbody id="tb3"></tbody></table></div></div>
+  </div>
+</main>
+
+<div id="waModal" class="wa-modal" role="dialog" aria-modal="true">
+  <div class="wa-modal-content">
+    <h3>PDF Generated</h3>
+    <p>Would you like to share this on WhatsApp now?<br>(You will need to attach the PDF manually after WhatsApp opens.)</p>
+    <div class="wa-actions">
+      <button class="icon-btn" data-action="waClose">Cancel</button>
+      <button class="icon-btn wa-share" data-action="waShare">Share</button>
+    </div>
+  </div>
+</div>
+<div id="toast-container"><div class="toast-msg hidden" id="toastText" role="status" aria-live="polite"></div></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
+  var $ = FK.$, esc = FK.esc;
+  var CACHE_KEY = 'completionReport_v9';
+  /* SHA-256 of the access password (the plain text is no longer shipped in the page source).
+     NOTE: this is a UI gate only – the data endpoint itself is public. */
+  var AUTH_HASH = '6e077073d1d6a2571a403f0da77a08610904bb64c88e68f122158d33f3b5a522';
+  var UNMAPPED_CM = 'Unmapped';
+
+  var rawData = [], trainerTS = null, shareText = '';
+
+  FK.setWallpaper([
+    'https://rukmini1.flixcart.com/image/1500/1500/xif0q/poster/r/h/3/small-demon-slayer-anime-kimetsu-no-yaiba-upper-moon-1-laminated-original-imah847wxzyfzuq2.jpeg',
+    'https://m.media-amazon.com/images/M/MV5BMGVhZTY1YTctOWJlYS00MjcxLTlkNDgtYTUxZTM5MzMzZjI2XkEyXkFqcGc@._V1_.jpg'
+  ]);
+  FK.syncThemeBtn();
+  FK.initInstallUi();
+  FK.registerSW();
+
+  /* ── auth ── */
+  var authInput = $('authInput');
+  function sha256(s) {
+    if (!(window.crypto && crypto.subtle)) return Promise.reject(new Error('insecure'));
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function (buf) {
+      return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    });
+  }
+  function unlock() {
+    var o = $('authOverlay'); o.style.opacity = '0';
+    setTimeout(function () { o.style.display = 'none'; }, 300);
+    authInput.blur();
+  }
+  authInput.addEventListener('input', function () {
+    var v = authInput.value.trim();
+    if (!v) return;
+    sha256(v).then(function (h) { if (h === AUTH_HASH) unlock(); })
+      .catch(function () { $('authError').textContent = 'Secure connection (HTTPS) required to sign in.'; });
+  });
+  authInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var v = authInput.value.trim();
+    sha256(v).then(function (h) { if (h !== AUTH_HASH) window.location.href = 'index.html'; });
+  });
+  authInput.focus();
+
+  /* ── data ── */
+  function normalizeRow(r) {
+    var id = FK.clean(r.id);
+    if (!id) return null;
+    var wh = FK.clean(r.wh);
+    var trainer = FK.titleCase(FK.clean(r.tn));
+    var cm = FK.titleCase(FK.clean(r.cm)) || UNMAPPED_CM;
+    return {
+      id: id,
+      trainer: trainer,
+      /* who the row is grouped under in the dropdown */
+      owner: trainer || (cm !== UNMAPPED_CM ? cm : 'Unassigned'),
+      store: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
+      city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
+      cm: cm
+    };
+  }
+  function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: rawData, ts: Date.now() })); } catch (e) { /* quota */ } }
+
+  function applyData(d) {
+    rawData = d.map(normalizeRow).filter(Boolean);
+    saveCache();
+    populateTrainers();
+  }
+
+  function loadData() {
+    return FK.fetchJson(FK.API_URL + '?action=getData&type=Pending').then(function (d) {
+      FK.hideLoader();
+      if (d && d.error) { FK.toast('Error: ' + d.error, true); return; }
+      if (!Array.isArray(d)) { FK.toast('Invalid data received.', true); return; }
+      applyData(d);
+      if (!rawData.length) FK.toast('No pending pickers found.');
+    }).catch(function () {
+      FK.hideLoader();
+      FK.toast('Network error. Retrying...', true);
+      setTimeout(function () {
+        FK.fetchJson(FK.API_URL + '?action=getData&type=Pending&nocache=' + Date.now(), { retries: 0 }).then(function (d) {
+          if (Array.isArray(d)) { applyData(d); FK.toast('Data loaded successfully'); }
+        }).catch(function () { /* user can refresh */ });
+      }, 3000);
+    });
+  }
+
+  function populateTrainers() {
+    if (!trainerTS) return;
+    var prev = trainerTS.getValue();
+    prev = Array.isArray(prev) ? prev : (prev ? String(prev).split(',') : []);
+    var seen = {}, list = [];
+    rawData.forEach(function (r) { if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); } });
+    list.sort();
+    trainerTS.clearOptions();
+    list.forEach(function (t) { trainerTS.addOption({ value: t, text: t }); });
+    prev.forEach(function (v) { if (seen[v]) trainerTS.addItem(v, true); });
+    onTrainerChange();                               // re-render with the fresh data
+  }
+
+  /* ── tables ── */
+  function selectedOwners() {
+    var v = trainerTS ? trainerTS.getValue() : [];
+    return Array.isArray(v) ? v : (v ? String(v).split(',') : []);
+  }
+  function rowsFor(owners) { return rawData.filter(function (r) { return owners.indexOf(r.owner) !== -1; }); }
+
+  function groupBy(arr, key) {
+    var map = {};
+    arr.forEach(function (r) { map[r[key]] = (map[r[key]] || 0) + 1; });   // nothing is dropped → totals always reconcile
+    var entries = Object.keys(map).map(function (k) { return [k, map[k]]; })
+      .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
+    return { entries: entries, total: arr.length };
+  }
+
+  function renderSection(thId, tbId, header, g) {
+    $(thId).innerHTML = '<tr><th>' + esc(header) + '</th><th>Pendency</th></tr>';
+    if (!g.entries.length) { $(tbId).innerHTML = '<tr><td class="empty-cell" colspan="2">No Data</td></tr>'; return; }
+    $(tbId).innerHTML = g.entries.map(function (e) {
+      return '<tr><td>' + esc(e[0]) + '</td><td><span class="normal-count">' + e[1] + '</span></td></tr>';
+    }).join('') + '<tr class="total-row"><td>Total</td><td>' + g.total + '</td></tr>';
+  }
+
+  function onTrainerChange() {
+    var owners = selectedOwners();
+    if (!owners.length) { $('results').style.display = 'none'; return; }
+    var data = rowsFor(owners);
+    if (!data.length) { $('results').style.display = 'none'; FK.toast('No records for the selected trainer(s).', true); return; }
+    renderSection('th1', 'tb1', 'Store Name', groupBy(data, 'store'));
+    renderSection('th2', 'tb2', 'Cluster Manager', groupBy(data, 'cm'));
+    renderSection('th3', 'tb3', 'City', groupBy(data, 'city'));
+    $('results').style.display = 'block';
+  }
+
+  /* ── pdf ── */
+  var MODES = {
+    store: { btn: 'btnPdfStore', key: 'store', head: 'Store Name', title: 'Store Name Wise Pendency' },
+    cm:    { btn: 'btnPdfCm',    key: 'cm',    head: 'Cluster Manager', title: 'Cluster Manager Wise Pendency' },
+    city:  { btn: 'btnPdfCity',  key: 'city',  head: 'City', title: 'City Wise Pendency' }
+  };
+
+  function exportPdf(modeKey) {
+    var m = MODES[modeKey], owners = selectedOwners();
+    if (!m) return;
+    if (!owners.length) { FK.toast('Select a trainer first.', true); return; }
+    var data = rowsFor(owners);
+    if (!data.length) { FK.toast('No data to export.', true); return; }
+
+    var btn = $(m.btn), orig = btn.textContent;
+    Array.prototype.forEach.call(document.querySelectorAll('.btn-export'), function (b) { b.disabled = true; });
+    btn.textContent = 'Generating...';
+
+    FK.ensureJsPdf().then(function () {
+      var doc = new window.jspdf.jsPDF({ compress: true });
+      var y = FK.pdf.loginGuide(doc);
+      y = FK.pdf.title(doc, m.title, y);
+      var g = groupBy(data, m.key);
+      var rows = g.entries.map(function (e) { return [FK.pdf.safe(e[0]), String(e[1])]; });
+      var last = rows.length;
+      rows.push(['TOTAL', String(g.total)]);
+      doc.autoTable({
+        head: [[m.head, 'Pendency']], body: rows, startY: y + 2, theme: 'grid',
+        styles: FK.pdf.bodyStyles, headStyles: FK.pdf.headStyles, margin: { left: 15, right: 15, bottom: 16 },
+        didParseCell: function (d) {
+          if (d.section !== 'body') return;
+          if (d.row.index === last) { d.cell.styles.fontStyle = 'bold'; return; }
+          if (d.column.index === 1) FK.pdf.countCell(d.cell);
+        }
+      });
+      FK.pdf.pageNumbers(doc);
+      doc.save('Disprz_Pendency_data_(' + FK.dateStamp() + ').pdf');
+      FK.toast('PDF downloaded');
+      shareText = 'Hello team, please find the ' + m.title + ' attached for your reference.';
+      var modal = $('waModal'); modal.style.display = 'flex';
+      setTimeout(function () { modal.classList.add('show'); }, 10);
+    }).catch(function (e) {
+      FK.toast('PDF failed: ' + e.message, true, 5000);
+    }).then(function () {
+      btn.textContent = orig;
+      Array.prototype.forEach.call(document.querySelectorAll('.btn-export'), function (b) { b.disabled = false; });
+    });
+  }
+
+  function closeShare() {
+    var modal = $('waModal'); modal.classList.remove('show');
+    setTimeout(function () { modal.style.display = 'none'; }, 200);
+  }
+
+  FK.delegate({
+    theme: function () { FK.toggleTheme(); },
+    install: function () { FK.install(); },
+    dismissInstall: function () { FK.dismissInstall(); },
+    goHome: function () { window.location.href = 'index.html'; },
+    pdf: function (el) { exportPdf(el.getAttribute('data-mode')); },
+    waClose: closeShare,
+    waShare: function () {
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText), '_blank', 'noopener');
+      closeShare();
+    }
+  });
+
+  /* ── init ── */
+  trainerTS = new TomSelect('#trainerSelect', {
+    placeholder: 'Choose a Trainer', create: false, maxItems: null, plugins: ['remove_button'],
+    sortField: { field: 'text' }, dropdownParent: 'body', onChange: onTrainerChange,
+    render: {
+      item: function (d, e) { return '<div>' + e(d.text) + '</div>'; },
+      option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; }
+    }
+  });
+
+  var cached = null;
+  try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) { cached = null; }
+  if (cached && Array.isArray(cached.data) && cached.data.length) { rawData = cached.data; populateTrainers(); FK.hideLoader(); }
+  loadData();
+
+  if ('requestIdleCallback' in window) requestIdleCallback(FK.initSnow, { timeout: 1500 }); else setTimeout(FK.initSnow, 300);
+});
+</script>
+</body>
+</html>

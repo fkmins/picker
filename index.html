@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Picker Pendency Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2874F0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FK Minutes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css"
+      integrity="sha512-mNN7o87hQqtNCCGWxFVdlVdaKF6d4S1wVMi3+ftJYnW572YIo0KPjK1Cns5SPlyCtKGp1Nu+z26MJUNXmpbjKA==" crossorigin="anonymous">
+<link rel="stylesheet" href="common.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"
+        integrity="sha512-nSCwMPJuzxtzxg73yUXuSuLmsfecNBt+/7dimMdC7VJisuxdr7XtYoCausZOSS6V5IHUOuJ7nQMXmylVt9+jeg==" crossorigin="anonymous"></script>
+<script defer src="common.js"></script>
+<style>
+.tab-container{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.btn-tab{border:1.5px solid var(--border-color);padding:11px 26px;border-radius:50px;font-weight:800;font-size:13px;background:var(--card-bg);
+  color:var(--text-muted);transition:all .22s ease;flex:1;max-width:220px;cursor:pointer;font-family:inherit}
+.btn-tab:hover:not(.active){border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
+.btn-tab.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);box-shadow:0 6px 18px rgba(40,116,240,.35);transform:translateY(-1px)}
+
+.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
+.filter-col{flex:1 1 260px;max-width:420px;position:relative}
+.ts-wrapper.single.has-items .ts-control>input{width:0!important;min-width:0!important;flex:0 0 0!important;padding:0!important;margin:0!important;opacity:0!important;position:absolute!important;left:-9999px!important}
+.ts-wrapper.single .ts-control>.item{text-align:center!important;width:100%!important;flex:1 1 100%!important;font-weight:700!important;color:var(--text-main)!important;display:block!important}
+.ts-wrapper.single:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
+
+.search-wrapper{width:100%;margin-bottom:20px}
+.search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:inherit;
+  background:var(--card-bg);color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s}
+.search-box::placeholder{color:var(--text-muted)}
+.search-box:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
+
+#resultArea{display:none;margin-top:22px;flex-direction:column;align-items:center;width:100%;animation:fadeIn .4s ease both}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;margin-bottom:18px}
+.metric-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:18px;padding:22px 18px;position:relative;overflow:hidden;
+  transition:transform .2s ease,box-shadow .2s ease;box-shadow:var(--shadow-card)}
+.metric-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--fk-yellow),var(--gold))}
+.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(212,175,55,.18)}
+.metric-card .val{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--fk-blue),#4f9cf9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:8px}
+.metric-card .lbl{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-muted);letter-spacing:.8px}
+
+.action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:22px;width:100%}
+.btn-action{border:none;padding:13px 22px;border-radius:14px;font-weight:800;font-size:13px;font-family:inherit;flex:1;min-width:150px;cursor:pointer;
+  transition:all .2s ease;letter-spacing:.3px;color:#fff}
+.btn-action:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.btn-action:active:not(:disabled){transform:scale(.97)}
+.btn-action:disabled{opacity:.55;cursor:wait}
+.btn-pdf{background:linear-gradient(135deg,#334155,#1e293b)}
+.btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669)}
+.btn-batch{background:linear-gradient(135deg,#f59e0b,#d97706);display:none}
+.btn-batch.visible{display:inline-block}
+
+.table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:460px;overflow:auto;box-shadow:var(--shadow-card)}
+.table{border-collapse:collapse;width:100%;min-width:480px;color:var(--text-main)}
+.table th,.table td{text-align:center;padding:14px 14px;vertical-align:middle}
+.table thead th{background:var(--table-header);color:var(--text-muted);font-size:13px;font-weight:800;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
+.table td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color)}
+.table tbody tr:nth-child(even) td{background:var(--table-hover)}
+.table tbody tr:hover td{background:var(--dropdown-hover)}
+.table tbody tr:last-child td{border-bottom:none}
+.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
+.empty-cell{padding:32px!important;color:var(--text-muted);font-weight:700}
+.normal-count{font-weight:800;font-size:15px}
+.na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
+.err-note{font-size:11px;color:var(--danger);font-weight:700;margin-top:4px}
+
+.btn-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:800;font-size:12px;
+  font-family:inherit;cursor:pointer;transition:transform .2s,opacity .2s}
+.btn-exit:hover:not(:disabled){transform:translateY(-2px);opacity:.9}
+.btn-exit:disabled{opacity:.45;cursor:wait}
+.badge-pending{animation:badgeFlow 3.2s ease-in-out infinite,pulsePending 2s infinite}
+@keyframes pulsePending{0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+
+.pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;
+  border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);min-width:84px}
+.pill-id:hover{background:rgba(40,116,240,.2);border-color:var(--fk-blue);transform:scale(1.06)}
+.pill-id:active{transform:scale(.95)}
+.pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important}
+.row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
+.tr-selected td{background:rgba(40,116,240,.08)!important}
+
+#paginationBar{display:none;justify-content:center;align-items:center;gap:14px;margin-top:18px;width:100%;flex-wrap:wrap}
+.page-info{font-weight:700;font-size:13px;color:var(--text-muted);min-width:140px}
+.btn-page{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:8px 18px;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;transition:all .2s ease}
+.btn-page:hover:not(:disabled){border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+.btn-page:disabled{opacity:.4;cursor:default}
+
+#announcementPopup{position:fixed;bottom:28px;right:24px;z-index:9998;width:200px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  animation:panelUp .5s cubic-bezier(.22,1,.36,1) both;transition:opacity .3s ease,transform .3s ease}
+.popup-close{position:absolute;top:2px;right:6px;background:none;border:none;font-size:20px;line-height:1;color:#fff;cursor:pointer;font-weight:700;padding:2px 6px;transition:transform .2s ease,color .15s}
+.popup-close:hover{color:var(--danger);transform:rotate(90deg)}
+.popup-img{width:120px;height:80px;object-fit:contain;filter:drop-shadow(0 16px 20px rgba(0,0,0,.25))}
+
+/* exit modal */
+.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .2s ease}
+.exit-modal{background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;padding:32px 26px 26px;width:90%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelUp .3s cubic-bezier(.22,1,.36,1)}
+.exit-modal-title{font-weight:900;font-size:20px;margin-bottom:6px}
+.exit-modal-name{font-weight:800;font-size:16px;color:var(--fk-blue);margin-bottom:18px;word-break:break-word}
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.reason-opt{padding:12px 8px;border-radius:12px;border:1.5px solid var(--border-color);background:var(--card-bg);color:var(--text-main);
+  font-weight:800;font-size:13px;font-family:inherit;cursor:pointer;transition:all .18s ease}
+.reason-opt:hover{border-color:var(--fk-blue);background:var(--dropdown-hover);color:var(--fk-blue)}
+.reason-opt.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);border-color:var(--fk-blue);color:#fff;box-shadow:0 4px 14px rgba(40,116,240,.35)}
+.exit-modal-actions{display:flex;gap:12px;justify-content:center}
+.exit-modal-btn{padding:12px 28px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:inherit;transition:all .2s ease}
+.exit-modal-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff}
+.exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)}
+.exit-btn-cancel:hover{border-color:var(--gold);color:var(--gold)}
+
+@media(max-width:768px){
+  .btn-tab{flex:1 1 42%;max-width:none;padding:13px 14px}
+  .filter-row{flex-direction:column;gap:10px}
+  .filter-col{flex:1 1 100%;max-width:100%}
+  .metrics-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .metric-card{padding:18px 14px}.metric-card .val{font-size:28px}
+  .btn-action{min-width:0;padding:14px 16px}
+  .table th,.table td{padding:12px 8px;font-size:13px}
+  #announcementPopup{bottom:14px;right:12px;width:150px;padding:12px}
+  .popup-img{width:90px;height:60px}
+}
+</style>
+</head>
+<body>
+<canvas id="snowCanvas" aria-hidden="true"></canvas>
+
+<div id="pwaInstallCard" class="pwa-install-card" hidden>
+  <div class="pwa-card-title">Install app</div>
+  <div class="pwa-card-info">
+    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
+    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">FK Minutes Dashboard</div></div>
+  </div>
+  <div class="pwa-card-actions">
+    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
+    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
+  </div>
+</div>
+
+<div id="appLoader">
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
+  <div class="loading-text">Please wait, loading your data</div>
+</div>
+
+<main class="glass-panel" id="mainPanel">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
+      <div>
+        <h1 class="hdr-title">Picker Pendency Dashboard</h1>
+        <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
+      <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
+    </div>
+  </div>
+  <hr class="divider">
+
+  <div class="tab-container">
+    <button id="btnNormal" class="btn-tab active" data-action="mode" data-mode="0">Dark Store Wise</button>
+    <button id="btnManager" class="btn-tab" data-action="mode" data-mode="1">Cluster Manager Wise</button>
+  </div>
+  <div class="filter-row">
+    <div class="filter-col"><select id="citySelect" autocomplete="off"></select></div>
+    <div class="filter-col" id="storeWrapper"><select id="storeSelect" autocomplete="off"></select></div>
+  </div>
+
+  <div id="resultArea">
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
+      <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Exited (This Session)</div></div>
+    </div>
+    <div class="search-wrapper" id="searchWrapper">
+      <input type="text" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off">
+    </div>
+    <div class="action-buttons">
+      <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">Export PDF</button>
+      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">Open as G-Sheet</button>
+      <button class="btn-action btn-batch" id="btnBatchExit" data-action="batchExit">Batch Exit (<span id="batchCount">0</span>)</button>
+    </div>
+    <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+    <div id="paginationBar">
+      <button class="btn-page" id="btnPrev" data-action="page" data-dir="-1">&larr; Prev</button>
+      <span class="page-info" id="pageInfo">Page 1</span>
+      <button class="btn-page" id="btnNext" data-action="page" data-dir="1">Next &rarr;</button>
+    </div>
+  </div>
+</main>
+
+<div id="exitModal" class="exit-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="exitModalTitle">
+  <div class="exit-modal">
+    <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
+    <div class="exit-modal-name" id="exitModalName"></div>
+    <div class="reason-grid" id="reasonGrid" role="radiogroup" aria-label="Exit reason">
+      <button type="button" class="reason-opt active" role="radio" aria-checked="true" data-action="reason" data-reason="Absconding">Absconding</button>
+      <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Resigned">Resigned</button>
+      <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Terminated">Terminated</button>
+      <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Others">Others</button>
+    </div>
+    <div class="exit-modal-actions">
+      <button class="exit-modal-btn exit-btn-confirm" id="exitConfirmBtn" data-action="confirmExit">Yes, Exit</button>
+      <button class="exit-modal-btn exit-btn-cancel" data-action="closeExit">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"><div class="toast-msg hidden" id="toastText" role="status" aria-live="polite"></div></div>
+<div id="announcementPopup">
+  <button class="popup-close" data-action="closePopup" aria-label="Close">&times;</button>
+  <img class="popup-img" src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" alt="Flipkart Minutes" decoding="async" loading="lazy">
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
+  var $ = FK.$, esc = FK.esc;
+  var CACHE_KEY = 'pickerDash_v8', PAGE_SIZE = 50, STALE_MS = 5 * 60 * 1000, DEFAULT_REASON = 'Absconding';
+
+  var db = [], filtered = [];
+  var exited = new Set(), pendingRows = new Set(), selected = new Set();
+  var cityTS, storeTS, managerMode = false, page = 1, exporting = false, lastLoad = 0;
+  var query = '', searchTimer = null, exitTarget = null, exitIsBatch = false, exitReason = DEFAULT_REASON;
+
+  FK.setWallpaper([
+    'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg',
+    'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'
+  ]);
+  FK.syncThemeBtn();
+  FK.initInstallUi();
+  FK.registerSW();
+
+  try { if (sessionStorage.getItem('popupDismissed')) $('announcementPopup').remove(); } catch (e) { /* ignore */ }
+
+  /* ── data ── */
+  function normalizeRow(r) {
+    var id = FK.clean(r.id);
+    if (!id) return null;
+    var wh = FK.clean(r.wh);
+    return {
+      id: id,
+      name: FK.titleCase(FK.clean(r.nm)) || 'N/A',
+      /* never lose a picker just because the store name is blank */
+      darkStore: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
+      city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
+      cm: FK.titleCase(FK.clean(r.cm)) || 'N/A',
+      ind: r.ind, ref: r.ref, e404: r.e404
+    };
+  }
+
+  function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: db, ts: Date.now() })); } catch (e) { /* quota */ } }
+
+  function loadData(showErr) {
+    return FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
+      FK.hideLoader();
+      if (d && d.error) { FK.toast('Error: ' + d.error, true); return; }
+      if (!Array.isArray(d)) { FK.toast('Unexpected response from server.', true); return; }
+      db = d.map(normalizeRow).filter(Boolean);
+      lastLoad = Date.now();
+      saveCache();
+      populateCityOptions();
+      if (cityTS.getValue()) { if (!managerMode) onCityChange(true); render(); }
+    }).catch(function () {
+      FK.hideLoader();
+      if (showErr || !db.length) FK.toast('Network error. Please check your connection and refresh.', true);
+    });
+  }
+
+  function populateCityOptions() {
+    var cur = cityTS.getValue(), seen = {}, cities = [];
+    cityTS.clearOptions();
+    db.forEach(function (i) { if (!seen[i.city]) { seen[i.city] = 1; cities.push(i.city); } });
+    cities.sort().forEach(function (c) { cityTS.addOption({ value: c, text: c }); });
+    if (cur && seen[cur]) cityTS.setValue(cur, true);
+  }
+
+  /* ── filters ── */
+  function onCityChange(silent) {
+    var c = cityTS.getValue();
+    page = 1; selected.clear(); updateBatchUI();
+    if (!c) { $('resultArea').style.display = 'none'; return; }
+    if (managerMode) { if (!silent) render(); return; }
+    var prev = storeTS.getValue(), seen = {}, stores = [];
+    storeTS.clearOptions();
+    if (!silent) storeTS.clear(true);
+    db.forEach(function (i) { if (i.city === c && !seen[i.darkStore]) { seen[i.darkStore] = 1; stores.push(i.darkStore); } });
+    stores.sort().forEach(function (s) { storeTS.addOption({ value: s, text: s }); });
+    if (silent && prev && seen[prev]) storeTS.setValue(prev, true);
+    if (!silent) $('resultArea').style.display = 'none';
+  }
+
+  function setMode(m) {
+    managerMode = !!m; page = 1; query = ''; selected.clear();
+    $('searchInput').value = '';
+    $('btnNormal').classList.toggle('active', !m);
+    $('btnManager').classList.toggle('active', !!m);
+    $('storeWrapper').style.display = m ? 'none' : '';
+    $('searchWrapper').style.display = m ? 'none' : '';
+    updateBatchUI();
+    if (cityTS.getValue()) { if (managerMode) render(); else onCityChange(); }
+    else $('resultArea').style.display = 'none';
+  }
+
+  /* ── rendering ── */
+  function groupCount(arr, key) {
+    var map = {};
+    arr.forEach(function (r) { map[r[key]] = (map[r[key]] || 0) + 1; });
+    return Object.keys(map).map(function (k) { return [k, map[k]]; })
+      .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
+  }
+  var checkNA = function (v) { return FK.isNA(v) ? '<span class="na-bg">N/A</span>' : esc(v); };
+  var badge = function (v) {
+    return v === 'Completed' ? '<span class="badge badge-completed">Completed</span>'
+         : v === 'Pending' ? '<span class="badge badge-pending">Pending</span>' : checkNA(v);
+  };
+
+  function render() {
+    var c = cityTS.getValue(), s = storeTS.getValue();
+    if (!c || (!managerMode && !s)) { $('resultArea').style.display = 'none'; return; }
+    filtered = db.filter(function (i) {
+      if (i.city !== c) return false;
+      if (!managerMode && i.darkStore !== s) return false;
+      if (exited.has(i.id)) return false;
+      if (query && !managerMode) return i.name.toLowerCase().indexOf(query) !== -1 || i.id.toLowerCase().indexOf(query) !== -1;
+      return true;
+    });
+    $('countBadge').textContent = filtered.length;
+    $('exitedBadge').textContent = exited.size;
+    $('resultArea').style.display = 'flex';
+    renderTable();
+  }
+
+  function pageSlice() { var st = (page - 1) * PAGE_SIZE; return filtered.slice(st, st + PAGE_SIZE); }
+
+  function renderTable() {
+    var tH = $('tableHead'), tB = $('tableBody'), pB = $('paginationBar');
+    if (!filtered.length) {
+      tH.innerHTML = '';
+      tB.innerHTML = '<tr><td class="empty-cell" colspan="' + (managerMode ? 2 : 6) + '">No Records Found</td></tr>';
+      pB.style.display = 'none'; updateBatchUI(); return;
+    }
+    if (managerMode) {
+      pB.style.display = 'none';
+      tH.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
+      tB.innerHTML = groupCount(filtered, 'cm').map(function (e) {
+        return '<tr><td>' + checkNA(e[0]) + '</td><td><span class="normal-count">' + e[1] + '</span></td></tr>';
+      }).join('') + '<tr class="total-row"><td>Total</td><td>' + filtered.length + '</td></tr>';
+      updateBatchUI(); return;
+    }
+
+    var pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    page = Math.min(page, pages);
+    var st = (page - 1) * PAGE_SIZE, items = pageSlice(), end = st + items.length;
+    $('pageInfo').textContent = 'Showing ' + (st + 1) + '\u2013' + end + ' of ' + filtered.length;
+    $('btnPrev').disabled = page === 1;
+    $('btnNext').disabled = page === pages;
+    pB.style.display = 'flex';
+
+    var allSel = items.length > 0;
+    tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
+      '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th><th>Action</th></tr>';
+    tB.innerHTML = items.map(function (i) {
+      var chk = selected.has(i.id), busyRow = pendingRows.has(i.id);
+      if (!chk) allSel = false;
+      var note = i.e404 && i.e404 !== 'All Match' ? '<div class="err-note">' + esc(i.e404) + '</div>' : '';
+      return '<tr data-row="' + esc(i.id) + '"' + (chk ? ' class="tr-selected"' : '') + '>' +
+        '<td><input type="checkbox" class="row-check" data-id="' + esc(i.id) + '"' + (chk ? ' checked' : '') + (busyRow ? ' disabled' : '') + '></td>' +
+        '<td>' + checkNA(i.name) + note + '</td>' +
+        '<td><span class="pill-id" data-action="copy" data-id="' + esc(i.id) + '" title="Click to copy">' + esc(i.id) + '</span></td>' +
+        '<td>' + badge(i.ind) + '</td><td>' + badge(i.ref) + '</td>' +
+        '<td><button class="btn-exit" data-action="exit" data-id="' + esc(i.id) + '"' + (busyRow ? ' disabled' : '') + '>Exit</button></td></tr>';
+    }).join('');
+    var sa = $('selectAllCheck'); if (sa) sa.checked = allSel;
+    updateBatchUI();
+  }
+
+  function updateBatchUI() {
+    $('batchCount').textContent = selected.size;
+    $('btnBatchExit').classList.toggle('visible', selected.size > 0 && !managerMode);
+  }
+
+  /* selection (event delegation on the table) */
+  $('tableHead').addEventListener('change', function (e) {
+    if (e.target.id !== 'selectAllCheck') return;
+    pageSlice().forEach(function (i) {
+      if (pendingRows.has(i.id)) return;
+      if (e.target.checked) selected.add(i.id); else selected.delete(i.id);
+    });
+    renderTable();
+  });
+  $('tableBody').addEventListener('change', function (e) {
+    if (!e.target.classList.contains('row-check')) return;
+    var id = e.target.getAttribute('data-id');
+    if (e.target.checked) selected.add(id); else selected.delete(id);
+    var tr = e.target.closest('tr'); if (tr) tr.classList.toggle('tr-selected', e.target.checked);
+    var all = pageSlice().every(function (i) { return selected.has(i.id); });
+    var sa = $('selectAllCheck'); if (sa) sa.checked = all;
+    updateBatchUI();
+  });
+
+  /* ── copy casper id ── */
+  function copyId(id, pill) {
+    var done = function () {
+      FK.toast('Copied: ' + id);
+      if (!pill) return;
+      pill.classList.add('pill-id-copied'); pill.textContent = 'Copied!';
+      setTimeout(function () { pill.classList.remove('pill-id-copied'); pill.textContent = id; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id).then(done).catch(function () { fallbackCopy(id, done); });
+    } else fallbackCopy(id, done);
+  }
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { FK.toast('Copy failed', true); }
+    document.body.removeChild(ta);
+  }
+
+  /* ── exit flow ── */
+  function setReason(r) {
+    exitReason = r;
+    Array.prototype.forEach.call(document.querySelectorAll('.reason-opt'), function (b) {
+      var on = b.getAttribute('data-reason') === r;
+      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+  function openExitModal(title, text, confirmText) {
+    setReason(DEFAULT_REASON);
+    $('exitModalTitle').textContent = title;
+    $('exitModalName').textContent = text;
+    $('exitConfirmBtn').textContent = confirmText;
+    $('exitModal').style.display = 'flex';
+    $('exitConfirmBtn').focus();
+  }
+  function showExitModal(id) {
+    var p = filtered.find(function (x) { return x.id === id; });
+    exitIsBatch = false; exitTarget = id;
+    openExitModal('Confirm Exit', 'Mark "' + ((p && !FK.isNA(p.name)) ? p.name : id) + '" as exited?', 'Yes, Exit');
+  }
+  function showBatchExitModal() {
+    if (!selected.size) return;
+    exitIsBatch = true; exitTarget = null;
+    openExitModal('Batch Exit', 'Mark ' + selected.size + ' picker(s) as exited?', 'Yes, Exit All');
+  }
+  function closeExitModal() { $('exitModal').style.display = 'none'; exitTarget = null; exitIsBatch = false; }
+
+  function confirmExit() {
+    var batch = exitIsBatch, id = exitTarget;
+    closeExitModal();
+    if (batch) submitExits(Array.from(selected), true);
+    else if (id) submitExits([id], false);
+  }
+
+  /* one implementation for single + batch; on failure only the removed rows are restored */
+  function submitExits(ids, isBatch) {
+    ids = ids.filter(function (id) { return !pendingRows.has(id); });
+    if (!ids.length) return;
+    var set = new Set(ids), reason = exitReason;
+    var removed = db.filter(function (i) { return set.has(i.id); });
+    if (!removed.length) return;
+    var first = removed[0];
+
+    ids.forEach(function (id) { pendingRows.add(id); exited.add(id); selected.delete(id); });
+    db = db.filter(function (i) { return !set.has(i.id); });
+    render();
+    FK.toast('Processing ' + (isBatch ? ids.length + ' exit(s)' : 'exit') + '...');
+
+    var payload = isBatch
+      ? { action: 'batch_report', ids: ids, reason: reason }
+      : { action: 'report', n: first.name, id: first.id, ds: first.darkStore, c: first.city, reason: reason };
+
+    FK.post(payload, { retries: 1, timeout: 45000 }).then(function (res) {
+      if (!res || res.status !== 'Success') throw new Error((res && res.error) || 'Failed');
+      FK.toast(isBatch ? ids.length + ' exits processed' : 'Exit processed');
+      saveCache();
+    }).catch(function (err) {
+      db = db.concat(removed);
+      ids.forEach(function (id) { exited.delete(id); });
+      render();
+      FK.toast((isBatch ? 'Batch exit' : 'Exit') + ' failed: ' + (err.message || 'retry') , true, 5000);
+    }).then(function () {
+      ids.forEach(function (id) { pendingRows.delete(id); });
+      renderTable();
+    });
+  }
+
+  /* ── exports ── */
+  function setExporting(on) {
+    exporting = on;
+    $('btnPdf').disabled = on; $('btnGSheet').disabled = on;
+  }
+
+  function exportPdf() {
+    if (!filtered.length || exporting) return;
+    setExporting(true);
+    var btn = $('btnPdf'); btn.textContent = 'Generating...';
+    FK.ensureJsPdf().then(function () {
+      var doc = new window.jspdf.jsPDF({ compress: true });
+      var y = FK.pdf.loginGuide(doc);
+      var c = cityTS.getValue(), s = storeTS.getValue();
+      y = FK.pdf.title(doc, managerMode ? 'Pendency Summary - ' + c : 'Picker Pendency - ' + (s || c), y);
+      var base = { startY: y + 2, theme: 'grid', styles: FK.pdf.bodyStyles, headStyles: FK.pdf.headStyles,
+                   margin: { left: 15, right: 15, bottom: 16 } };
+
+      if (managerMode) {
+        var rows = groupCount(filtered, 'cm').map(function (e) { return [FK.pdf.safe(e[0]), String(e[1])]; });
+        var last = rows.length;
+        rows.push(['TOTAL', String(filtered.length)]);
+        doc.autoTable(Object.assign({}, base, {
+          head: [['Cluster Manager', 'Pendency']], body: rows,
+          didParseCell: function (d) {
+            if (d.section !== 'body') return;
+            if (d.row.index === last) { d.cell.styles.fontStyle = 'bold'; return; }
+            if (d.column.index === 1) FK.pdf.countCell(d.cell);
+          }
+        }));
+      } else {
+        doc.autoTable(Object.assign({}, base, {
+          head: [['Picker Name', 'Casper ID', 'Induction', 'Refresher']],
+          body: filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), i.ind || '', i.ref || '']; }),
+          didParseCell: function (d) { if (d.section === 'body' && d.column.index > 1) FK.pdf.statusCell(d.cell); }
+        }));
+      }
+      FK.pdf.pageNumbers(doc);
+      doc.save('Disprz_Pendency_data_(' + FK.dateStamp() + ').pdf');
+      FK.toast('PDF downloaded');
+    }).catch(function (e) {
+      FK.toast('PDF failed: ' + e.message, true, 5000);
+    }).then(function () { btn.textContent = 'Export PDF'; setExporting(false); });
+  }
+
+  function exportToGSheet() {
+    if (!filtered.length || exporting) return;
+    setExporting(true);
+    var btn = $('btnGSheet'); btn.textContent = 'Preparing...';
+
+    /* Open the tab synchronously inside the click → browsers don't treat it as a blocked pop-up. */
+    var win = null;
+    try {
+      win = window.open('about:blank', '_blank');
+      if (win && win.document) {
+        win.document.title = 'Generating Google Sheet...';
+        win.document.body.style.cssText = 'font-family:Arial,sans-serif;background:#0f172a;color:#f1f5f9;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center';
+        win.document.body.textContent = 'Generating your Google Sheet... this tab will switch automatically.';
+      }
+    } catch (e) { win = null; }
+
+    /* light 3-second notice (export starts immediately, it is not delayed) */
+    FK.toast('Please allow pop-ups so your Google Sheet can open.', false, 3000);
+
+    var c = cityTS.getValue(), s = storeTS.getValue();
+    var summary = [['Cluster Manager', 'Total Pendency']].concat(groupCount(filtered, 'cm'));
+    var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher', '404 Error']].concat(
+      filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind || '', i.ref || '', i.e404 || '']; }));
+    var title = ((managerMode ? c : (s || c)) + '_Pendency').replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+    FK.post({ action: 'export', f: title, summaryData: summary, detailData: detail }, { timeout: 120000, retries: 0 })
+      .then(function (d) {
+        if (!d || !d.url) throw new Error((d && d.error) || 'No URL returned');
+        if (win && !win.closed) { win.location.replace(d.url); FK.toast('G-Sheet created successfully!'); }
+        else FK.toastLink('G-Sheet is ready.', d.url, 'Open it');
+      })
+      .catch(function (e) {
+        if (win && !win.closed) { try { win.close(); } catch (x) { /* ignore */ } }
+        FK.toast('Export failed: ' + (e.name === 'AbortError' ? 'it took too long, please try again' : (e.message || 'retry')), true, 5000);
+      })
+      .then(function () { btn.textContent = 'Open as G-Sheet'; setExporting(false); });
+  }
+
+  /* ── events ── */
+  FK.delegate({
+    theme: function () { FK.toggleTheme(); },
+    install: function () { FK.install(); },
+    dismissInstall: function () { FK.dismissInstall(); },
+    mode: function (el) { setMode(el.getAttribute('data-mode') === '1'); },
+    page: function (el) { page += parseInt(el.getAttribute('data-dir'), 10); renderTable(); },
+    copy: function (el) { copyId(el.getAttribute('data-id'), el); },
+    exit: function (el) { showExitModal(el.getAttribute('data-id')); },
+    batchExit: showBatchExitModal,
+    reason: function (el) { setReason(el.getAttribute('data-reason')); },
+    confirmExit: confirmExit,
+    closeExit: closeExitModal,
+    pdf: exportPdf,
+    gsheet: exportToGSheet,
+    closePopup: function () {
+      var p = $('announcementPopup'); if (!p) return;
+      p.style.opacity = '0'; p.style.transform = 'scale(.8) translateY(12px)';
+      setTimeout(function () { p.remove(); }, 300);
+      try { sessionStorage.setItem('popupDismissed', '1'); } catch (e) { /* ignore */ }
+    }
+  });
+  $('exitModal').addEventListener('click', function (e) { if (e.target === this) closeExitModal(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('exitModal').style.display === 'flex') closeExitModal();
+  });
+  $('searchInput').addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () { query = $('searchInput').value.trim().toLowerCase(); page = 1; render(); }, 240);
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS && !pendingRows.size && !exporting) loadData(false);
+  });
+
+  /* ── init ── */
+  var tsRender = {
+    item: function (d, e) { return '<div style="text-align:center;width:100%;display:block">' + e(d.text) + '</div>'; },
+    option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; }
+  };
+  cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, sortField: { field: 'text' },
+    render: tsRender, onChange: function () { onCityChange(); }, dropdownParent: 'body' });
+  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Dark Store', create: false, sortField: { field: 'text' },
+    render: tsRender, onChange: function () { page = 1; selected.clear(); render(); }, dropdownParent: 'body' });
+
+  var cached = null;
+  try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) { cached = null; }
+  if (cached && Array.isArray(cached.data) && cached.data.length) { db = cached.data; populateCityOptions(); FK.hideLoader(); }
+  loadData(!cached);
+
+  if ('requestIdleCallback' in window) requestIdleCallback(FK.initSnow, { timeout: 1500 }); else setTimeout(FK.initSnow, 300);
+});
+</script>
+</body>
+</html>
