@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://script.google.com" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css"
       integrity="sha512-mNN7o87hQqtNCCGWxFVdlVdaKF6d4S1wVMi3+ftJYnW572YIo0KPjK1Cns5SPlyCtKGp1Nu+z26MJUNXmpbjKA==" crossorigin="anonymous">
 <link rel="stylesheet" href="common.css">
@@ -77,13 +78,12 @@
 
 .btn-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:800;font-size:12px;
   font-family:inherit;cursor:pointer;transition:transform .2s,opacity .2s}
-.btn-exit:hover:not(:disabled){transform:translateY(-2px);opacity:.9}
-.btn-exit:disabled{opacity:.45;cursor:wait}
+.btn-exit:hover{transform:translateY(-2px);opacity:.9}
 .badge-pending{animation:badgeFlow 3.2s ease-in-out infinite,pulsePending 2s infinite}
 @keyframes pulsePending{0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
 .pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;
-  border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);min-width:84px}
+  border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);min-width:84px;font-family:inherit}
 .pill-id:hover{background:rgba(40,116,240,.2);border-color:var(--fk-blue);transform:scale(1.06)}
 .pill-id:active{transform:scale(.95)}
 .pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important}
@@ -169,12 +169,12 @@
   <hr class="divider">
 
   <div class="tab-container">
-    <button id="btnNormal" class="btn-tab active" data-action="mode" data-mode="0">Dark Store Wise</button>
-    <button id="btnManager" class="btn-tab" data-action="mode" data-mode="1">Cluster Manager Wise</button>
+    <button id="btnNormal" class="btn-tab active" data-action="mode" data-mode="0" aria-pressed="true">Dark Store Wise</button>
+    <button id="btnManager" class="btn-tab" data-action="mode" data-mode="1" aria-pressed="false">Cluster Manager Wise</button>
   </div>
   <div class="filter-row">
-    <div class="filter-col"><select id="citySelect" autocomplete="off"></select></div>
-    <div class="filter-col" id="storeWrapper"><select id="storeSelect" autocomplete="off"></select></div>
+    <div class="filter-col"><select id="citySelect" autocomplete="off" aria-label="City"></select></div>
+    <div class="filter-col" id="storeWrapper"><select id="storeSelect" autocomplete="off" aria-label="Dark store"></select></div>
   </div>
 
   <div id="resultArea">
@@ -183,7 +183,7 @@
       <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Exited (This Session)</div></div>
     </div>
     <div class="search-wrapper" id="searchWrapper">
-      <input type="text" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off">
+      <input type="search" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off" aria-label="Search name or Casper ID">
     </div>
     <div class="action-buttons">
       <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">Export PDF</button>
@@ -203,7 +203,7 @@
   <div class="exit-modal">
     <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
     <div class="exit-modal-name" id="exitModalName"></div>
-    <div class="reason-grid" id="reasonGrid" role="radiogroup" aria-label="Exit reason">
+    <div class="reason-grid" role="radiogroup" aria-label="Exit reason">
       <button type="button" class="reason-opt active" role="radio" aria-checked="true" data-action="reason" data-reason="Absconding">Absconding</button>
       <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Resigned">Resigned</button>
       <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Terminated">Terminated</button>
@@ -226,13 +226,16 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v8', PAGE_SIZE = 50, STALE_MS = 5 * 60 * 1000, DEFAULT_REASON = 'Absconding';
+  var CACHE_KEY = 'pickerDash_v9', PAGE_SIZE = 50, STALE_MS = 5 * 60 * 1000, DEFAULT_REASON = 'Absconding';
 
   var db = [], filtered = [];
-  var exited = new Set(), pendingRows = new Set(), selected = new Set();
-  var cityTS, storeTS, managerMode = false, page = 1, exporting = false, lastLoad = 0;
+  /* exited   = removed this session (also hides rows if a background refresh brings them back before the server catches up)
+     inFlight = exits whose request has not finished yet (blocks double-submits + background refresh) */
+  var exited = new Set(), inFlight = new Set(), selected = new Set();
+  var cityTS, storeTS, managerMode = false, page = 1, exporting = false, loading = false, lastLoad = 0;
   var query = '', searchTimer = null, exitTarget = null, exitIsBatch = false, exitReason = DEFAULT_REASON;
 
+  FK.purgeCaches('pickerDash_', CACHE_KEY);
   FK.setWallpaper([
     'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg',
     'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'
@@ -241,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
   FK.initInstallUi();
   FK.registerSW();
 
-  try { if (sessionStorage.getItem('popupDismissed')) $('announcementPopup').remove(); } catch (e) { /* ignore */ }
+  if (FK.store.get('popupDismissed', true)) $('announcementPopup').remove();
 
   /* ── data ── */
   function normalizeRow(r) {
@@ -259,57 +262,65 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
-  function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: db, ts: Date.now() })); } catch (e) { /* quota */ } }
-
   function loadData(showErr) {
-    return FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
-      FK.hideLoader();
-      if (d && d.error) { FK.toast('Error: ' + d.error, true); return; }
-      if (!Array.isArray(d)) { FK.toast('Unexpected response from server.', true); return; }
+    if (loading) return;
+    loading = true;
+    FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
+      if (d && d.error) throw new Error(d.error);
+      if (!Array.isArray(d)) throw new Error('Unexpected response from server');
       db = d.map(normalizeRow).filter(Boolean);
       lastLoad = Date.now();
-      saveCache();
-      populateCityOptions();
-      if (cityTS.getValue()) { if (!managerMode) onCityChange(true); render(); }
-    }).catch(function () {
-      FK.hideLoader();
-      if (showErr || !db.length) FK.toast('Network error. Please check your connection and refresh.', true);
-    });
+      FK.writeCache(CACHE_KEY, db);
+      refreshFilters();
+    }).catch(function (e) {
+      if (showErr || !db.length) {
+        FK.toast(FK.isNetworkError(e) ? 'Network error. Please check your connection and refresh.' : 'Error: ' + e.message, true, 5000);
+      }
+    }).then(function () { loading = false; FK.hideLoader(); });
   }
 
-  function populateCityOptions() {
-    var cur = cityTS.getValue(), seen = {}, cities = [];
-    cityTS.clearOptions();
-    db.forEach(function (i) { if (!seen[i.city]) { seen[i.city] = 1; cities.push(i.city); } });
-    cities.sort().forEach(function (c) { cityTS.addOption({ value: c, text: c }); });
-    if (cur && seen[cur]) cityTS.setValue(cur, true);
+  /* ── dropdown helpers ── */
+  function uniq(arr, key) {
+    var seen = {}, out = [];
+    arr.forEach(function (r) { if (!seen[r[key]]) { seen[r[key]] = 1; out.push(r[key]); } });
+    return out.sort(function (a, b) { return a.localeCompare(b); });
+  }
+  function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
+
+  /* Tom Select's clearOptions() keeps the currently-selected option, so clear the selection first –
+     otherwise a store from the previous city stays in the list. Keeps the old value only if it still exists. */
+  function fillSelect(ts, values, keep) {
+    var cur = ts.getValue();
+    ts.clear(true);
+    ts.clearOptions();
+    values.forEach(function (v) { ts.addOption({ value: v, text: v }); });
+    if (keep && cur && values.indexOf(cur) !== -1) ts.setValue(cur, true);
   }
 
-  /* ── filters ── */
-  function onCityChange(silent) {
-    var c = cityTS.getValue();
-    page = 1; selected.clear(); updateBatchUI();
-    if (!c) { $('resultArea').style.display = 'none'; return; }
-    if (managerMode) { if (!silent) render(); return; }
-    var prev = storeTS.getValue(), seen = {}, stores = [];
-    storeTS.clearOptions();
-    if (!silent) storeTS.clear(true);
-    db.forEach(function (i) { if (i.city === c && !seen[i.darkStore]) { seen[i.darkStore] = 1; stores.push(i.darkStore); } });
-    stores.sort().forEach(function (s) { storeTS.addOption({ value: s, text: s }); });
-    if (silent && prev && seen[prev]) storeTS.setValue(prev, true);
-    if (!silent) $('resultArea').style.display = 'none';
+  /* after (re)loading data: keep the user's city / store / ticked rows where they still exist */
+  function refreshFilters() {
+    fillSelect(cityTS, uniq(db, 'city'), true);
+    if (!managerMode) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
+    var live = new Set(db.map(function (i) { return i.id; }));
+    Array.from(selected).forEach(function (id) { if (!live.has(id)) selected.delete(id); });
+    render();
+  }
+
+  function onCityChange() {
+    page = 1; selected.clear();
+    fillSelect(storeTS, storesOf(cityTS.getValue()), false);
+    render();
   }
 
   function setMode(m) {
-    managerMode = !!m; page = 1; query = ''; selected.clear();
+    managerMode = m; page = 1; query = ''; selected.clear();
     $('searchInput').value = '';
-    $('btnNormal').classList.toggle('active', !m);
-    $('btnManager').classList.toggle('active', !!m);
+    $('btnNormal').classList.toggle('active', !m); $('btnNormal').setAttribute('aria-pressed', String(!m));
+    $('btnManager').classList.toggle('active', m); $('btnManager').setAttribute('aria-pressed', String(m));
     $('storeWrapper').style.display = m ? 'none' : '';
     $('searchWrapper').style.display = m ? 'none' : '';
-    updateBatchUI();
-    if (cityTS.getValue()) { if (managerMode) render(); else onCityChange(); }
-    else $('resultArea').style.display = 'none';
+    if (!m) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
+    render();
   }
 
   /* ── rendering ── */
@@ -327,13 +338,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function render() {
     var c = cityTS.getValue(), s = storeTS.getValue();
-    if (!c || (!managerMode && !s)) { $('resultArea').style.display = 'none'; return; }
+    if (!c || (!managerMode && !s)) { $('resultArea').style.display = 'none'; updateBatchUI(); return; }
     filtered = db.filter(function (i) {
-      if (i.city !== c) return false;
-      if (!managerMode && i.darkStore !== s) return false;
-      if (exited.has(i.id)) return false;
-      if (query && !managerMode) return i.name.toLowerCase().indexOf(query) !== -1 || i.id.toLowerCase().indexOf(query) !== -1;
-      return true;
+      if (i.city !== c || exited.has(i.id)) return false;
+      if (managerMode) return true;
+      if (i.darkStore !== s) return false;
+      return !query || i.name.toLowerCase().indexOf(query) !== -1 || i.id.toLowerCase().indexOf(query) !== -1;
     });
     $('countBadge').textContent = filtered.length;
     $('exitedBadge').textContent = exited.size;
@@ -360,28 +370,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    page = Math.min(page, pages);
-    var st = (page - 1) * PAGE_SIZE, items = pageSlice(), end = st + items.length;
-    $('pageInfo').textContent = 'Showing ' + (st + 1) + '\u2013' + end + ' of ' + filtered.length;
+    page = Math.min(Math.max(page, 1), pages);
+    var st = (page - 1) * PAGE_SIZE, items = pageSlice();
+    $('pageInfo').textContent = 'Showing ' + (st + 1) + '\u2013' + (st + items.length) + ' of ' + filtered.length;
     $('btnPrev').disabled = page === 1;
     $('btnNext').disabled = page === pages;
-    pB.style.display = 'flex';
+    pB.style.display = pages > 1 ? 'flex' : 'none';
 
-    var allSel = items.length > 0;
-    tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
+    var allSel = true;
+    tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all on this page"></th>' +
       '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th><th>Action</th></tr>';
     tB.innerHTML = items.map(function (i) {
-      var chk = selected.has(i.id), busyRow = pendingRows.has(i.id);
+      var chk = selected.has(i.id), id = esc(i.id);
       if (!chk) allSel = false;
       var note = i.e404 && i.e404 !== 'All Match' ? '<div class="err-note">' + esc(i.e404) + '</div>' : '';
-      return '<tr data-row="' + esc(i.id) + '"' + (chk ? ' class="tr-selected"' : '') + '>' +
-        '<td><input type="checkbox" class="row-check" data-id="' + esc(i.id) + '"' + (chk ? ' checked' : '') + (busyRow ? ' disabled' : '') + '></td>' +
+      return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
+        '<td><input type="checkbox" class="row-check" data-id="' + id + '" aria-label="Select ' + id + '"' + (chk ? ' checked' : '') + '></td>' +
         '<td>' + checkNA(i.name) + note + '</td>' +
-        '<td><span class="pill-id" data-action="copy" data-id="' + esc(i.id) + '" title="Click to copy">' + esc(i.id) + '</span></td>' +
+        '<td><button type="button" class="pill-id" data-action="copy" data-id="' + id + '" title="Click to copy">' + id + '</button></td>' +
         '<td>' + badge(i.ind) + '</td><td>' + badge(i.ref) + '</td>' +
-        '<td><button class="btn-exit" data-action="exit" data-id="' + esc(i.id) + '"' + (busyRow ? ' disabled' : '') + '>Exit</button></td></tr>';
+        '<td><button class="btn-exit" data-action="exit" data-id="' + id + '">Exit</button></td></tr>';
     }).join('');
-    var sa = $('selectAllCheck'); if (sa) sa.checked = allSel;
+    $('selectAllCheck').checked = allSel;
     updateBatchUI();
   }
 
@@ -393,10 +403,7 @@ document.addEventListener('DOMContentLoaded', function () {
   /* selection (event delegation on the table) */
   $('tableHead').addEventListener('change', function (e) {
     if (e.target.id !== 'selectAllCheck') return;
-    pageSlice().forEach(function (i) {
-      if (pendingRows.has(i.id)) return;
-      if (e.target.checked) selected.add(i.id); else selected.delete(i.id);
-    });
+    pageSlice().forEach(function (i) { if (e.target.checked) selected.add(i.id); else selected.delete(i.id); });
     renderTable();
   });
   $('tableBody').addEventListener('change', function (e) {
@@ -404,8 +411,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var id = e.target.getAttribute('data-id');
     if (e.target.checked) selected.add(id); else selected.delete(id);
     var tr = e.target.closest('tr'); if (tr) tr.classList.toggle('tr-selected', e.target.checked);
-    var all = pageSlice().every(function (i) { return selected.has(i.id); });
-    var sa = $('selectAllCheck'); if (sa) sa.checked = all;
+    var sa = $('selectAllCheck');
+    if (sa) sa.checked = pageSlice().every(function (i) { return selected.has(i.id); });
     updateBatchUI();
   });
 
@@ -413,20 +420,21 @@ document.addEventListener('DOMContentLoaded', function () {
   function copyId(id, pill) {
     var done = function () {
       FK.toast('Copied: ' + id);
-      if (!pill) return;
       pill.classList.add('pill-id-copied'); pill.textContent = 'Copied!';
       setTimeout(function () { pill.classList.remove('pill-id-copied'); pill.textContent = id; }, 1200);
     };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(id).then(done).catch(function () { fallbackCopy(id, done); });
     } else fallbackCopy(id, done);
   }
   function fallbackCopy(text, done) {
     var ta = document.createElement('textarea');
-    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
     document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) { FK.toast('Copy failed', true); }
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
     document.body.removeChild(ta);
+    if (ok) done(); else FK.toast('Copy failed', true);
   }
 
   /* ── exit flow ── */
@@ -458,42 +466,42 @@ document.addEventListener('DOMContentLoaded', function () {
   function closeExitModal() { $('exitModal').style.display = 'none'; exitTarget = null; exitIsBatch = false; }
 
   function confirmExit() {
-    var batch = exitIsBatch, id = exitTarget;
+    var ids = exitIsBatch ? Array.from(selected) : (exitTarget ? [exitTarget] : []);
+    var batch = exitIsBatch, reason = exitReason;
     closeExitModal();
-    if (batch) submitExits(Array.from(selected), true);
-    else if (id) submitExits([id], false);
+    submitExits(ids, reason, batch);
   }
 
-  /* one implementation for single + batch; on failure only the removed rows are restored */
-  function submitExits(ids, isBatch) {
-    ids = ids.filter(function (id) { return !pendingRows.has(id); });
-    if (!ids.length) return;
-    var set = new Set(ids), reason = exitReason;
+  /* one implementation for single + batch; optimistic, and on failure only these rows are restored */
+  function submitExits(ids, reason, isBatch) {
+    var set = new Set(ids.filter(function (id) { return !inFlight.has(id); }));
     var removed = db.filter(function (i) { return set.has(i.id); });
     if (!removed.length) return;
-    var first = removed[0];
+    ids = removed.map(function (i) { return i.id; });
+    set = new Set(ids);
 
-    ids.forEach(function (id) { pendingRows.add(id); exited.add(id); selected.delete(id); });
+    ids.forEach(function (id) { inFlight.add(id); exited.add(id); selected.delete(id); });
     db = db.filter(function (i) { return !set.has(i.id); });
     render();
-    FK.toast('Processing ' + (isBatch ? ids.length + ' exit(s)' : 'exit') + '...');
+    var what = isBatch ? ids.length + ' exit(s)' : 'exit';
+    FK.toast('Processing ' + what + '...');
 
-    var payload = isBatch
-      ? { action: 'batch_report', ids: ids, reason: reason }
-      : { action: 'report', n: first.name, id: first.id, ds: first.darkStore, c: first.city, reason: reason };
-
-    FK.post(payload, { retries: 1, timeout: 45000 }).then(function (res) {
+    FK.post({
+      action: 'exit', reason: reason,
+      /* name / store / city are a fallback in case the row has already left the Mix up sheet */
+      items: removed.map(function (i) { return { id: i.id, n: FK.clean(i.name), ds: i.darkStore, c: i.city }; })
+    }, { retries: 1, timeout: 45000 }).then(function (res) {      // the server is idempotent → a retry never duplicates
       if (!res || res.status !== 'Success') throw new Error((res && res.error) || 'Failed');
+      db = db.filter(function (i) { return !set.has(i.id); });      // a refresh may have re-added them meanwhile
+      FK.writeCache(CACHE_KEY, db);
       FK.toast(isBatch ? ids.length + ' exits processed' : 'Exit processed');
-      saveCache();
     }).catch(function (err) {
-      db = db.concat(removed);
+      db = db.filter(function (i) { return !set.has(i.id); }).concat(removed);   // no duplicates
       ids.forEach(function (id) { exited.delete(id); });
-      render();
-      FK.toast((isBatch ? 'Batch exit' : 'Exit') + ' failed: ' + (err.message || 'retry') , true, 5000);
+      FK.toast((isBatch ? 'Batch exit' : 'Exit') + ' failed: ' + (FK.isNetworkError(err) ? 'network problem, please retry' : err.message), true, 5000);
     }).then(function () {
-      ids.forEach(function (id) { pendingRows.delete(id); });
-      renderTable();
+      ids.forEach(function (id) { inFlight.delete(id); });
+      render();
     });
   }
 
@@ -557,9 +565,7 @@ document.addEventListener('DOMContentLoaded', function () {
         win.document.body.textContent = 'Generating your Google Sheet... this tab will switch automatically.';
       }
     } catch (e) { win = null; }
-
-    /* light 3-second notice (export starts immediately, it is not delayed) */
-    FK.toast('Please allow pop-ups so your Google Sheet can open.', false, 3000);
+    if (!win) FK.toast('Pop-up blocked – a link will appear here when the sheet is ready.', false, 4000);
 
     var c = cityTS.getValue(), s = storeTS.getValue();
     var summary = [['Cluster Manager', 'Total Pendency']].concat(groupCount(filtered, 'cm'));
@@ -570,8 +576,11 @@ document.addEventListener('DOMContentLoaded', function () {
     FK.post({ action: 'export', f: title, summaryData: summary, detailData: detail }, { timeout: 120000, retries: 0 })
       .then(function (d) {
         if (!d || !d.url) throw new Error((d && d.error) || 'No URL returned');
-        if (win && !win.closed) { win.location.replace(d.url); FK.toast('G-Sheet created successfully!'); }
-        else FK.toastLink('G-Sheet is ready.', d.url, 'Open it');
+        if (win && !win.closed) {
+          try { win.opener = null; } catch (x) { /* ignore */ }      // the sheet tab cannot script this page
+          win.location.replace(d.url);
+          FK.toast('G-Sheet created successfully!');
+        } else FK.toastLink('G-Sheet is ready.', d.url, 'Open it');
       })
       .catch(function (e) {
         if (win && !win.closed) { try { win.close(); } catch (x) { /* ignore */ } }
@@ -585,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function () {
     theme: function () { FK.toggleTheme(); },
     install: function () { FK.install(); },
     dismissInstall: function () { FK.dismissInstall(); },
-    mode: function (el) { setMode(el.getAttribute('data-mode') === '1'); },
+    mode: function (el) { var m = el.getAttribute('data-mode') === '1'; if (m !== managerMode) setMode(m); },
     page: function (el) { page += parseInt(el.getAttribute('data-dir'), 10); renderTable(); },
     copy: function (el) { copyId(el.getAttribute('data-id'), el); },
     exit: function (el) { showExitModal(el.getAttribute('data-id')); },
@@ -599,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var p = $('announcementPopup'); if (!p) return;
       p.style.opacity = '0'; p.style.transform = 'scale(.8) translateY(12px)';
       setTimeout(function () { p.remove(); }, 300);
-      try { sessionStorage.setItem('popupDismissed', '1'); } catch (e) { /* ignore */ }
+      FK.store.set('popupDismissed', '1', true);
     }
   });
   $('exitModal').addEventListener('click', function (e) { if (e.target === this) closeExitModal(); });
@@ -611,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function () {
     searchTimer = setTimeout(function () { query = $('searchInput').value.trim().toLowerCase(); page = 1; render(); }, 240);
   });
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS && !pendingRows.size && !exporting) loadData(false);
+    if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS && !inFlight.size && !exporting) loadData(false);
   });
 
   /* ── init ── */
@@ -620,13 +629,12 @@ document.addEventListener('DOMContentLoaded', function () {
     option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; }
   };
   cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, sortField: { field: 'text' },
-    render: tsRender, onChange: function () { onCityChange(); }, dropdownParent: 'body' });
+    render: tsRender, onChange: onCityChange, dropdownParent: 'body' });
   storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Dark Store', create: false, sortField: { field: 'text' },
     render: tsRender, onChange: function () { page = 1; selected.clear(); render(); }, dropdownParent: 'body' });
 
-  var cached = null;
-  try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) { cached = null; }
-  if (cached && Array.isArray(cached.data) && cached.data.length) { db = cached.data; populateCityOptions(); FK.hideLoader(); }
+  var cached = FK.readCache(CACHE_KEY);
+  if (cached && cached.data.length) { db = cached.data; refreshFilters(); FK.hideLoader(); }
   loadData(!cached);
 
   if ('requestIdleCallback' in window) requestIdleCallback(FK.initSnow, { timeout: 1500 }); else setTimeout(FK.initSnow, 300);

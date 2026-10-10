@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
- *  FK Minutes — Picker Training Dashboard (Backend)  ·  v6 (audited)
+ *  FK Minutes — Picker Training Dashboard (Backend)  ·  v7 (audited)
  *  Google Apps Script — V8 Runtime
  *
  *  Sheets: Raw - Picker (Induction), Raw - Picker (BBD), Mix up Report,
@@ -24,16 +24,9 @@ var CONFIG = {
   COMPLETION_RETENTION_DAYS: 60,
   LOG_MAX_ROWS: 1000,
 
-  CACHE_PREFIX: "FK_Minutes_v6_",
+  CACHE_PREFIX: "FK_Minutes_v7_",
   CACHE_TTL: 21600,          // 6 h
   CACHE_CHUNK: 30000,        // chars per cache entry (limit is 100 KB / entry)
-
-  // Writes a "Type" column (K) into the raw sheets. It is not used by anything
-  // in this script, so it is OFF by default (saves 2 sheet writes every run).
-  WRITE_TYPE_COLUMN: false,
-
-  // true = move exported G-Sheets next to the master sheet (adds ~1-2 s per export)
-  EXPORT_MOVE_TO_SHEET_FOLDER: false,
 
   EXIT_REASONS: ["Absconding", "Resigned", "Terminated", "Others"],
 
@@ -64,12 +57,12 @@ var HEADER_ALIASES = {
 var _ssCache = null;
 
 /* ═══════════════════════════════════════════════════════════════════
- *  1. PUBLIC FUNCTIONS (run from editor / triggers / web app)
+ *  1. PUBLIC ENTRY POINTS
  * ═══════════════════════════════════════════════════════════════════ */
 
 /**
  * Main controller: parses raw sheets, rebuilds "Mix up Report" and appends to
- * "Completion Daily".
+ * "Completion Daily".  Called by a time-driven trigger (every 4 h).
  */
 function runDataController() {
   var lock = LockService.getScriptLock();
@@ -80,19 +73,13 @@ function runDataController() {
 
   try {
     var ss = getSpreadsheet_();
-
-    if (CONFIG.WRITE_TYPE_COLUMN) writeTypeColumn_(ss);
-
     var indMap = buildMapByCasperId_(getSheetData_(CONFIG.SHEET_RAW_INDUCTION));
     var bbdMap = buildMapByCasperId_(getSheetData_(CONFIG.SHEET_RAW_BBD));
     var exitsMap = buildExitsMap_();
     var mapping = loadMapping_();
 
     /* ── Build Mix up Report ── */
-    var allKeys = {};
-    Object.keys(indMap).forEach(function (k) { allKeys[k] = true; });
-    Object.keys(bbdMap).forEach(function (k) { allKeys[k] = true; });
-
+    var allKeys = mergeKeysets_(indMap, bbdMap);
     var mixHeaders = [
       "Casper ID", "Picker Name", "404 Error", "Induction", "Refresher",
       "Warehouse ID", "Store Manager", "Cluster Manager", "City", "Trainer", "Dark Store Name"
@@ -101,17 +88,16 @@ function runDataController() {
     var completionUpdates = [];
 
     Object.keys(allKeys).forEach(function (key) {
-      if (exitsMap[key]) return;                       // exited pickers are skipped
+      if (exitsMap[key]) return;
 
       var indRec = indMap[key], bbdRec = bbdMap[key];
       var base = enrichFromMapping_(mergeRecords_(indRec, bbdRec), mapping);
+      var indDone = indRec ? isCompleted_(indRec.status) : false;
+      var bbdDone = bbdRec ? isCompleted_(bbdRec.status) : false;
 
       var err404 = "All Match";
       if (!indRec && bbdRec) err404 = "Missing in Induction";
       if (indRec && !bbdRec) err404 = "Missing in Refresher";
-
-      var indDone = indRec ? isTrainingCompleted_(indRec.status) : false;
-      var bbdDone = bbdRec ? isTrainingCompleted_(bbdRec.status) : false;
 
       if (!(indDone && bbdDone)) {
         mixRows.push([
@@ -126,7 +112,7 @@ function runDataController() {
       if (bbdRec && bbdDone) completionUpdates.push({ type: "Refresher", record: fillBlanks_(bbdRec, base) });
     });
 
-    mixRows.sort(function (a, b) {                     // city → store → name (stable, readable sheet)
+    mixRows.sort(function (a, b) {
       return String(a[8]).localeCompare(String(b[8])) ||
              String(a[10]).localeCompare(String(b[10])) ||
              String(a[1]).localeCompare(String(b[1]));
@@ -154,13 +140,13 @@ function runDataController() {
   }
 }
 
-/** Manually refresh cache and force a sync. */
+/** Manual cache refresh + sync (run from Script Editor). */
 function manualRefreshCache() {
   invalidateCache_();
   runDataController();
 }
 
-/** 4-hourly data sync + daily cleanup. Only touches this project's own triggers. */
+/** 4-hourly data sync + daily cleanup.  Only touches this project's own triggers. */
 function setupTriggers() {
   var mine = { runDataController: true, runDailyCleanup: true };
   ScriptApp.getProjectTriggers().forEach(function (t) {
@@ -172,7 +158,11 @@ function setupTriggers() {
 
 function manualCleanup() { runDailyCleanup(); }
 
-/** GET — dashboard data. */
+/* ═══════════════════════════════════════════════════════════════════
+ *  2. WEB APP  —  doGet / doPost
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/** GET — dashboard data.  ?action=getData&type=Pending|Completed|All */
 function doGet(e) {
   try {
     var p = (e && e.parameter) || {};
@@ -191,12 +181,12 @@ function doGet(e) {
     if (data.length > 1) {
       var h = data[0];
       var ix = {
-        id: getColumnIndex_(h, ["Casper ID"]),   nm: getColumnIndex_(h, ["Picker Name"]),
-        e404: getColumnIndex_(h, ["404 Error"]), ind: getColumnIndex_(h, ["Induction"]),
-        ref: getColumnIndex_(h, ["Refresher"]),  wh: getColumnIndex_(h, ["Warehouse ID"]),
-        sm: getColumnIndex_(h, ["Store Manager"]), cm: getColumnIndex_(h, ["Cluster Manager"]),
-        ct: getColumnIndex_(h, ["City"]),        tn: getColumnIndex_(h, ["Trainer"]),
-        ds: getColumnIndex_(h, ["Dark Store Name"])
+        id:  getColumnIndex_(h, ["Casper ID"]),    nm: getColumnIndex_(h, ["Picker Name"]),
+        e404:getColumnIndex_(h, ["404 Error"]),     ind:getColumnIndex_(h, ["Induction"]),
+        ref: getColumnIndex_(h, ["Refresher"]),     wh: getColumnIndex_(h, ["Warehouse ID"]),
+        sm:  getColumnIndex_(h, ["Store Manager"]), cm: getColumnIndex_(h, ["Cluster Manager"]),
+        ct:  getColumnIndex_(h, ["City"]),           tn: getColumnIndex_(h, ["Trainer"]),
+        ds:  getColumnIndex_(h, ["Dark Store Name"])
       };
       var cell = function (row, i) { return i === -1 || row[i] == null ? "" : row[i]; };
 
@@ -204,10 +194,10 @@ function doGet(e) {
         var row = data[i];
         if (!cell(row, ix.id)) continue;
         var indVal = String(cell(row, ix.ind)), refVal = String(cell(row, ix.ref));
-        var isPending = indVal === "Pending" || refVal === "Pending";
-        var isCompleted = indVal === "Completed" && refVal === "Completed";
-        if (typeFilter === "Pending" && !isPending) continue;
-        if (typeFilter === "Completed" && !isCompleted) continue;
+        var isPending  = indVal === "Pending" || refVal === "Pending";
+        var isComplete = indVal === "Completed" && refVal === "Completed";
+        if (typeFilter === "Pending"   && !isPending)  continue;
+        if (typeFilter === "Completed" && !isComplete) continue;
 
         result.push({
           id: cell(row, ix.id), nm: cell(row, ix.nm), ind: indVal, ref: refVal,
@@ -226,33 +216,34 @@ function doGet(e) {
   }
 }
 
-/** POST — exits & exports. */
+/** POST — exits & G-Sheet exports. */
 function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) return json_({ error: "Empty request body" });
-
     var payload;
     try { payload = JSON.parse(e.postData.contents.trim()); }
-    catch (parseErr) { return json_({ error: "Invalid JSON" }); }
+    catch (_) { return json_({ error: "Invalid JSON" }); }
 
     var action = payload.action;
 
-    // Export is slow (Drive + Sheets). It must NOT hold the script lock, otherwise
-    // every exit / data-sync would queue behind it and time out.
+    /* Export runs without a lock (it only creates a new spreadsheet, never touches the master). */
     if (action === "export") return json_(handleExport_(payload));
 
-    if (action !== "report" && action !== "batch_report") return json_({ error: "Unknown action" });
-
-    var lock = LockService.getScriptLock();
-    if (!lock.tryLock(20000)) return json_({ error: "Server busy, try again" });
-    var result;
-    try {
-      result = action === "report" ? handleReport_(payload) : handleBatchReport_(payload);
-      if (result.status === "Success") invalidateCache_();
-    } finally {
-      lock.releaseLock();
+    /* All exit variants share one lock-protected handler. */
+    if (action === "exit" || action === "report" || action === "batch_report") {
+      var lock = LockService.getScriptLock();
+      if (!lock.tryLock(20000)) return json_({ error: "Server busy, try again" });
+      var result;
+      try {
+        result = handleExit_(payload);
+        if (result.status === "Success") invalidateCache_();
+      } finally {
+        lock.releaseLock();
+      }
+      return json_(result);
     }
-    return json_(result);
+
+    return json_({ error: "Unknown action" });
   } catch (err) {
     logError_("doPost", err.message, err.stack, "");
     return json_({ error: String(err) });
@@ -264,7 +255,7 @@ function runDailyCleanup() {
   var props = PropertiesService.getScriptProperties();
   var files = readTrackedFiles_(props);
   if (!files.length) return;
-  var now = Date.now(), DAY = 24 * 60 * 60 * 1000, keep = [];
+  var now = Date.now(), DAY = 86400000, keep = [];
   files.forEach(function (f) {
     if (now - f.t > DAY) { try { DriveApp.getFileById(f.id).setTrashed(true); } catch (e) { /* already gone */ } }
     else keep.push(f);
@@ -273,11 +264,11 @@ function runDailyCleanup() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- *  2. RESPONSE / SHEET HELPERS
+ *  3. RESPONSE / SHEET HELPERS
  * ═══════════════════════════════════════════════════════════════════ */
 
 function json_(obj) { return text_(JSON.stringify(obj)); }
-function text_(s) { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.JSON); }
+function text_(s)   { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.JSON); }
 
 function getSpreadsheet_() {
   if (_ssCache) return _ssCache;
@@ -285,7 +276,6 @@ function getSpreadsheet_() {
   return (_ssCache = SpreadsheetApp.openById(CONFIG.SHEET_ID));
 }
 
-/** Plain SpreadsheetApp read — consistent types (Date objects) and no A1-quoting pitfalls. */
 function getSheetData_(sheetName) {
   var sheet = getSpreadsheet_().getSheetByName(sheetName);
   if (!sheet) return [];
@@ -298,6 +288,7 @@ function getOrCreateSheet_(ss, name) {
   return ss.getSheetByName(name) || ss.insertSheet(name);
 }
 
+/** Normalise a header string for comparison: lowercase, strip everything but [a-z0-9]. */
 function norm_(s) { return String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]/g, ""); }
 
 function getColumnIndex_(headers, names) {
@@ -309,16 +300,15 @@ function getColumnIndex_(headers, names) {
   return -1;
 }
 
-/** Exact aliases first, then a loose "header contains X but not Y" fallback. */
+/** Exact aliases first, then loose "header contains X but not Y" fallback. */
 function getColumnLoose_(headers, names, mustContain, mustNotContain) {
   var idx = getColumnIndex_(headers, names);
   if (idx !== -1) return idx;
   for (var i = 0; i < headers.length; i++) {
     var h = norm_(headers[i]);
     if (!h) continue;
-    var ok = mustContain.some(function (c) { return h.indexOf(c) !== -1; });
-    var bad = mustNotContain.some(function (c) { return h.indexOf(c) !== -1; });
-    if (ok && !bad) return i;
+    if (mustContain.some(function (c) { return h.indexOf(c) !== -1; }) &&
+       !mustNotContain.some(function (c) { return h.indexOf(c) !== -1; })) return i;
   }
   return -1;
 }
@@ -378,20 +368,8 @@ function styleMixupSheet_(sheet, rowCount, colCount) {
   sheet.setColumnWidths(1, colCount, 150);
 }
 
-function writeTypeColumn_(ss) {
-  [[CONFIG.SHEET_RAW_INDUCTION, "Induction"], [CONFIG.SHEET_RAW_BBD, "Refresher"]].forEach(function (p) {
-    var sh = ss.getSheetByName(p[0]);
-    if (!sh) return;
-    var lr = sh.getLastRow();
-    if (lr < 1) return;
-    var vals = [["Type"]];
-    for (var i = 1; i < lr; i++) vals.push([p[1]]);
-    sh.getRange(1, 11, lr, 1).setValues(vals);
-  });
-}
-
 /* ═══════════════════════════════════════════════════════════════════
- *  3. CACHE (chunked)
+ *  4. CACHE (chunked — Apps Script cache entries cap at 100 KB)
  * ═══════════════════════════════════════════════════════════════════ */
 
 function getChunkedCache_(key) {
@@ -437,10 +415,10 @@ function invalidateCache_() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- *  4. DATA PARSING
+ *  5. DATA PARSING & MAPPING
  * ═══════════════════════════════════════════════════════════════════ */
 
-function isTrainingCompleted_(status) {
+function isCompleted_(status) {
   if (!status) return false;
   var s = String(status).toLowerCase().trim();
   return s === "completed" || s === "certified" || s === "trained" || s === "done" || s === "pass" || s === "passed";
@@ -492,10 +470,17 @@ function buildMapByCasperId_(data) {
     };
     // duplicate rows: never let a "pending" row overwrite a "completed" one
     var prev = map[key];
-    if (prev && isTrainingCompleted_(prev.status) && !isTrainingCompleted_(rec.status)) continue;
+    if (prev && isCompleted_(prev.status) && !isCompleted_(rec.status)) continue;
     map[key] = rec;
   }
   return map;
+}
+
+function mergeKeysets_(a, b) {
+  var out = {};
+  Object.keys(a).forEach(function (k) { out[k] = true; });
+  Object.keys(b).forEach(function (k) { out[k] = true; });
+  return out;
 }
 
 function buildExitsMap_() {
@@ -552,7 +537,7 @@ function fillBlanks_(rec, base) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- *  5. COMPLETION DAILY
+ *  6. COMPLETION DAILY
  * ═══════════════════════════════════════════════════════════════════ */
 
 function updateCompletionDaily_(ss, updates, exitsMap) {
@@ -567,8 +552,8 @@ function updateCompletionDaily_(ss, updates, exitsMap) {
   var head = data[0];
   var idxCode = getColumnIndex_(head, ["Employee Code", "Casper ID"]);
   var idxType = getColumnIndex_(head, ["Type"]);
-  var idxTc = getColumnIndex_(head, ["Training Completed"]);
-  var idxAct = getColumnIndex_(head, ["Is the picker active?"]);
+  var idxTc   = getColumnIndex_(head, ["Training Completed"]);
+  var idxAct  = getColumnIndex_(head, ["Is the picker active?"]);
   if (idxCode === -1 || idxType === -1) {
     logError_("updateCompletionDaily_", "Completion Daily header missing 'Employee Code' or 'Type' – skipped", "", "");
     return;
@@ -598,22 +583,22 @@ function updateCompletionDaily_(ss, updates, exitsMap) {
     var rec = u.record, key = normalizeId_(rec.cid) + "_" + u.type;
     if (existing[key]) return;
     var done = parseDate_(rec.completed);
-    if (done && done.getTime() < cutoff.getTime()) return;          // don't resurrect expired rows
+    if (done && done.getTime() < cutoff.getTime()) return;
 
     var vals = {};
-    vals[norm_("Employee Code")] = rec.cid;
-    vals[norm_("Trained Employee Name")] = rec.name;
-    vals[norm_("Training Status")] = rec.status;
-    vals[norm_("Warehouse ID")] = rec.wh;
-    vals[norm_("Training Assigned")] = parseDate_(rec.assigned) || rec.assigned || "";
-    vals[norm_("Training Completed")] = done || rec.completed || "";
-    vals[norm_("Store Manager")] = rec.sm;
-    vals[norm_("Cluster Manager")] = rec.cm;
-    vals[norm_("Trainer")] = getTrainerAlias_(rec.trainer);
-    vals[norm_("City")] = rec.city;
-    vals[norm_("Type")] = u.type;
-    vals[norm_("Dark Store Name")] = rec.ds;
-    vals[norm_("Is the picker active?")] = exitsMap[normalizeId_(rec.cid)] ? "No" : "Yes";
+    vals[norm_("Employee Code")]          = rec.cid;
+    vals[norm_("Trained Employee Name")]  = rec.name;
+    vals[norm_("Training Status")]        = rec.status;
+    vals[norm_("Warehouse ID")]           = rec.wh;
+    vals[norm_("Training Assigned")]      = parseDate_(rec.assigned) || rec.assigned || "";
+    vals[norm_("Training Completed")]     = done || rec.completed || "";
+    vals[norm_("Store Manager")]          = rec.sm;
+    vals[norm_("Cluster Manager")]        = rec.cm;
+    vals[norm_("Trainer")]                = getTrainerAlias_(rec.trainer);
+    vals[norm_("City")]                   = rec.city;
+    vals[norm_("Type")]                   = u.type;
+    vals[norm_("Dark Store Name")]        = rec.ds;
+    vals[norm_("Is the picker active?")]  = exitsMap[normalizeId_(rec.cid)] ? "No" : "Yes";
 
     var row = [];
     for (var c = 0; c < width; c++) row.push(hdrNorm[c] && vals.hasOwnProperty(hdrNorm[c]) ? vals[hdrNorm[c]] : "");
@@ -631,7 +616,7 @@ function updateCompletionDaily_(ss, updates, exitsMap) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- *  6. EXITS (single + batch share one idempotent implementation)
+ *  7. EXITS  (single / batch / unified)
  * ═══════════════════════════════════════════════════════════════════ */
 
 function cleanReason_(r) {
@@ -639,66 +624,95 @@ function cleanReason_(r) {
   return CONFIG.EXIT_REASONS.indexOf(r) !== -1 ? r : "Others";
 }
 
-function handleReport_(payload) {
-  var id = String(payload.id || "").trim();
-  if (!id) return { error: "ID missing" };
-  var fb = {}; fb[normalizeId_(id)] = { city: payload.c, ds: payload.ds, name: payload.n };
-  processExits_([id], {}, cleanReason_(payload.reason), fb);
-  return { status: "Success", message: "Record updated" };
+/**
+ * Accepts all three payload formats:
+ *   new:   { action:"exit",         items:[{id,n,ds,c}], reason }
+ *   old-1: { action:"report",       id, n, ds, c,        reason }
+ *   old-2: { action:"batch_report", ids:[...],            reason }
+ */
+function handleExit_(payload) {
+  var action = payload.action;
+  var reason = cleanReason_(payload.reason);
+  var items;
+
+  if (action === "exit") {
+    if (!Array.isArray(payload.items) || !payload.items.length) return { error: "No items provided" };
+    if (payload.items.length > CONFIG.MAX_BATCH_IDS)            return { error: "Too many IDs (max " + CONFIG.MAX_BATCH_IDS + ")" };
+    items = payload.items;
+  } else if (action === "report") {
+    var id = String(payload.id || "").trim();
+    if (!id) return { error: "ID missing" };
+    items = [{ id: id, n: payload.n, ds: payload.ds, c: payload.c }];
+  } else {
+    // batch_report
+    if (!Array.isArray(payload.ids) || !payload.ids.length) return { error: "No IDs provided" };
+    if (payload.ids.length > CONFIG.MAX_BATCH_IDS)           return { error: "Too many IDs (max " + CONFIG.MAX_BATCH_IDS + ")" };
+    items = payload.ids.map(function (id) { return { id: id }; });
+  }
+
+  processExits_(items, reason);
+  return { status: "Success", message: items.length > 1 ? "Batch exited successfully" : "Record updated" };
 }
 
-function handleBatchReport_(payload) {
-  var ids = payload.ids;
-  if (!Array.isArray(ids) || !ids.length) return { error: "No IDs provided" };
-  if (ids.length > CONFIG.MAX_BATCH_IDS) return { error: "Too many IDs (max " + CONFIG.MAX_BATCH_IDS + ")" };
-  processExits_(ids, payload.reasons || {}, cleanReason_(payload.reason), {});
-  return { status: "Success", message: "Batch exited successfully" };
-}
-
-function processExits_(ids, reasons, defaultReason, fallback) {
+/**
+ * @param {Array<{id:string, n?:string, ds?:string, c?:string}>} items
+ * @param {string} reason
+ */
+function processExits_(items, reason) {
   var ss = getSpreadsheet_();
-  var sheetMix = getOrCreateSheet_(ss, CONFIG.SHEET_MIXUP);
+  var sheetMix  = getOrCreateSheet_(ss, CONFIG.SHEET_MIXUP);
   var sheetExits = getOrCreateSheet_(ss, CONFIG.SHEET_EXITS);
 
-  var wanted = {};
-  ids.forEach(function (id) { var k = normalizeId_(id); if (k) wanted[k] = String(id).trim(); });
+  /* Build lookup: normalised key → raw display id + optional fallback metadata. */
+  var wanted = {}, fallback = {};
+  items.forEach(function (item) {
+    var raw = String(item.id || "").trim();
+    var k = normalizeId_(raw);
+    if (!k) return;
+    wanted[k] = raw;
+    if (item.n || item.ds || item.c) fallback[k] = { name: item.n || "", ds: item.ds || "", city: item.c || "" };
+  });
 
+  /* Initialise Exits sheet header if empty. */
   if (sheetExits.getLastRow() === 0) {
     sheetExits.appendRow(["City", "Dark Store Name", "Picker Name", "Casper ID", "Reason"]);
     sheetExits.getRange(1, 1, 1, 5).setFontWeight("bold").setBackground("#f3f3f3");
   }
 
-  var already = buildExitsMap_();                 // idempotent: a retried request never duplicates a row
-  var info = {}, toDelete = [];
+  /* Idempotent: skip IDs that are already in the Exits sheet. */
+  var already = buildExitsMap_();
 
+  /* Scrape info from the Mix up sheet and collect rows to delete. */
+  var info = {}, toDelete = [];
   var lr = sheetMix.getLastRow();
   if (lr > 1) {
     var vals = sheetMix.getRange(1, 1, lr, sheetMix.getLastColumn()).getValues();
     var h = vals[0];
-    var iId = getColumnIndex_(h, ["Casper ID"]), iNm = getColumnIndex_(h, ["Picker Name"]);
+    var iId = getColumnIndex_(h, ["Casper ID"]),  iNm = getColumnIndex_(h, ["Picker Name"]);
     var iDs = getColumnIndex_(h, ["Dark Store Name"]), iCt = getColumnIndex_(h, ["City"]);
     if (iId !== -1) {
       for (var i = 1; i < vals.length; i++) {
         var k = normalizeId_(vals[i][iId]);
         if (wanted[k]) {
           info[k] = { city: vals[i][iCt], ds: vals[i][iDs], name: vals[i][iNm] };
-          toDelete.push(i + 1);
+          toDelete.push(i + 1);                    // 1-indexed sheet row
         }
       }
     }
   }
   deleteRowsDescending_(sheetMix, toDelete);
 
+  /* Append new rows to Exits sheet. */
   var newRows = [];
   Object.keys(wanted).forEach(function (k) {
     if (already[k]) return;
     var src = info[k] || fallback[k] || {};
-    newRows.push([safeCell_(src.city), safeCell_(src.ds), safeCell_(src.name), wanted[k],
-                  cleanReason_(reasons[wanted[k]] || defaultReason)]);
+    newRows.push([safeCell_(src.city), safeCell_(src.ds), safeCell_(src.name), wanted[k], reason]);
   });
   if (newRows.length) {
     sheetExits.getRange(sheetExits.getLastRow() + 1, 1, newRows.length, 5).setValues(newRows);
   }
+
   markPickerInactive_(ss, Object.keys(wanted));
 }
 
@@ -718,7 +732,7 @@ function markPickerInactive_(ss, keys) {
   if (!sheet || sheet.getLastRow() < 2) return;
   var lr = sheet.getLastRow(), lc = sheet.getLastColumn();
   var head = sheet.getRange(1, 1, 1, lc).getValues()[0];
-  var iId = getColumnIndex_(head, ["Employee Code", "Casper ID"]);
+  var iId  = getColumnIndex_(head, ["Employee Code", "Casper ID"]);
   var iAct = getColumnIndex_(head, ["Is the picker active?"]);
   if (iId === -1 || iAct === -1) return;
 
@@ -729,11 +743,11 @@ function markPickerInactive_(ss, keys) {
   for (var i = 0; i < ids.length; i++) {
     if (set[normalizeId_(ids[i][0])] && String(act[i][0]).trim() !== "No") { act[i][0] = "No"; changed = true; }
   }
-  if (changed) sheet.getRange(2, iAct + 1, act.length, 1).setValues(act);   // only the one column
+  if (changed) sheet.getRange(2, iAct + 1, act.length, 1).setValues(act);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- *  7. G-SHEET EXPORT
+ *  8. G-SHEET EXPORT
  * ═══════════════════════════════════════════════════════════════════ */
 
 function handleExport_(payload) {
@@ -742,7 +756,7 @@ function handleExport_(payload) {
   try {
     newSs = SpreadsheetApp.create(name);
     var id = newSs.getId();
-    trackFileForDeletion_(id);                    // tracked first, so even a half-finished export is cleaned up
+    trackFileForDeletion_(id);                    // tracked first so even a half-finished export is cleaned up
 
     var summary = newSs.getSheets()[0];
     summary.setName("CMSM Summary");
@@ -756,12 +770,6 @@ function handleExport_(payload) {
     try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
     catch (e1) { logError_("handleExport_.share", e1.message, "", name); }
 
-    if (CONFIG.EXPORT_MOVE_TO_SHEET_FOLDER) {
-      try {
-        var parents = DriveApp.getFileById(getSpreadsheet_().getId()).getParents();
-        if (parents.hasNext()) file.moveTo(parents.next());
-      } catch (e2) { logError_("handleExport_.move", e2.message, "", name); }
-    }
     return { url: newSs.getUrl() };
   } catch (err) {
     logError_("handleExport_", err.message, err.stack, name);
@@ -778,31 +786,33 @@ function formatAndPopulateSheet_(sheet, dataArray, maxRows) {
   if (!rows.length) return;
 
   var cols = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);
-  rows.forEach(function (r) { while (r.length < cols) r.push(""); });   // ragged rows would throw
+  rows.forEach(function (r) { while (r.length < cols) r.push(""); });   // ragged rows → pad
 
   sheet.getRange(1, 1, rows.length, cols).setValues(rows).setHorizontalAlignment("center");
   sheet.getRange(1, 1, 1, cols).setFontWeight("bold").setBackground("#d9ead3");
-  sheet.setColumnWidths(1, cols, 150);            // fixed widths: autoResizeColumns is very slow
+  sheet.setColumnWidths(1, cols, 150);
   sheet.setFrozenRows(1);
 }
 
 function createLoginGuideSheet_(ss) {
   var sheet = ss.insertSheet("Login Guide");
+  var PLAY  = "https://play.google.com/store/apps/details?id=com.disprz";
+  var APPLE = "https://apps.apple.com/in/app/disprz/id1458716803";
   var g = [
     ["Login Guide for Picker", ""],
     ["Step", "Details"],
     ["1. Download App", "Download the Disprz App (Blue one)"],
-    ["   Play Store", "https://play.google.com/store/apps/details?id=com.disprz"],
-    ["   App Store", "https://apps.apple.com/in/app/disprz/id1458716803"],
+    ["   Play Store", PLAY],
+    ["   App Store", APPLE],
     ["2. Org URL", "edl.disprz.com"],
     ["3. Username", "Your Casper ID (e.g. 42534) without ca."],
     ["4. Password", "Edl@123"],
-    ["Flipkart Minutes \u2014 East L&D", ""]
+    ["\u0046lipkart Minutes \u2014 East L&D", ""]
   ];
   sheet.getRange(1, 1, g.length, 2).setValues(g).setHorizontalAlignment("center").setVerticalAlignment("middle");
   sheet.getRange(1, 1, 1, 2).merge().setFontSize(16).setFontWeight("bold").setFontColor("#2874F0");
   sheet.getRange(2, 1, 1, 2).setFontWeight("bold").setBackground("#d9ead3");
-  sheet.getRange(6, 1, 3, 2).setBackground("#fce4ec").setFontWeight("bold").setFontColor("#000000");   // org url / username / password
+  sheet.getRange(6, 1, 3, 2).setBackground("#fce4ec").setFontWeight("bold").setFontColor("#000000");
   sheet.getRange(g.length, 1, 1, 2).merge().setFontSize(10).setFontColor("#64748b").setFontStyle("italic");
   sheet.setColumnWidth(1, 200);
   sheet.setColumnWidth(2, 400);

@@ -5,6 +5,7 @@
 (function (g) {
   'use strict';
   var FK = g.FK = {};
+  var noop = function () {};
 
   /* ── single place for the backend URL ── */
   FK.API_URL = 'https://script.google.com/macros/s/AKfycbxH_jWtTRoLLJHZc7N2JHzfkq7n1virJkuYQbS3mx_onClfwac0UuIsn5jltaA2X4kn/exec';
@@ -30,6 +31,33 @@
   FK.dateStamp = function () {
     var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
     return p(d.getDate()) + '-' + p(d.getMonth() + 1) + '-' + d.getFullYear();
+  };
+  /* "Failed to fetch" / timeout → true;  server-side error message → false */
+  FK.isNetworkError = function (e) { return !!e && (e.name === 'TypeError' || e.name === 'AbortError'); };
+
+  /* ── storage that never throws (private mode / quota) ── */
+  function area(session) { try { return session ? g.sessionStorage : g.localStorage; } catch (e) { return null; } }
+  FK.store = {
+    get: function (k, session) { try { return area(session).getItem(k); } catch (e) { return null; } },
+    set: function (k, v, session) { try { area(session).setItem(k, v); return true; } catch (e) { return false; } }
+  };
+  FK.readCache = function (key) {
+    try {
+      var c = JSON.parse(FK.store.get(key) || 'null');
+      return c && Array.isArray(c.data) ? c : null;
+    } catch (e) { return null; }
+  };
+  FK.writeCache = function (key, data) { FK.store.set(key, JSON.stringify({ data: data, ts: Date.now() })); };
+  /* old cache versions are never read again – free the space (they can be several hundred KB each) */
+  FK.purgeCaches = function (prefix, keep) {
+    try {
+      var ls = g.localStorage, dead = [];
+      for (var i = 0; i < ls.length; i++) {
+        var k = ls.key(i);
+        if (k && k.indexOf(prefix) === 0 && k !== keep) dead.push(k);
+      }
+      dead.forEach(function (k) { ls.removeItem(k); });
+    } catch (e) { /* ignore */ }
   };
 
   /* ── toast (one element, auto-hides) ── */
@@ -59,7 +87,7 @@
   };
   FK.toggleTheme = function () {
     var d = document.documentElement.classList.toggle('dark-mode');
-    try { localStorage.setItem('theme', d ? 'dark' : 'light'); } catch (e) { /* private mode */ }
+    FK.store.set('theme', d ? 'dark' : 'light');
     FK.syncThemeBtn();
   };
   FK.hideLoader = function () {
@@ -87,7 +115,11 @@
       if (opts.headers) init.headers = opts.headers;
       if (opts.body) init.body = opts.body;
       return fetch(url, init)
-        .then(function (r) { clearTimeout(timer); return r.text(); })
+        .then(function (r) {
+          clearTimeout(timer);
+          if (!r.ok) throw new Error('Server returned HTTP ' + r.status);
+          return r.text();
+        })
         .then(function (txt) {
           try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid response from server'); }
         })
@@ -104,12 +136,12 @@
   FK.post = function (payload, opts) {
     opts = opts || {};
     return FK.fetchJson(FK.API_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload),
+      method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload),   // text/plain → no CORS pre-flight
       timeout: opts.timeout, retries: opts.retries
     });
   };
 
-  /* ── lazy-loaded PDF libs (pinned versions + SRI) ── */
+  /* ── lazy-loaded PDF libs (pinned versions + SRI, hashes verified) ── */
   var loaded = {};
   FK.loadScript = function (src, integrity) {
     if (loaded[src]) return loaded[src];
@@ -118,7 +150,7 @@
       s.src = src; s.async = true; s.crossOrigin = 'anonymous';
       if (integrity) s.integrity = integrity;
       s.onload = res;
-      s.onerror = function () { delete loaded[src]; rej(new Error('Could not load ' + src.split('/').pop())); };
+      s.onerror = function () { delete loaded[src]; s.remove(); rej(new Error('Could not load ' + src.split('/').pop())); };
       document.head.appendChild(s);
     });
     return loaded[src];
@@ -131,7 +163,9 @@
         return FK.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js',
           'sha512-03CCNkeosDFN2zCCu4vLpu3pJfZcrL48F3yB8k87ejT+OVMwco7IH3FW02vtbGhdncS6gyYZ/duYaC/K62xQPQ==');
       })
-      .then(function () { if (!g.jspdf) throw new Error('PDF library failed to load'); });
+      .then(function () {
+        if (!(g.jspdf && g.jspdf.jsPDF && g.jspdf.jsPDF.API.autoTable)) throw new Error('PDF library failed to load');
+      });
   };
 
   /* ── PDF helpers ── */
@@ -182,6 +216,8 @@
     },
     loginGuide: function (doc) {
       var pw = doc.internal.pageSize.getWidth(), M = 15, y = 15;
+      var PLAY = 'https://play.google.com/store/apps/details?id=com.disprz';
+      var APPLE = 'https://apps.apple.com/in/app/disprz/id1458716803';
       doc.setFont('helvetica', 'bold').setFontSize(16).setTextColor(40, 116, 240)
          .text('Login Guide for Picker', pw / 2, y, { align: 'center' });
       y += 5;
@@ -190,11 +226,9 @@
       doc.setFont('helvetica', 'bold').setFontSize(11).setTextColor(0, 0, 0)
          .text('Step 1: Download the Disprz App (blue icon)', pw / 2, y, { align: 'center' });
       y += 7;
-      FK.pdf.centeredPair(doc, y, 'Play Store:', 'https://play.google.com/store/apps/details?id=com.disprz',
-        'https://play.google.com/store/apps/details?id=com.disprz');
+      FK.pdf.centeredPair(doc, y, 'Play Store:', PLAY, PLAY);
       y += 6;
-      FK.pdf.centeredPair(doc, y, 'App Store:', 'https://apps.apple.com/in/app/disprz/id1458716803',
-        'https://apps.apple.com/in/app/disprz/id1458716803');
+      FK.pdf.centeredPair(doc, y, 'App Store:', APPLE, APPLE);
       y += 9;
 
       var gap = 5, bw = (pw - 2 * M - 2 * gap) / 3, boxes = ['URL: edl.disprz.com', 'User: Casper ID (no "ca")', 'Password: Edl@123'];
@@ -226,8 +260,7 @@
   function updateInstallUi() {
     var btn = $('installBtn'), card = $('pwaInstallCard');
     if (btn) btn.hidden = isStandalone();
-    var dismissed = false;
-    try { dismissed = sessionStorage.getItem('pwaDismissed') === '1'; } catch (e) { /* ignore */ }
+    var dismissed = FK.store.get('pwaDismissed', true) === '1';
     if (card) card.hidden = !(deferredPrompt && !dismissed && !isStandalone());
   }
   g.addEventListener('beforeinstallprompt', function (e) {
@@ -249,29 +282,28 @@
       : 'Open the browser menu and choose "Install app" or "Add to Home screen".', false, 6000);
   };
   FK.dismissInstall = function () {
-    try { sessionStorage.setItem('pwaDismissed', '1'); } catch (e) { /* ignore */ }
+    FK.store.set('pwaDismissed', '1', true);
     var c = $('pwaInstallCard'); if (c) c.hidden = true;
   };
   FK.initInstallUi = updateInstallUi;
 
-  /* ── service worker (reload only on UPDATE, never on first install) ── */
+  /* ── service worker ──
+     App files are served network-first, so every page load already gets the newest version.
+     No forced reload on update (that used to wipe selections / open modals mid-work). */
   FK.registerSW = function () {
-    if (!('serviceWorker' in navigator)) return;
-    var hadController = !!navigator.serviceWorker.controller, reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function () {
-      if (hadController && !reloading) { reloading = true; g.location.reload(); }
-    });
-    navigator.serviceWorker.register('sw.js', { scope: './' }).then(function (reg) {
-      setInterval(function () { reg.update().catch(function () {}); }, 5 * 60 * 1000);
-    }).catch(function () { /* e.g. file:// */ });
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(noop);
   };
 
   /* ── snow ── */
   FK.initSnow = function () {
     if (g.matchMedia && g.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
     var cvs = $('snowCanvas'); if (!cvs) return;
-    var ctx = cvs.getContext('2d'), w, h, flakes = [], on = true, N = g.innerWidth < 768 ? 14 : 36;
-    function size() { w = cvs.width = g.innerWidth; h = cvs.height = g.innerHeight; }
+    var ctx = cvs.getContext('2d'), w = 0, h, flakes = [], on = true, N = g.innerWidth < 768 ? 14 : 36;
+    function size() {
+      var oldW = w;
+      w = cvs.width = g.innerWidth; h = cvs.height = g.innerHeight;
+      if (oldW !== w) seed();                 // mobile URL-bar show/hide changes height only → don't reset flakes
+    }
     function make(top) {
       return { x: Math.random() * w, y: top ? -5 : Math.random() * h, r: Math.random() * 2.5 + .7, sp: Math.random() * .8 + .18,
                dr: Math.random() * .5 - .25, op: Math.random() * .4 + .18, wb: Math.random() * Math.PI * 2, ws: Math.random() * .02 + .005 };
@@ -291,9 +323,9 @@
       ctx.globalAlpha = 1;
       requestAnimationFrame(tick);
     }
-    g.addEventListener('resize', function () { size(); seed(); }, { passive: true });
+    g.addEventListener('resize', size, { passive: true });
     document.addEventListener('visibilitychange', function () { var was = on; on = !document.hidden; if (on && !was) tick(); });
-    size(); seed(); tick();
+    size(); tick();
   };
 
   /* ── data-action click delegation (no inline onclick anywhere) ── */

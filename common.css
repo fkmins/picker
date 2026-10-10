@@ -41,6 +41,15 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.55);z-in
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
 
+/* keyboard users can see where they are (mouse clicks stay unchanged) */
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* scrollbars are hidden globally, but scrollable tables keep a thin one so users know there is more */
+.table-holder,.tbl-wrap{scrollbar-width:thin;scrollbar-color:var(--border-color) transparent}
+.table-holder::-webkit-scrollbar,.tbl-wrap::-webkit-scrollbar{display:block;width:6px;height:6px}
+.table-holder::-webkit-scrollbar-thumb,.tbl-wrap::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:6px}
+.table-holder::-webkit-scrollbar-track,.tbl-wrap::-webkit-scrollbar-track{background:transparent}
+
 /* snow sits above the panel but BELOW dropdowns / modals / toasts */
 #snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:50}
 
