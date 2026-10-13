@@ -13,7 +13,7 @@ try {
   var FK = g.FK = {};
   
   // REPLACE THIS URL IF YOUR GOOGLE DEPLOYMENT URL CHANGES
-  FK.API_URL = 'https://script.google.com/macros/s/AKfycbzZfcs1ttzdKuS2r2dhC7GrHQ7bpT7A-L6aBD9FHusL5wwwVBmD2xND2IxDnh8GfqYr/exec';
+  FK.API_URL = 'https://script.google.com/macros/s/AKfycbwG40qfn0MTw9c6n21R3zkSqdR1Nb7sRHEH3MbuLrptD95wAfucauTOAn-z93vIxeEP/exec';
   
   var $ = FK.$ = function (id) { return document.getElementById(id); };
 
