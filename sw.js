@@ -1,9 +1,9 @@
-/* FK Minutes service worker
+/* Flipkart Minutes service worker
  *  - same-origin app files : network-first with a 4 s timeout (fresh when online, instant cache on weak signal / offline)
  *  - CDN / fonts / images  : stale-while-revalidate, capped cache size
  *  - Apps Script API calls : never touched
  */
-var VERSION = 'v10';
+var VERSION = 'v12';
 var SHELL_CACHE = 'fk-shell-' + VERSION;
 var STATIC_CACHE = 'fk-static-' + VERSION;
 var STATIC_MAX = 40;                 // opaque cross-origin responses are expensive in the storage quota
@@ -76,7 +76,7 @@ function staleWhileRevalidate(event, req) {
     }
     return res;
   });
-  event.waitUntil(network.catch(function () {}));      // registered synchronously (calling it later can throw)
+  event.waitUntil(network.catch(function () {}));      // registered synchronously
   return caches.match(req).then(function (cached) {
     return cached || network;
   });
