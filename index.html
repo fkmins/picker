@@ -57,12 +57,6 @@
 .row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
 .tr-selected td{background:rgba(40,116,240,.08)!important}
 
-/* Full Screen Loader */
-#fsLoader {position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
-#fsLoader.active {opacity:1;pointer-events:auto;}
-.spinner {width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--fk-blue);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px;}
-@keyframes spin {to {transform: rotate(360deg);}}
-
 .exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
 .exit-modal{background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;padding:32px 26px 26px;width:90%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelUp .3s cubic-bezier(.22,1,.36,1)}
 .exit-modal-title{font-weight:900;font-size:20px;margin-bottom:6px}
@@ -71,19 +65,23 @@
 .exit-modal-btn{padding:12px 28px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:inherit;}
 .exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff}
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)}
-
-/* Mobile Adjustments (Sticky Columns) */
-@media(max-width:768px){
-  .filter-row{flex-direction:column;gap:10px}
-  .table th:nth-child(1), .table td:nth-child(1) { position:sticky; left:0; z-index:2; }
-  .table th:nth-child(2), .table td:nth-child(2) { position:sticky; left:44px; z-index:2; }
-  .table tbody tr td:nth-child(1), .table tbody tr td:nth-child(2) { background:var(--card-bg); }
-  .table tbody tr:nth-child(even) td:nth-child(1), .table tbody tr:nth-child(even) td:nth-child(2) { background:var(--table-hover); }
-  .table tbody tr.tr-selected td:nth-child(1), .table tbody tr.tr-selected td:nth-child(2) { background:rgba(40,116,240,.08); }
-}
 </style>
 </head>
 <body>
+
+<!-- PWA Install Card -->
+<div id="pwaInstallCard" class="pwa-install-card" hidden>
+  <div class="pwa-card-title">Install app</div>
+  <div class="pwa-card-info">
+    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
+    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
+  </div>
+  <div class="pwa-card-actions">
+    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
+    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
+  </div>
+</div>
+
 <div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;">Processing...</div></div>
 <div id="appLoader">
   <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading">
@@ -96,7 +94,8 @@
       <div><h1 class="hdr-title">Flipkart Minutes Dashboard</h1><div class="hdr-sub">East - L&amp;D</div></div>
     </div>
     <div class="hdr-actions">
-      <button class="icon-btn" id="notifBtn" data-action="notify">🔔 Enable Alerts</button>
+      <!-- Enable Alerts removed. Integrated into Install App -->
+      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
       <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
@@ -145,14 +144,15 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v12', DEFAULT_REASON = 'Absconding';
+  var CACHE_KEY = 'pickerDash_v12';
   var db = [], filtered = [], selected = new Set();
   var cityTS, storeTS, managerMode = false, loading = false;
   var exitTarget = null, exitIsBatch = false;
 
   FK.registerSW();
   FK.syncThemeBtn();
-  FK.syncOfflineQueue(); // Sync exits cached during offline sessions
+  FK.initInstallUi();
+  FK.syncOfflineQueue();
 
   function normalizeRow(r) {
     var id = FK.clean(r.id), wh = FK.clean(r.wh);
@@ -181,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }).then(function () { loading = false; FK.hideLoader(); });
   }
   
-  // Background Data Sync Every 60 seconds
   setInterval(function() { if(!document.hidden && navigator.onLine) loadData(false, true); }, 60000);
 
   function uniq(arr, key) {
@@ -202,6 +201,12 @@ document.addEventListener('DOMContentLoaded', function () {
     render();
   }
   function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
+  
+  function onCityChange() {
+    selected.clear();
+    fillSelect(storeTS, storesOf(cityTS.getValue()), false);
+    render();
+  }
 
   function syncURLParams(city, store, mMode) {
     var u = new URL(window.location);
@@ -258,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function () {
       tB.innerHTML = rowsHtml; updateBatchUI(); return;
     }
 
-    // CSS-Display trick for Search Efficiency. Removing pagination entirely.
     tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck"></th>' +
       '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th><th>Action</th></tr>';
     tB.innerHTML = filtered.map(function (i) {
@@ -274,7 +278,6 @@ document.addEventListener('DOMContentLoaded', function () {
     $('selectAllCheck').checked = selected.size > 0 && selected.size === filtered.length;
     updateBatchUI();
     
-    // Attach Swipe Events to Table Body
     var tStartX = 0, tEl = null;
     tB.addEventListener('touchstart', function(e) { tStartX = e.changedTouches[0].screenX; tEl = e.target.closest('tr'); }, {passive:true});
     tB.addEventListener('touchend', function(e) {
@@ -287,7 +290,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }, {passive:true});
   }
 
-  /* ── CSS Display Search Toggle ── */
   $('searchInput').addEventListener('input', function () {
     var q = this.value.trim().toLowerCase();
     var rows = $('tableBody').querySelectorAll('tr');
@@ -317,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function copyId(id, pill) {
     var done = function () { pill.classList.add('pill-id-copied'); setTimeout(function () { pill.classList.remove('pill-id-copied'); }, 1200); };
-    if (navigator.clipboard) navigator.clipboard.writeText(id).then(done).catch(noop); else done();
+    if (navigator.clipboard) navigator.clipboard.writeText(id).then(done).catch(function(){}); else done();
   }
 
   function showExitModal(id) {
@@ -346,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var ids = exitIsBatch ? Array.from(selected) : (exitTarget ? [exitTarget] : []);
     closeExitModal();
 
-    // Data Sync/Freshness Check
     var stale = ids.filter(function(i) { return !db.find(function(x) { return x.id === i; }); });
     if(stale.length > 0) {
       FK.toast('Some pickers were already cleared. Refreshing data...', true);
@@ -390,7 +391,9 @@ document.addEventListener('DOMContentLoaded', function () {
       doc.autoTable({ head: managerMode ? [['Cluster Manager', 'Pendency']] : [['Picker Name', 'Casper ID', 'Induction', 'Refresher']], body: rows, startY: y + 2, theme: 'grid' });
       doc.save(title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
       FK.toast('PDF Downloaded');
-    }).finally(function () { btn.textContent = 'Export PDF'; $('fsLoader').classList.remove('active'); });
+    }).catch(function() {
+      FK.toast('PDF failed.', true, 5000);
+    }).then(function () { btn.textContent = 'Export PDF'; $('fsLoader').classList.remove('active'); });
   }
 
   function exportToGSheet() {
@@ -402,18 +405,17 @@ document.addEventListener('DOMContentLoaded', function () {
     FK.post({ action: 'export', f: (managerMode ? c : s), detailData: detail })
       .then(function (d) { FK.toastLink('G-Sheet is ready.', d.url, 'Open it'); })
       .catch(function () { FK.toast('Export failed.', true); })
-      .finally(function () { $('btnGSheet').textContent = 'Export G-Sheet'; $('fsLoader').classList.remove('active'); });
+      .then(function () { $('btnGSheet').textContent = 'Export G-Sheet'; $('fsLoader').classList.remove('active'); });
   }
 
   FK.delegate({
-    theme: FK.toggleTheme, notify: FK.requestNotifications, mode: function(el) { setMode(el.getAttribute('data-mode')==='1'); },
+    theme: FK.toggleTheme, install: FK.install, dismissInstall: FK.dismissInstall, mode: function(el) { setMode(el.getAttribute('data-mode')==='1'); },
     copy: function(el) { copyId(el.getAttribute('data-id'), el); }, exit: function(el) { showExitModal(el.getAttribute('data-id')); },
     batchExit: showBatchExitModal, confirmExit: confirmExit, closeExit: closeExitModal, pdf: exportPdf, gsheet: exportToGSheet
   });
   
   $('exitModal').addEventListener('click', function(e) { if(e.target===this) closeExitModal(); });
 
-  /* ── Init & URL History Loader ── */
   var tsRender = { item: function(d,e){ return '<div style="display:block;width:100%">' + e(d.text) + '</div>'; }, option: function(d,e){ return '<div>' + e(d.text) + '</div>'; } };
   cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, render: tsRender, onChange: onCityChange });
   storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Store', create: false, render: tsRender, onChange: function(){ selected.clear(); render(); }});
@@ -421,15 +423,19 @@ document.addEventListener('DOMContentLoaded', function () {
   var cached = FK.readCache(CACHE_KEY);
   if (cached && cached.data.length) { db = cached.data; }
   
-  // Wait for initial load to parse URL params
   FK.fetchJson(FK.API_URL + '?action=getData').then(function(d){
+    if (d && d.error) throw new Error(d.error);
     db = d.map(normalizeRow).filter(Boolean); FK.writeCache(CACHE_KEY, db);
     var u = new URLSearchParams(window.location.search);
     refreshFilters();
     if(u.get('city')) cityTS.setValue(u.get('city'), true);
     if(u.get('store')) { fillSelect(storeTS, storesOf(u.get('city')), false); storeTS.setValue(u.get('store'), true); }
     if(u.get('mode') === '1') setMode(true); else render();
-  }).finally(FK.hideLoader);
+  }).catch(function(e) {
+    FK.toast('Error: ' + (e.message || 'Could not connect to server'), true, 5000);
+  }).then(function() {
+    FK.hideLoader();
+  });
 });
 </script>
 </body>
