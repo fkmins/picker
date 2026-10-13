@@ -35,17 +35,7 @@ try {
     toastTimer = setTimeout(function () { t.classList.add('hidden'); }, ms || 3500);
   };
   
-  FK.toastLink = function (msg, url, label, ms) {
-    var t = $('toastText'); if (!t) return;
-    t.textContent = msg + ' ';
-    var a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = label;
-    t.appendChild(a); t.className = 'toast-msg live';
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.add('hidden'); }, ms || 15000);
-  };
-
   FK.syncThemeBtn = function () { var b = $('themeBtn'); if (b) b.textContent = document.documentElement.classList.contains('dark-mode') ? 'Damage Your Eyes' : 'Save Your Eyes'; };
-  
   FK.toggleTheme = function () {
     var d = document.documentElement.classList.toggle('dark-mode');
     FK.store.set('theme', d ? 'dark' : 'light'); FK.syncThemeBtn();
@@ -106,29 +96,32 @@ try {
       new Notification('Flipkart Minutes', { body: 'It has been 4 hours. Check dashboard for pending pickers!', icon: 'icons/icon-192.png' });
     }, 4 * 60 * 60 * 1000); 
   };
-  
   if ('Notification' in window && Notification.permission === 'granted') FK.startNotificationLoop();
 
   /* ── PWA Install & Notification Merge ── */
   var deferredPrompt = null;
   function isStandalone() { return (g.matchMedia && g.matchMedia('(display-mode: standalone)').matches) || g.navigator.standalone === true; }
   function isIOS() { return /iphone|ipad|ipod/i.test(g.navigator.userAgent) && !g.MSStream; }
+  
   function updateInstallUi() {
     var btn = $('installBtn'), card = $('pwaInstallCard');
-    if (btn) btn.hidden = isStandalone();
+    if (btn) btn.hidden = isStandalone(); 
     var dismissed = FK.store.get('pwaDismissed') === '1';
     if (card) card.hidden = !(deferredPrompt && !dismissed && !isStandalone());
   }
   
+  g.addEventListener('DOMContentLoaded', updateInstallUi);
   g.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; updateInstallUi(); });
-  g.addEventListener('appinstalled', function () { deferredPrompt = null; updateInstallUi(); FK.toast('App installed successfully!'); });
+  g.addEventListener('appinstalled', function () { 
+    deferredPrompt = null; updateInstallUi(); 
+    if($('installBtn')) $('installBtn').hidden = true;
+    FK.toast('App installed successfully!'); 
+  });
   
   FK.install = function () {
-    // Silently request notifications during the install intent
     if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
       Notification.requestPermission().then(function(p) { if(p === 'granted') FK.startNotificationLoop(); });
     }
-    
     if (deferredPrompt) {
       var p = deferredPrompt; deferredPrompt = null; updateInstallUi();
       p.prompt();
