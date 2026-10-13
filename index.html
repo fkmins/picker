@@ -22,6 +22,10 @@
 .btn-tab.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);box-shadow:0 6px 18px rgba(40,116,240,.35)}
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
 .filter-col{flex:1 1 260px;max-width:420px;}
+.ts-wrapper{position:relative!important; text-align:center!important;}
+.ts-wrapper .ts-control{border-radius:14px!important;padding:12px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:inherit!important;background:var(--card-bg)!important;color:var(--text-main)!important;display:flex!important;justify-content:center!important;align-items:center!important;text-align:center!important;transition:border-color .2s,box-shadow .2s!important;box-shadow:none!important}
+.ts-wrapper.single .ts-control > input { text-align: center!important; }
+.ts-wrapper.single .ts-control > .item { text-align: center!important; width: 100%!important; display: block!important; }
 .search-wrapper{width:100%;margin-bottom:20px}
 .search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:inherit;background:var(--card-bg);color:var(--text-main);text-align:center;}
 .search-box:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
@@ -37,6 +41,7 @@
 .btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669)}
 .btn-batch{background:linear-gradient(135deg,#f59e0b,#d97706);display:none}
 .btn-batch.visible{display:inline-block}
+.table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:500px;overflow:auto;box-shadow:var(--shadow-card)}
 .table{border-collapse:collapse;width:100%;min-width:480px;color:var(--text-main)}
 .table th,.table td{text-align:center;padding:14px;vertical-align:middle;border-bottom:1px solid var(--border-color)}
 .table thead th{background:var(--table-header);color:var(--text-muted);font-size:13px;font-weight:800;position:sticky;top:0;z-index:3;border-bottom:2px solid var(--border-color)}
@@ -136,14 +141,15 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v12';
+  var CACHE_KEY = 'pickerDash_v13';
   var db = [], filtered = [], selected = new Set();
   var cityTS, storeTS, managerMode = false, loading = false;
   var exitTarget = null, exitIsBatch = false;
 
   FK.registerSW();
   FK.syncThemeBtn();
-  FK.syncOfflineQueue(); 
+  FK.initInstallUi();
+  FK.syncOfflineQueue();
 
   function normalizeRow(r) {
     var id = FK.clean(r.id), wh = FK.clean(r.wh);
@@ -191,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!managerMode) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
     render();
   }
+  
   function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
   
   function onCityChange() {
@@ -394,7 +401,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var c = cityTS.getValue(), s = storeTS.getValue();
     var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher']].concat(filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind, i.ref]; }));
     
-    // Auto-Open GSheet pop-up bypass trick
     var win = window.open('about:blank', '_blank');
     if (win && win.document) {
       win.document.write('<body style="background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;"><h2>Generating G-Sheet... Please wait.</h2></body>');
