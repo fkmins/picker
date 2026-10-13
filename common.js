@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FK Minutes — shared helpers (index.html + completion.html)
+   Flipkart Minutes — shared helpers (index.html + completion.html)
    Loaded with <script defer>, so it runs before DOMContentLoaded.
    ═══════════════════════════════════════════════════════════════ */
 (function (g) {
@@ -21,7 +21,7 @@
   FK.isNA = function (v) {
     if (v == null) return true;
     var s = String(v).trim().toUpperCase();
-    return !s || s === 'N/A' || s === '#N/A' || s === '#NA';
+    return !s || s === 'N/A' || s === '#N/A' || s === '#NA' || s === 'NOT ASSIGNED';
   };
   FK.clean = function (v) { return FK.isNA(v) ? '' : String(v).trim(); };
   FK.titleCase = function (s) {
@@ -32,10 +32,9 @@
     var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
     return p(d.getDate()) + '-' + p(d.getMonth() + 1) + '-' + d.getFullYear();
   };
-  /* "Failed to fetch" / timeout → true;  server-side error message → false */
   FK.isNetworkError = function (e) { return !!e && (e.name === 'TypeError' || e.name === 'AbortError'); };
 
-  /* ── storage that never throws (private mode / quota) ── */
+  /* ── storage ── */
   function area(session) { try { return session ? g.sessionStorage : g.localStorage; } catch (e) { return null; } }
   FK.store = {
     get: function (k, session) { try { return area(session).getItem(k); } catch (e) { return null; } },
@@ -48,7 +47,6 @@
     } catch (e) { return null; }
   };
   FK.writeCache = function (key, data) { FK.store.set(key, JSON.stringify({ data: data, ts: Date.now() })); };
-  /* old cache versions are never read again – free the space (they can be several hundred KB each) */
   FK.purgeCaches = function (prefix, keep) {
     try {
       var ls = g.localStorage, dead = [];
@@ -60,7 +58,7 @@
     } catch (e) { /* ignore */ }
   };
 
-  /* ── toast (one element, auto-hides) ── */
+  /* ── toast ── */
   var toastTimer = null;
   FK.toast = function (msg, isErr, ms) {
     var t = $('toastText'); if (!t) return;
@@ -102,7 +100,7 @@
     document.head.appendChild(s);
   };
 
-  /* ── network ── GET retries twice; POST never auto-retries unless asked (avoids duplicate exports) */
+  /* ── network ── */
   FK.fetchJson = function (url, opts) {
     opts = opts || {};
     var method = (opts.method || 'GET').toUpperCase(), post = method === 'POST';
@@ -136,12 +134,12 @@
   FK.post = function (payload, opts) {
     opts = opts || {};
     return FK.fetchJson(FK.API_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload),   // text/plain → no CORS pre-flight
+      method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload),
       timeout: opts.timeout, retries: opts.retries
     });
   };
 
-  /* ── lazy-loaded PDF libs (pinned versions + SRI, hashes verified) ── */
+  /* ── lazy-loaded PDF libs ── */
   var loaded = {};
   FK.loadScript = function (src, integrity) {
     if (loaded[src]) return loaded[src];
@@ -170,7 +168,6 @@
 
   /* ── PDF helpers ── */
   FK.pdf = {
-    /* jsPDF's built-in fonts are Latin-1 only: map typographic chars, drop accents, '?' for the rest */
     safe: function (s) {
       return String(s == null ? '' : s)
         .replace(/[\u2013\u2014]/g, '-').replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"')
@@ -180,7 +177,6 @@
                   lineWidth: 0.2, lineColor: [90, 90, 90], fontSize: 10 },
     bodyStyles: { halign: 'center', valign: 'middle', textColor: [0, 0, 0], fontSize: 9.5, lineWidth: 0.2,
                   lineColor: [90, 90, 90], cellPadding: 2.6, overflow: 'linebreak' },
-    /* green / amber / red by count */
     countCell: function (cell) {
       var v = parseInt(cell.raw, 10);
       if (isNaN(v)) return;
@@ -202,7 +198,6 @@
         doc.text('Page ' + i + ' of ' + n + '   |   Generated ' + FK.dateStamp(), pw / 2, ph - 7, { align: 'center' });
       }
     },
-    /* "Label  value" on one centred line (value may be a link) */
     centeredPair: function (doc, y, label, value, url) {
       var pw = doc.internal.pageSize.getWidth();
       doc.setFont('helvetica', 'bold').setFontSize(9);
@@ -241,7 +236,6 @@
       doc.setDrawColor(212, 175, 55).setLineWidth(0.5).line(M, y, pw - M, y);
       return y + 9;
     },
-    /* wrapped, centred heading; returns next y */
     title: function (doc, text, y) {
       var pw = doc.internal.pageSize.getWidth();
       doc.setFont('helvetica', 'bold').setFontSize(12.5).setTextColor(0, 0, 0);
@@ -287,9 +281,34 @@
   };
   FK.initInstallUi = updateInstallUi;
 
-  /* ── service worker ──
-     App files are served network-first, so every page load already gets the newest version.
-     No forced reload on update (that used to wipe selections / open modals mid-work). */
+  /* ── Notifications (4-hour repeating) ── */
+  FK.initNotifications = function () {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission();
+    }
+    // Check every 4 hours (14,400,000 ms)
+    setInterval(function () {
+      if (Notification.permission === 'granted') {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then(function(reg) {
+            reg.showNotification('Flipkart Minutes', {
+              body: 'It has been 4 hours. Please check the dashboard for pending pickers!',
+              icon: 'icons/icon-192.png',
+              vibrate: [200, 100, 200]
+            });
+          });
+        } else {
+           new Notification('Flipkart Minutes', {
+             body: 'It has been 4 hours. Please check the dashboard for pending pickers!',
+             icon: 'icons/icon-192.png'
+           });
+        }
+      }
+    }, 4 * 60 * 60 * 1000);
+  };
+
+  /* ── service worker ── */
   FK.registerSW = function () {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(noop);
   };
@@ -302,7 +321,7 @@
     function size() {
       var oldW = w;
       w = cvs.width = g.innerWidth; h = cvs.height = g.innerHeight;
-      if (oldW !== w) seed();                 // mobile URL-bar show/hide changes height only → don't reset flakes
+      if (oldW !== w) seed();
     }
     function make(top) {
       return { x: Math.random() * w, y: top ? -5 : Math.random() * h, r: Math.random() * 2.5 + .7, sp: Math.random() * .8 + .18,
@@ -328,7 +347,6 @@
     size(); tick();
   };
 
-  /* ── data-action click delegation (no inline onclick anywhere) ── */
   FK.delegate = function (handlers) {
     document.addEventListener('click', function (e) {
       var el = e.target.closest ? e.target.closest('[data-action]') : null;
