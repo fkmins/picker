@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Picker Pendency Dashboard</title>
+<title>Flipkart Minutes | Picker Pendency Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="FK Minutes">
+<meta name="apple-mobile-web-app-title" content="Flipkart Minutes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -74,7 +74,6 @@
 .empty-cell{padding:32px!important;color:var(--text-muted);font-weight:700}
 .normal-count{font-weight:800;font-size:15px}
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
-.err-note{font-size:11px;color:var(--danger);font-weight:700;margin-top:4px}
 
 .btn-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:800;font-size:12px;
   font-family:inherit;cursor:pointer;transition:transform .2s,opacity .2s}
@@ -102,7 +101,6 @@
 .popup-close:hover{color:var(--danger);transform:rotate(90deg)}
 .popup-img{width:120px;height:80px;object-fit:contain;filter:drop-shadow(0 16px 20px rgba(0,0,0,.25))}
 
-/* exit modal */
 .exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .2s ease}
 .exit-modal{background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;padding:32px 26px 26px;width:90%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelUp .3s cubic-bezier(.22,1,.36,1)}
 .exit-modal-title{font-weight:900;font-size:20px;margin-bottom:6px}
@@ -139,7 +137,7 @@
   <div class="pwa-card-title">Install app</div>
   <div class="pwa-card-info">
     <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
-    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">FK Minutes Dashboard</div></div>
+    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
   </div>
   <div class="pwa-card-actions">
     <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
@@ -155,9 +153,9 @@
 <main class="glass-panel" id="mainPanel">
   <div class="hdr">
     <div class="hdr-brand">
-      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
+      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="Flipkart Minutes" decoding="async">
       <div>
-        <h1 class="hdr-title">Picker Pendency Dashboard</h1>
+        <h1 class="hdr-title">Flipkart Minutes Dashboard</h1>
         <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
       </div>
     </div>
@@ -229,8 +227,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var CACHE_KEY = 'pickerDash_v9', PAGE_SIZE = 50, STALE_MS = 5 * 60 * 1000, DEFAULT_REASON = 'Absconding';
 
   var db = [], filtered = [];
-  /* exited   = removed this session (also hides rows if a background refresh brings them back before the server catches up)
-     inFlight = exits whose request has not finished yet (blocks double-submits + background refresh) */
   var exited = new Set(), inFlight = new Set(), selected = new Set();
   var cityTS, storeTS, managerMode = false, page = 1, exporting = false, loading = false, lastLoad = 0;
   var query = '', searchTimer = null, exitTarget = null, exitIsBatch = false, exitReason = DEFAULT_REASON;
@@ -243,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
   FK.syncThemeBtn();
   FK.initInstallUi();
   FK.registerSW();
+  FK.initNotifications(); // 4-hour background local notifications
 
   if (FK.store.get('popupDismissed', true)) $('announcementPopup').remove();
 
@@ -254,11 +251,10 @@ document.addEventListener('DOMContentLoaded', function () {
     return {
       id: id,
       name: FK.titleCase(FK.clean(r.nm)) || 'N/A',
-      /* never lose a picker just because the store name is blank */
       darkStore: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
       cm: FK.titleCase(FK.clean(r.cm)) || 'N/A',
-      ind: r.ind, ref: r.ref, e404: r.e404
+      ind: r.ind, ref: r.ref
     };
   }
 
@@ -287,8 +283,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
 
-  /* Tom Select's clearOptions() keeps the currently-selected option, so clear the selection first –
-     otherwise a store from the previous city stays in the list. Keeps the old value only if it still exists. */
   function fillSelect(ts, values, keep) {
     var cur = ts.getValue();
     ts.clear(true);
@@ -297,7 +291,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (keep && cur && values.indexOf(cur) !== -1) ts.setValue(cur, true);
   }
 
-  /* after (re)loading data: keep the user's city / store / ticked rows where they still exist */
   function refreshFilters() {
     fillSelect(cityTS, uniq(db, 'city'), true);
     if (!managerMode) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
@@ -330,10 +323,11 @@ document.addEventListener('DOMContentLoaded', function () {
     return Object.keys(map).map(function (k) { return [k, map[k]]; })
       .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
   }
-  var checkNA = function (v) { return FK.isNA(v) ? '<span class="na-bg">N/A</span>' : esc(v); };
+  var checkNA = function (v) { return FK.isNA(v) ? '<span class="na-bg">Not Assigned</span>' : esc(v); };
   var badge = function (v) {
     return v === 'Completed' ? '<span class="badge badge-completed">Completed</span>'
-         : v === 'Pending' ? '<span class="badge badge-pending">Pending</span>' : checkNA(v);
+         : v === 'Pending' ? '<span class="badge badge-pending">Pending</span>' 
+         : v === 'Not Assigned' ? '<span class="na-bg">Not Assigned</span>' : checkNA(v);
   };
 
   function render() {
@@ -383,10 +377,9 @@ document.addEventListener('DOMContentLoaded', function () {
     tB.innerHTML = items.map(function (i) {
       var chk = selected.has(i.id), id = esc(i.id);
       if (!chk) allSel = false;
-      var note = i.e404 && i.e404 !== 'All Match' ? '<div class="err-note">' + esc(i.e404) + '</div>' : '';
       return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
         '<td><input type="checkbox" class="row-check" data-id="' + id + '" aria-label="Select ' + id + '"' + (chk ? ' checked' : '') + '></td>' +
-        '<td>' + checkNA(i.name) + note + '</td>' +
+        '<td>' + checkNA(i.name) + '</td>' +
         '<td><button type="button" class="pill-id" data-action="copy" data-id="' + id + '" title="Click to copy">' + id + '</button></td>' +
         '<td>' + badge(i.ind) + '</td><td>' + badge(i.ref) + '</td>' +
         '<td><button class="btn-exit" data-action="exit" data-id="' + id + '">Exit</button></td></tr>';
@@ -416,7 +409,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateBatchUI();
   });
 
-  /* ── copy casper id ── */
   function copyId(id, pill) {
     var done = function () {
       FK.toast('Copied: ' + id);
@@ -437,7 +429,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (ok) done(); else FK.toast('Copy failed', true);
   }
 
-  /* ── exit flow ── */
   function setReason(r) {
     exitReason = r;
     Array.prototype.forEach.call(document.querySelectorAll('.reason-opt'), function (b) {
@@ -472,7 +463,6 @@ document.addEventListener('DOMContentLoaded', function () {
     submitExits(ids, reason, batch);
   }
 
-  /* one implementation for single + batch; optimistic, and on failure only these rows are restored */
   function submitExits(ids, reason, isBatch) {
     var set = new Set(ids.filter(function (id) { return !inFlight.has(id); }));
     var removed = db.filter(function (i) { return set.has(i.id); });
@@ -488,15 +478,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     FK.post({
       action: 'exit', reason: reason,
-      /* name / store / city are a fallback in case the row has already left the Mix up sheet */
       items: removed.map(function (i) { return { id: i.id, n: FK.clean(i.name), ds: i.darkStore, c: i.city }; })
-    }, { retries: 1, timeout: 45000 }).then(function (res) {      // the server is idempotent → a retry never duplicates
+    }, { retries: 1, timeout: 45000 }).then(function (res) {
       if (!res || res.status !== 'Success') throw new Error((res && res.error) || 'Failed');
-      db = db.filter(function (i) { return !set.has(i.id); });      // a refresh may have re-added them meanwhile
+      db = db.filter(function (i) { return !set.has(i.id); });
       FK.writeCache(CACHE_KEY, db);
       FK.toast(isBatch ? ids.length + ' exits processed' : 'Exit processed');
     }).catch(function (err) {
-      db = db.filter(function (i) { return !set.has(i.id); }).concat(removed);   // no duplicates
+      db = db.filter(function (i) { return !set.has(i.id); }).concat(removed);
       ids.forEach(function (id) { exited.delete(id); });
       FK.toast((isBatch ? 'Batch exit' : 'Exit') + ' failed: ' + (FK.isNetworkError(err) ? 'network problem, please retry' : err.message), true, 5000);
     }).then(function () {
@@ -505,7 +494,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ── exports ── */
   function setExporting(on) {
     exporting = on;
     $('btnPdf').disabled = on; $('btnGSheet').disabled = on;
@@ -543,7 +531,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }));
       }
       FK.pdf.pageNumbers(doc);
-      doc.save('Disprz_Pendency_data_(' + FK.dateStamp() + ').pdf');
+      
+      var exportName = managerMode ? 'Cluster_Manager_Pendency.pdf' : ((s || c).replace(/[^a-zA-Z0-9_\-]/g, '_') + '_Pendency.pdf');
+      doc.save(exportName);
+      
       FK.toast('PDF downloaded');
     }).catch(function (e) {
       FK.toast('PDF failed: ' + e.message, true, 5000);
@@ -555,7 +546,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setExporting(true);
     var btn = $('btnGSheet'); btn.textContent = 'Preparing...';
 
-    /* Open the tab synchronously inside the click → browsers don't treat it as a blocked pop-up. */
     var win = null;
     try {
       win = window.open('about:blank', '_blank');
@@ -569,27 +559,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var c = cityTS.getValue(), s = storeTS.getValue();
     var summary = [['Cluster Manager', 'Total Pendency']].concat(groupCount(filtered, 'cm'));
-    var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher', '404 Error']].concat(
-      filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind || '', i.ref || '', i.e404 || '']; }));
-    var title = ((managerMode ? c : (s || c)) + '_Pendency').replace(/[^a-zA-Z0-9_\-]/g, '_');
+    var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher']].concat(
+      filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind || 'Not Assigned', i.ref || 'Not Assigned']; }));
+    var title = ((managerMode ? 'Cluster_Manager' : (s || c)) + '_Pendency').replace(/[^a-zA-Z0-9_\-]/g, '_');
 
     FK.post({ action: 'export', f: title, summaryData: summary, detailData: detail }, { timeout: 120000, retries: 0 })
       .then(function (d) {
         if (!d || !d.url) throw new Error((d && d.error) || 'No URL returned');
         if (win && !win.closed) {
-          try { win.opener = null; } catch (x) { /* ignore */ }      // the sheet tab cannot script this page
+          try { win.opener = null; } catch (x) { }
           win.location.replace(d.url);
           FK.toast('G-Sheet created successfully!');
         } else FK.toastLink('G-Sheet is ready.', d.url, 'Open it');
       })
       .catch(function (e) {
-        if (win && !win.closed) { try { win.close(); } catch (x) { /* ignore */ } }
+        if (win && !win.closed) { try { win.close(); } catch (x) { } }
         FK.toast('Export failed: ' + (e.name === 'AbortError' ? 'it took too long, please try again' : (e.message || 'retry')), true, 5000);
       })
       .then(function () { btn.textContent = 'Open as G-Sheet'; setExporting(false); });
   }
 
-  /* ── events ── */
   FK.delegate({
     theme: function () { FK.toggleTheme(); },
     install: function () { FK.install(); },
