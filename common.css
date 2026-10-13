@@ -1,6 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════
-   FK Minutes — shared styles (index.html + completion.html)
-   ═══════════════════════════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
 ::-webkit-scrollbar{display:none}
@@ -41,26 +38,24 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.55);z-in
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
 
-/* keyboard users can see where they are (mouse clicks stay unchanged) */
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-
-/* scrollbars are hidden globally, but scrollable tables keep a thin one so users know there is more */
 .table-holder,.tbl-wrap{scrollbar-width:thin;scrollbar-color:var(--border-color) transparent}
 .table-holder::-webkit-scrollbar,.tbl-wrap::-webkit-scrollbar{display:block;width:6px;height:6px}
 .table-holder::-webkit-scrollbar-thumb,.tbl-wrap::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:6px}
 .table-holder::-webkit-scrollbar-track,.tbl-wrap::-webkit-scrollbar-track{background:transparent}
 
-/* snow sits above the panel but BELOW dropdowns / modals / toasts */
-#snowCanvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:50}
-
-/* loader */
 #appLoader{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(20,15,5,.96),rgba(5,10,25,.98));
   z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease}
 #appLoader.hidden{opacity:0;pointer-events:none}
 .loader-svg{width:110px;height:110px;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-weight:800;font-size:14px;color:var(--gold-light);letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
-/* panel + header */
+/* Full Screen Processing Loader */
+#fsLoader {position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+#fsLoader.active {opacity:1;pointer-events:auto;}
+.spinner {width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--fk-blue);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px;}
+@keyframes spin {to {transform: rotate(360deg);}}
+
 .glass-panel{background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-radius:28px;
   padding:36px 32px;width:100%;max-width:940px;border:1px solid var(--border-color);box-shadow:var(--shadow-panel);
   position:relative;z-index:10;animation:panelUp .5s cubic-bezier(.22,1,.36,1) both}
@@ -80,12 +75,16 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.55);z-in
 .icon-btn.accent{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue)}
 .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 0 24px;border:none}
 
-/* TomSelect theming (solid dropdown → nothing bleeds through) */
-.ts-wrapper{text-align:center!important;position:relative!important}
-.ts-wrapper .ts-control{border-radius:14px!important;padding:12px 18px!important;border:1.5px solid var(--border-color)!important;
+/* TomSelect Alignment Fix */
+.ts-wrapper{position:relative!important; text-align:center!important;}
+.ts-wrapper .ts-control{
+  border-radius:14px!important;padding:12px 18px!important;border:1.5px solid var(--border-color)!important;
   font-weight:700!important;font-size:14px!important;font-family:inherit!important;background:var(--card-bg)!important;
   color:var(--text-main)!important;display:flex!important;justify-content:center!important;align-items:center!important;
-  text-align:center!important;transition:border-color .2s,box-shadow .2s!important;box-shadow:none!important}
+  text-align:center!important;transition:border-color .2s,box-shadow .2s!important;box-shadow:none!important
+}
+.ts-wrapper.single .ts-control > input { text-align: center!important; }
+.ts-wrapper.single .ts-control > .item { text-align: center!important; width: 100%!important; display: block!important; }
 .ts-wrapper .ts-control.focus,.ts-wrapper.focus .ts-control{border-color:var(--gold)!important;box-shadow:0 0 0 3px var(--gold-glow)!important}
 .ts-dropdown{background:var(--solid)!important;border:1px solid var(--border-color)!important;border-radius:14px!important;
   box-shadow:0 14px 36px rgba(0,0,0,.30)!important;font-family:inherit!important;z-index:99999!important;
@@ -96,18 +95,14 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.55);z-in
   margin:2px 0!important;border:1px solid transparent!important}
 .ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--dropdown-hover)!important;color:var(--fk-blue)!important;
   font-weight:800!important;border-color:var(--fk-blue)!important}
-.ts-dropdown .no-results{text-align:center!important;color:var(--text-muted)!important;padding:12px!important}
 
-/* toast */
 #toast-container{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:100001;pointer-events:none;text-align:center;width:max-content;max-width:92vw}
 .toast-msg{background:var(--text-main);color:var(--solid);padding:13px 28px;border-radius:50px;font-weight:700;font-size:13px;
   box-shadow:0 12px 32px rgba(0,0,0,.25);transition:opacity .3s ease,transform .3s ease;display:inline-block}
 .toast-msg.hidden{opacity:0;transform:translateY(8px);pointer-events:none}
 .toast-msg.err{background:var(--danger);color:#fff}
 .toast-msg.live{pointer-events:auto}
-.toast-msg a{color:var(--gold-light);font-weight:900;text-decoration:underline;margin-left:6px}
 
-/* PWA install card */
 .pwa-install-card{position:fixed;top:20px;right:20px;z-index:100002;background:var(--solid);border:1.5px solid var(--border-color);
   border-radius:20px;padding:22px 24px;width:320px;box-shadow:0 16px 48px rgba(0,0,0,.25);text-align:left;
   animation:panelUp .4s cubic-bezier(.22,1,.36,1) both}
@@ -118,12 +113,9 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.55);z-in
 .pwa-card-origin{font-size:12px;color:var(--text-muted);font-weight:600}
 .pwa-card-actions{display:flex;gap:10px}
 .pwa-card-btn{flex:1;padding:10px 20px;border-radius:50px;font-weight:800;font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s ease}
-.pwa-card-btn:hover{transform:translateY(-1px)}
 .pwa-card-install{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border:none;box-shadow:0 4px 12px rgba(40,116,240,.3)}
 .pwa-card-cancel{background:transparent;color:var(--text-main);border:1.5px solid var(--border-color)}
-.pwa-card-cancel:hover{border-color:var(--danger);color:var(--danger)}
 
-/* animated status badges */
 .badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 14px;border-radius:50px;font-size:12px;font-weight:800;
   letter-spacing:.3px;color:#fff;background-size:250% 250%;animation:badgeFlow 3.2s ease-in-out infinite;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 .badge-pending{background-image:linear-gradient(120deg,#ef4444,#f97316,#dc2626,#ef4444);box-shadow:0 2px 10px rgba(239,68,68,.35)}
@@ -141,21 +133,12 @@ body::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.55);z-in
   .icon-btn{padding:10px 20px;font-size:13px}
   .ts-wrapper .ts-control{padding:14px 16px!important;font-size:15px!important}
   .pwa-install-card{top:auto;bottom:20px;right:10px;left:10px;width:auto}
-}
-@media(max-width:400px){.glass-panel{padding:22px 12px;border-radius:18px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-/* Full Screen Loader */
-#fsLoader {position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
-#fsLoader.active {opacity:1;pointer-events:auto;}
-.spinner {width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--fk-blue);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px;}
-@keyframes spin {to {transform: rotate(360deg);}}
-
-/* Mobile Adjustments (Sticky Columns for Table) */
-@media(max-width:768px){
-  .filter-row {flex-direction:column;gap:10px}
+  
+  /* Mobile Sticky Columns */
   .table th:nth-child(1), .table td:nth-child(1) { position:sticky; left:0; z-index:2; }
   .table th:nth-child(2), .table td:nth-child(2) { position:sticky; left:44px; z-index:2; }
   .table tbody tr td:nth-child(1), .table tbody tr td:nth-child(2) { background:var(--card-bg); }
   .table tbody tr:nth-child(even) td:nth-child(1), .table tbody tr:nth-child(even) td:nth-child(2) { background:var(--table-hover); }
   .table tbody tr.tr-selected td:nth-child(1), .table tbody tr.tr-selected td:nth-child(2) { background:rgba(40,116,240,.08); }
 }
+@media(max-width:400px){.glass-panel{padding:22px 12px;border-radius:18px}}
