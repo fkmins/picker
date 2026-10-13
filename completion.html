@@ -15,14 +15,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://script.google.com" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css"
-      integrity="sha512-mNN7o87hQqtNCCGWxFVdlVdaKF6d4S1wVMi3+ftJYnW572YIo0KPjK1Cns5SPlyCtKGp1Nu+z26MJUNXmpbjKA==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="common.css">
-<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"
-        integrity="sha512-nSCwMPJuzxtzxg73yUXuSuLmsfecNBt+/7dimMdC7VJisuxdr7XtYoCausZOSS6V5IHUOuJ7nQMXmylVt9+jeg==" crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
 <script defer src="common.js"></script>
 <style>
 /* auth */
@@ -60,7 +55,7 @@
 .total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
 .empty-cell{padding:24px!important;color:var(--text-muted);font-weight:700}
 
-.wa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100003;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .2s}
+.wa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100003;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px);opacity:0;transition:opacity .2s}
 .wa-modal.show{display:flex;opacity:1}
 .wa-modal-content{background:var(--solid);padding:24px;border-radius:16px;width:100%;max-width:400px;border:1px solid var(--border-color);box-shadow:0 12px 40px rgba(0,0,0,.3);transform:scale(.95);transition:transform .2s}
 .wa-modal.show .wa-modal-content{transform:scale(1)}
@@ -77,7 +72,7 @@
 </style>
 </head>
 <body>
-<canvas id="snowCanvas" aria-hidden="true"></canvas>
+<div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;">Generating PDF...</div></div>
 
 <div id="authOverlay" class="auth-overlay">
   <div class="auth-modal">
@@ -88,27 +83,14 @@
   </div>
 </div>
 
-<div id="pwaInstallCard" class="pwa-install-card" hidden>
-  <div class="pwa-card-title">Install app</div>
-  <div class="pwa-card-info">
-    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
-    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
-  </div>
-  <div class="pwa-card-actions">
-    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
-    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
-  </div>
-</div>
-
 <div id="appLoader">
-  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading">
   <div class="loading-text">Loading Completion Report</div>
 </div>
 
 <main class="glass-panel">
   <div class="hdr">
     <div class="hdr-brand">
-      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="Flipkart Minutes" decoding="async">
       <div>
         <h1 class="hdr-title">Completion Report</h1>
         <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
@@ -116,7 +98,6 @@
     </div>
     <div class="hdr-actions">
       <a href="index.html" class="icon-btn">Dashboard</a>
-      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
       <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
@@ -149,27 +130,20 @@
     </div>
   </div>
 </div>
-<div id="toast-container"><div class="toast-msg hidden" id="toastText" role="status" aria-live="polite"></div></div>
+<div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'completionReport_v10', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
+  var CACHE_KEY = 'completionReport_v12', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
   var AUTH_HASH = '6e077073d1d6a2571a403f0da77a08610904bb64c88e68f122158d33f3b5a522';
   var UNMAPPED_CM = 'Unmapped';
 
   var rawData = [], trainerTS = null, shareText = '', loading = false, lastLoad = 0;
 
-  FK.purgeCaches('completionReport_', CACHE_KEY);
-  FK.setWallpaper([
-    'https://rukmini1.flixcart.com/image/1500/1500/xif0q/poster/r/h/3/small-demon-slayer-anime-kimetsu-no-yaiba-upper-moon-1-laminated-original-imah847wxzyfzuq2.jpeg',
-    'https://m.media-amazon.com/images/M/MV5BMGVhZTY1YTctOWJlYS00MjcxLTlkNDgtYTUxZTM5MzMzZjI2XkEyXkFqcGc@._V1_.jpg'
-  ]);
   FK.syncThemeBtn();
-  FK.initInstallUi();
   FK.registerSW();
-  FK.initNotifications(); // Setup interval push notifications
 
   /* ── auth ── */
   var authInput = $('authInput'), overlay = $('authOverlay');
@@ -180,35 +154,31 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   function unlock() {
-    FK.store.set(AUTH_KEY, AUTH_HASH, true);
+    FK.store.set(AUTH_KEY, AUTH_HASH);
     overlay.style.opacity = '0';
     setTimeout(function () { overlay.style.display = 'none'; }, 300);
     authInput.blur();
   }
-  if (FK.store.get(AUTH_KEY, true) === AUTH_HASH) {
+  if (FK.store.get(AUTH_KEY) === AUTH_HASH) {
     overlay.style.display = 'none';
   } else {
     authInput.addEventListener('input', function () {
       var v = authInput.value.trim();
       if (!v) return;
-      sha256(v).then(function (h) { if (h === AUTH_HASH && overlay.style.display !== 'none') unlock(); })
-        .catch(function () { $('authError').textContent = 'Secure connection (HTTPS) required to sign in.'; });
+      sha256(v).then(function (h) { if (h === AUTH_HASH && overlay.style.display !== 'none') unlock(); }).catch(function () {});
     });
     authInput.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter') return;
-      sha256(authInput.value.trim()).then(function (h) { if (h !== AUTH_HASH) window.location.href = 'index.html'; })
-        .catch(function () { });
+      sha256(authInput.value.trim()).then(function (h) { if (h !== AUTH_HASH) window.location.href = 'index.html'; }).catch(function () { });
     });
     authInput.focus();
   }
 
   /* ── data ── */
   function normalizeRow(r) {
-    var id = FK.clean(r.id);
+    var id = FK.clean(r.id), wh = FK.clean(r.wh);
     if (!id) return null;
-    var wh = FK.clean(r.wh);
-    var trainer = FK.titleCase(FK.clean(r.tn));
-    var cm = FK.titleCase(FK.clean(r.cm)) || UNMAPPED_CM;
+    var trainer = FK.titleCase(FK.clean(r.tn)), cm = FK.titleCase(FK.clean(r.cm)) || UNMAPPED_CM;
     return {
       id: id,
       owner: trainer || (cm !== UNMAPPED_CM ? cm : 'Unassigned'),
@@ -223,16 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
     loading = true;
     FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
       if (d && d.error) throw new Error(d.error);
-      if (!Array.isArray(d)) throw new Error('Invalid data received');
       rawData = d.map(normalizeRow).filter(Boolean);
       lastLoad = Date.now();
       FK.writeCache(CACHE_KEY, rawData);
       populateTrainers();
       if (!rawData.length) FK.toast('No pending pickers found.');
     }).catch(function (e) {
-      if (showErr || !rawData.length) {
-        FK.toast(FK.isNetworkError(e) ? 'Network error. Please check your connection and refresh.' : 'Error: ' + e.message, true, 5000);
-      }
+      if (showErr || !rawData.length) FK.toast('Network Error or Data Missing.', true, 5000);
     }).then(function () { loading = false; FK.hideLoader(); });
   }
 
@@ -240,28 +207,25 @@ document.addEventListener('DOMContentLoaded', function () {
     var prev = selectedOwners(), seen = {}, list = [];
     rawData.forEach(function (r) { if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); } });
     list.sort(function (a, b) { return a.localeCompare(b); });
-    trainerTS.clear(true);
-    trainerTS.clearOptions();
+    trainerTS.clear(true); trainerTS.clearOptions();
     list.forEach(function (t) { trainerTS.addOption({ value: t, text: t }); });
     trainerTS.setValue(prev.filter(function (v) { return seen[v]; }), true);
     render();
   }
 
-  /* ── tables ── */
   function selectedOwners() {
     var v = trainerTS ? trainerTS.getValue() : [];
     return Array.isArray(v) ? v : (v ? String(v).split(',') : []);
   }
+  
   function rowsFor(owners) {
-    var set = new Set(owners);
-    return rawData.filter(function (r) { return set.has(r.owner); });
+    var set = new Set(owners); return rawData.filter(function (r) { return set.has(r.owner); });
   }
 
   function groupBy(arr, key) {
     var map = {};
     arr.forEach(function (r) { map[r[key]] = (map[r[key]] || 0) + 1; });
-    var entries = Object.keys(map).map(function (k) { return [k, map[k]]; })
-      .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
+    var entries = Object.keys(map).map(function (k) { return [k, map[k]]; }).sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
     return { entries: entries, total: arr.length };
   }
 
@@ -282,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('results').style.display = 'block';
   }
 
-  /* ── pdf ── */
+  /* ── PDF Export ── */
   var MODES = {
     store: { key: 'store', head: 'Store Name', title: 'Store Name Wise Pendency' },
     cm:    { key: 'cm',    head: 'Cluster Manager', title: 'Cluster Manager Wise Pendency' },
@@ -290,14 +254,14 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function exportPdf(btn) {
-    var m = MODES[btn.getAttribute('data-mode')];
-    if (!m) return;
+    var m = MODES[btn.getAttribute('data-mode')]; if (!m) return;
     var data = rowsFor(selectedOwners());
-    if (!data.length) { FK.toast('Select a trainer first.', true); return; }
+    if (!data.length) { return FK.toast('Select a trainer first.', true); }
+    if (data.length > 500) { return FK.toast('Data too large. Please use dashboard export.', true); }
 
     var buttons = document.querySelectorAll('.btn-export'), orig = btn.textContent;
     Array.prototype.forEach.call(buttons, function (b) { b.disabled = true; });
-    btn.textContent = 'Generating...';
+    $('fsLoader').classList.add('active');
 
     FK.ensureJsPdf().then(function () {
       var doc = new window.jspdf.jsPDF({ compress: true });
@@ -305,8 +269,8 @@ document.addEventListener('DOMContentLoaded', function () {
       y = FK.pdf.title(doc, m.title, y);
       var g = groupBy(data, m.key);
       var rows = g.entries.map(function (e) { return [FK.pdf.safe(e[0]), String(e[1])]; });
-      var last = rows.length;
-      rows.push(['TOTAL', String(g.total)]);
+      var last = rows.length; rows.push(['TOTAL', String(g.total)]);
+      
       doc.autoTable({
         head: [[m.head, 'Pendency']], body: rows, startY: y + 2, theme: 'grid',
         styles: FK.pdf.bodyStyles, headStyles: FK.pdf.headStyles, margin: { left: 15, right: 15, bottom: 16 },
@@ -317,65 +281,47 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
       FK.pdf.pageNumbers(doc);
-      
-      var exportName = m.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
-      doc.save(exportName);
+      doc.save(m.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
       
       FK.toast('PDF downloaded');
       shareText = 'Hello team, please find the ' + m.title + ' attached for your reference.';
       openShare();
     }).catch(function (e) {
-      FK.toast('PDF failed: ' + e.message, true, 5000);
-    }).then(function () {
+      FK.toast('PDF failed.', true, 5000);
+    }).finally(function () {
       btn.textContent = orig;
       Array.prototype.forEach.call(buttons, function (b) { b.disabled = false; });
+      $('fsLoader').classList.remove('active');
     });
   }
 
   function openShare() {
     var modal = $('waModal'); modal.style.display = 'flex';
     setTimeout(function () { modal.classList.add('show'); }, 10);
+    FK.trapFocus(modal);
   }
   function closeShare() {
     var modal = $('waModal'); modal.classList.remove('show');
     setTimeout(function () { modal.style.display = 'none'; }, 200);
   }
 
-  FK.delegate({
-    theme: function () { FK.toggleTheme(); },
-    install: function () { FK.install(); },
-    dismissInstall: function () { FK.dismissInstall(); },
-    goHome: function () { window.location.href = 'index.html'; },
-    pdf: exportPdf,
-    waClose: closeShare,
-    waShare: function () {
-      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText), '_blank', 'noopener');
-      closeShare();
-    }
+  FK.delegate({ theme: FK.toggleTheme, goHome: function () { window.location.href = 'index.html'; }, pdf: exportPdf, waClose: closeShare,
+    waShare: function () { window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText), '_blank', 'noopener'); closeShare(); }
   });
+  
   $('waModal').addEventListener('click', function (e) { if (e.target === this) closeShare(); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && $('waModal').classList.contains('show')) closeShare();
-  });
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS) loadData(false);
-  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('waModal').classList.contains('show')) closeShare(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS) loadData(false); });
 
   /* ── init ── */
   trainerTS = new TomSelect('#trainerSelect', {
-    placeholder: 'Choose a Trainer', create: false, maxItems: null, plugins: ['remove_button'],
-    sortField: { field: 'text' }, dropdownParent: 'body', onChange: render,
-    render: {
-      item: function (d, e) { return '<div>' + e(d.text) + '</div>'; },
-      option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; }
-    }
+    placeholder: 'Choose a Trainer', create: false, maxItems: null, plugins: ['remove_button'], sortField: { field: 'text' }, dropdownParent: 'body', onChange: render,
+    render: { item: function (d, e) { return '<div>' + e(d.text) + '</div>'; }, option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; } }
   });
 
   var cached = FK.readCache(CACHE_KEY);
   if (cached && cached.data.length) { rawData = cached.data; populateTrainers(); FK.hideLoader(); }
   loadData(!cached);
-
-  if ('requestIdleCallback' in window) requestIdleCallback(FK.initSnow, { timeout: 1500 }); else setTimeout(FK.initSnow, 300);
 });
 </script>
 </body>
