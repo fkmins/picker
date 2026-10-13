@@ -3,7 +3,7 @@
  *  - CDN / fonts / images  : stale-while-revalidate, capped cache size
  *  - Apps Script API calls : never touched
  */
-var VERSION = 'v12';
+var VERSION = 'v13';
 var SHELL_CACHE = 'fk-shell-' + VERSION;
 var STATIC_CACHE = 'fk-static-' + VERSION;
 var STATIC_MAX = 40;                 // opaque cross-origin responses are expensive in the storage quota
@@ -51,7 +51,7 @@ function networkFirst(event, req) {
     }
     return res;
   });
-  event.waitUntil(network.catch(function () {}));      // keep the worker alive so the cache update finishes
+  event.waitUntil(network.catch(function () {}));
 
   var slow = new Promise(function (resolve) { setTimeout(resolve, NET_TIMEOUT); })
     .then(function () { return fromCache(req).then(function (hit) { return hit || network; }); });
@@ -71,12 +71,12 @@ function staleWhileRevalidate(event, req) {
       var copy = res.clone();
       return caches.open(STATIC_CACHE)
         .then(function (c) { return c.put(req, copy).then(function () { return trim(c); }); })
-        .catch(function () { /* quota – ignore */ })
+        .catch(function () { })
         .then(function () { return res; });
     }
     return res;
   });
-  event.waitUntil(network.catch(function () {}));      // registered synchronously
+  event.waitUntil(network.catch(function () {}));
   return caches.match(req).then(function (cached) {
     return cached || network;
   });
@@ -87,7 +87,6 @@ self.addEventListener('fetch', function (event) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.protocol.indexOf('http') !== 0 || isApi(url)) return;
-  /* manifest.json: always straight from the network so icon / name changes propagate */
   if (url.origin === self.location.origin && /manifest\.json$/.test(url.pathname)) return;
 
   event.respondWith(url.origin === self.location.origin ? networkFirst(event, req) : staleWhileRevalidate(event, req));
