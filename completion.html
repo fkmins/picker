@@ -72,6 +72,20 @@
 </style>
 </head>
 <body>
+
+<!-- PWA Install Card -->
+<div id="pwaInstallCard" class="pwa-install-card" hidden>
+  <div class="pwa-card-title">Install app</div>
+  <div class="pwa-card-info">
+    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
+    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
+  </div>
+  <div class="pwa-card-actions">
+    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
+    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
+  </div>
+</div>
+
 <div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;">Generating PDF...</div></div>
 
 <div id="authOverlay" class="auth-overlay">
@@ -98,6 +112,7 @@
     </div>
     <div class="hdr-actions">
       <a href="index.html" class="icon-btn">Dashboard</a>
+      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
       <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
@@ -144,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   FK.syncThemeBtn();
   FK.registerSW();
+  FK.initInstallUi();
 
   /* ── auth ── */
   var authInput = $('authInput'), overlay = $('authOverlay');
@@ -305,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () { modal.style.display = 'none'; }, 200);
   }
 
-  FK.delegate({ theme: FK.toggleTheme, goHome: function () { window.location.href = 'index.html'; }, pdf: exportPdf, waClose: closeShare,
+  FK.delegate({ theme: FK.toggleTheme, install: FK.install, dismissInstall: FK.dismissInstall, goHome: function () { window.location.href = 'index.html'; }, pdf: exportPdf, waClose: closeShare,
     waShare: function () { window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText), '_blank', 'noopener'); closeShare(); }
   });
   
