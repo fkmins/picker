@@ -5,170 +5,106 @@
 <title>Flipkart Minutes | Picker Pendency Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2874F0">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Flipkart Minutes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://script.google.com" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css"
-      integrity="sha512-mNN7o87hQqtNCCGWxFVdlVdaKF6d4S1wVMi3+ftJYnW572YIo0KPjK1Cns5SPlyCtKGp1Nu+z26MJUNXmpbjKA==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.bootstrap5.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="common.css">
-<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark-mode')}catch(e){}</script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"
-        integrity="sha512-nSCwMPJuzxtzxg73yUXuSuLmsfecNBt+/7dimMdC7VJisuxdr7XtYoCausZOSS6V5IHUOuJ7nQMXmylVt9+jeg==" crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
 <script defer src="common.js"></script>
 <style>
 .tab-container{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-.btn-tab{border:1.5px solid var(--border-color);padding:11px 26px;border-radius:50px;font-weight:800;font-size:13px;background:var(--card-bg);
-  color:var(--text-muted);transition:all .22s ease;flex:1;max-width:220px;cursor:pointer;font-family:inherit}
+.btn-tab{border:1.5px solid var(--border-color);padding:11px 26px;border-radius:50px;font-weight:800;font-size:13px;background:var(--card-bg);color:var(--text-muted);transition:all .22s ease;flex:1;max-width:220px;cursor:pointer;font-family:inherit}
 .btn-tab:hover:not(.active){border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
-.btn-tab.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);box-shadow:0 6px 18px rgba(40,116,240,.35);transform:translateY(-1px)}
-
+.btn-tab.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);box-shadow:0 6px 18px rgba(40,116,240,.35)}
 .filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
-.filter-col{flex:1 1 260px;max-width:420px;position:relative}
-.ts-wrapper.single.has-items .ts-control>input{width:0!important;min-width:0!important;flex:0 0 0!important;padding:0!important;margin:0!important;opacity:0!important;position:absolute!important;left:-9999px!important}
-.ts-wrapper.single .ts-control>.item{text-align:center!important;width:100%!important;flex:1 1 100%!important;font-weight:700!important;color:var(--text-main)!important;display:block!important}
-.ts-wrapper.single:not(.has-items) .ts-control>input{text-align:center!important;flex:1!important}
-
+.filter-col{flex:1 1 260px;max-width:420px;}
 .search-wrapper{width:100%;margin-bottom:20px}
-.search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:inherit;
-  background:var(--card-bg);color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s}
-.search-box::placeholder{color:var(--text-muted)}
+.search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:inherit;background:var(--card-bg);color:var(--text-main);text-align:center;}
 .search-box:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
-
 #resultArea{display:none;margin-top:22px;flex-direction:column;align-items:center;width:100%;animation:fadeIn .4s ease both}
 .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;margin-bottom:18px}
-.metric-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:18px;padding:22px 18px;position:relative;overflow:hidden;
-  transition:transform .2s ease,box-shadow .2s ease;box-shadow:var(--shadow-card)}
+.metric-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:18px;padding:22px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-card)}
 .metric-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--fk-yellow),var(--gold))}
-.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(212,175,55,.18)}
-.metric-card .val{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--fk-blue),#4f9cf9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:8px}
+.metric-card .val{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--fk-blue),#4f9cf9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
 .metric-card .lbl{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-muted);letter-spacing:.8px}
-
 .action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:22px;width:100%}
-.btn-action{border:none;padding:13px 22px;border-radius:14px;font-weight:800;font-size:13px;font-family:inherit;flex:1;min-width:150px;cursor:pointer;
-  transition:all .2s ease;letter-spacing:.3px;color:#fff}
-.btn-action:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
-.btn-action:active:not(:disabled){transform:scale(.97)}
-.btn-action:disabled{opacity:.55;cursor:wait}
+.btn-action{border:none;padding:13px 22px;border-radius:14px;font-weight:800;font-size:13px;font-family:inherit;flex:1;min-width:150px;cursor:pointer;color:#fff}
 .btn-pdf{background:linear-gradient(135deg,#334155,#1e293b)}
 .btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669)}
 .btn-batch{background:linear-gradient(135deg,#f59e0b,#d97706);display:none}
 .btn-batch.visible{display:inline-block}
 
-.table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:460px;overflow:auto;box-shadow:var(--shadow-card)}
+.table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:500px;overflow:auto;box-shadow:var(--shadow-card)}
 .table{border-collapse:collapse;width:100%;min-width:480px;color:var(--text-main)}
-.table th,.table td{text-align:center;padding:14px 14px;vertical-align:middle}
-.table thead th{background:var(--table-header);color:var(--text-muted);font-size:13px;font-weight:800;position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border-color)}
-.table td{font-weight:600;font-size:14px;border-bottom:1px solid var(--border-color)}
+.table th,.table td{text-align:center;padding:14px;vertical-align:middle;border-bottom:1px solid var(--border-color)}
+.table thead th{background:var(--table-header);color:var(--text-muted);font-size:13px;font-weight:800;position:sticky;top:0;z-index:3;border-bottom:2px solid var(--border-color)}
+.table td{font-weight:600;font-size:14px;}
 .table tbody tr:nth-child(even) td{background:var(--table-hover)}
 .table tbody tr:hover td{background:var(--dropdown-hover)}
-.table tbody tr:last-child td{border-bottom:none}
-.total-row td{font-weight:900!important;background:var(--table-header)!important;border-top:2px solid var(--gold)!important;text-transform:uppercase}
 .empty-cell{padding:32px!important;color:var(--text-muted);font-weight:700}
-.normal-count{font-weight:800;font-size:15px}
 .na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
-
-.btn-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:800;font-size:12px;
-  font-family:inherit;cursor:pointer;transition:transform .2s,opacity .2s}
-.btn-exit:hover{transform:translateY(-2px);opacity:.9}
-.badge-pending{animation:badgeFlow 3.2s ease-in-out infinite,pulsePending 2s infinite}
+.btn-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;transition:transform .2s}
+.btn-exit:hover{transform:translateY(-2px)}
+.badge-pending{animation:pulsePending 2s infinite}
 @keyframes pulsePending{0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
-.pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;
-  border:1px solid rgba(40,116,240,.2);cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1);min-width:84px;font-family:inherit}
-.pill-id:hover{background:rgba(40,116,240,.2);border-color:var(--fk-blue);transform:scale(1.06)}
-.pill-id:active{transform:scale(.95)}
+.pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2);cursor:pointer;min-width:84px;font-family:inherit}
 .pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important}
 .row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
 .tr-selected td{background:rgba(40,116,240,.08)!important}
 
-#paginationBar{display:none;justify-content:center;align-items:center;gap:14px;margin-top:18px;width:100%;flex-wrap:wrap}
-.page-info{font-weight:700;font-size:13px;color:var(--text-muted);min-width:140px}
-.btn-page{background:var(--card-bg);border:1.5px solid var(--border-color);color:var(--text-main);border-radius:50px;padding:8px 18px;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;transition:all .2s ease}
-.btn-page:hover:not(:disabled){border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
-.btn-page:disabled{opacity:.4;cursor:default}
+/* Full Screen Loader */
+#fsLoader {position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+#fsLoader.active {opacity:1;pointer-events:auto;}
+.spinner {width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--fk-blue);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px;}
+@keyframes spin {to {transform: rotate(360deg);}}
 
-#announcementPopup{position:fixed;bottom:28px;right:24px;z-index:9998;width:200px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;
-  animation:panelUp .5s cubic-bezier(.22,1,.36,1) both;transition:opacity .3s ease,transform .3s ease}
-.popup-close{position:absolute;top:2px;right:6px;background:none;border:none;font-size:20px;line-height:1;color:#fff;cursor:pointer;font-weight:700;padding:2px 6px;transition:transform .2s ease,color .15s}
-.popup-close:hover{color:var(--danger);transform:rotate(90deg)}
-.popup-img{width:120px;height:80px;object-fit:contain;filter:drop-shadow(0 16px 20px rgba(0,0,0,.25))}
-
-.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .2s ease}
+.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
 .exit-modal{background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;padding:32px 26px 26px;width:90%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelUp .3s cubic-bezier(.22,1,.36,1)}
 .exit-modal-title{font-weight:900;font-size:20px;margin-bottom:6px}
 .exit-modal-name{font-weight:800;font-size:16px;color:var(--fk-blue);margin-bottom:18px;word-break:break-word}
-.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
-.reason-opt{padding:12px 8px;border-radius:12px;border:1.5px solid var(--border-color);background:var(--card-bg);color:var(--text-main);
-  font-weight:800;font-size:13px;font-family:inherit;cursor:pointer;transition:all .18s ease}
-.reason-opt:hover{border-color:var(--fk-blue);background:var(--dropdown-hover);color:var(--fk-blue)}
-.reason-opt.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);border-color:var(--fk-blue);color:#fff;box-shadow:0 4px 14px rgba(40,116,240,.35)}
-.exit-modal-actions{display:flex;gap:12px;justify-content:center}
-.exit-modal-btn{padding:12px 28px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:inherit;transition:all .2s ease}
-.exit-modal-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.exit-modal-actions{display:flex;gap:12px;justify-content:center;margin-top:22px;}
+.exit-modal-btn{padding:12px 28px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:inherit;}
 .exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff}
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)}
-.exit-btn-cancel:hover{border-color:var(--gold);color:var(--gold)}
 
+/* Mobile Adjustments (Sticky Columns) */
 @media(max-width:768px){
-  .btn-tab{flex:1 1 42%;max-width:none;padding:13px 14px}
   .filter-row{flex-direction:column;gap:10px}
-  .filter-col{flex:1 1 100%;max-width:100%}
-  .metrics-grid{grid-template-columns:1fr 1fr;gap:10px}
-  .metric-card{padding:18px 14px}.metric-card .val{font-size:28px}
-  .btn-action{min-width:0;padding:14px 16px}
-  .table th,.table td{padding:12px 8px;font-size:13px}
-  #announcementPopup{bottom:14px;right:12px;width:150px;padding:12px}
-  .popup-img{width:90px;height:60px}
+  .table th:nth-child(1), .table td:nth-child(1) { position:sticky; left:0; z-index:2; }
+  .table th:nth-child(2), .table td:nth-child(2) { position:sticky; left:44px; z-index:2; }
+  .table tbody tr td:nth-child(1), .table tbody tr td:nth-child(2) { background:var(--card-bg); }
+  .table tbody tr:nth-child(even) td:nth-child(1), .table tbody tr:nth-child(even) td:nth-child(2) { background:var(--table-hover); }
+  .table tbody tr.tr-selected td:nth-child(1), .table tbody tr.tr-selected td:nth-child(2) { background:rgba(40,116,240,.08); }
 }
 </style>
 </head>
 <body>
-<canvas id="snowCanvas" aria-hidden="true"></canvas>
-
-<div id="pwaInstallCard" class="pwa-install-card" hidden>
-  <div class="pwa-card-title">Install app</div>
-  <div class="pwa-card-info">
-    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
-    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
-  </div>
-  <div class="pwa-card-actions">
-    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
-    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
-  </div>
-</div>
-
+<div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;">Processing...</div></div>
 <div id="appLoader">
-  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading" decoding="async">
-  <div class="loading-text">Please wait, loading your data</div>
+  <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading">
+  <div class="loading-text">Loading Dashboard Data</div>
 </div>
 
 <main class="glass-panel" id="mainPanel">
   <div class="hdr">
     <div class="hdr-brand">
-      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="Flipkart Minutes" decoding="async">
-      <div>
-        <h1 class="hdr-title">Flipkart Minutes Dashboard</h1>
-        <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
-      </div>
+      <div><h1 class="hdr-title">Flipkart Minutes Dashboard</h1><div class="hdr-sub">East - L&amp;D</div></div>
     </div>
     <div class="hdr-actions">
-      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
+      <button class="icon-btn" id="notifBtn" data-action="notify">🔔 Enable Alerts</button>
       <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
   <hr class="divider">
 
   <div class="tab-container">
-    <button id="btnNormal" class="btn-tab active" data-action="mode" data-mode="0" aria-pressed="true">Dark Store Wise</button>
-    <button id="btnManager" class="btn-tab" data-action="mode" data-mode="1" aria-pressed="false">Cluster Manager Wise</button>
+    <button id="btnNormal" class="btn-tab active" data-action="mode" data-mode="0">Dark Store Wise</button>
+    <button id="btnManager" class="btn-tab" data-action="mode" data-mode="1">Cluster Manager Wise</button>
   </div>
   <div class="filter-row">
     <div class="filter-col"><select id="citySelect" autocomplete="off" aria-label="City"></select></div>
@@ -178,35 +114,24 @@
   <div id="resultArea">
     <div class="metrics-grid">
       <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
-      <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Exited (This Session)</div></div>
+      <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Exited (Offline Queue)</div></div>
     </div>
     <div class="search-wrapper" id="searchWrapper">
-      <input type="search" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off" aria-label="Search name or Casper ID">
+      <input type="search" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off">
     </div>
     <div class="action-buttons">
       <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">Export PDF</button>
-      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">Open as G-Sheet</button>
+      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">Export G-Sheet</button>
       <button class="btn-action btn-batch" id="btnBatchExit" data-action="batchExit">Batch Exit (<span id="batchCount">0</span>)</button>
     </div>
     <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
-    <div id="paginationBar">
-      <button class="btn-page" id="btnPrev" data-action="page" data-dir="-1">&larr; Prev</button>
-      <span class="page-info" id="pageInfo">Page 1</span>
-      <button class="btn-page" id="btnNext" data-action="page" data-dir="1">Next &rarr;</button>
-    </div>
   </div>
 </main>
 
-<div id="exitModal" class="exit-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="exitModalTitle">
+<div id="exitModal" class="exit-overlay" style="display:none" role="dialog" aria-modal="true">
   <div class="exit-modal">
     <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
     <div class="exit-modal-name" id="exitModalName"></div>
-    <div class="reason-grid" role="radiogroup" aria-label="Exit reason">
-      <button type="button" class="reason-opt active" role="radio" aria-checked="true" data-action="reason" data-reason="Absconding">Absconding</button>
-      <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Resigned">Resigned</button>
-      <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Terminated">Terminated</button>
-      <button type="button" class="reason-opt" role="radio" aria-checked="false" data-action="reason" data-reason="Others">Others</button>
-    </div>
     <div class="exit-modal-actions">
       <button class="exit-modal-btn exit-btn-confirm" id="exitConfirmBtn" data-action="confirmExit">Yes, Exit</button>
       <button class="exit-modal-btn exit-btn-cancel" data-action="closeExit">Cancel</button>
@@ -214,40 +139,24 @@
   </div>
 </div>
 
-<div id="toast-container"><div class="toast-msg hidden" id="toastText" role="status" aria-live="polite"></div></div>
-<div id="announcementPopup">
-  <button class="popup-close" data-action="closePopup" aria-label="Close">&times;</button>
-  <img class="popup-img" src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" alt="Flipkart Minutes" decoding="async" loading="lazy">
-</div>
+<div id="toast-container"><div class="toast-msg hidden" id="toastText"></div></div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v9', PAGE_SIZE = 50, STALE_MS = 5 * 60 * 1000, DEFAULT_REASON = 'Absconding';
+  var CACHE_KEY = 'pickerDash_v12', DEFAULT_REASON = 'Absconding';
+  var db = [], filtered = [], selected = new Set();
+  var cityTS, storeTS, managerMode = false, loading = false;
+  var exitTarget = null, exitIsBatch = false;
 
-  var db = [], filtered = [];
-  var exited = new Set(), inFlight = new Set(), selected = new Set();
-  var cityTS, storeTS, managerMode = false, page = 1, exporting = false, loading = false, lastLoad = 0;
-  var query = '', searchTimer = null, exitTarget = null, exitIsBatch = false, exitReason = DEFAULT_REASON;
-
-  FK.purgeCaches('pickerDash_', CACHE_KEY);
-  FK.setWallpaper([
-    'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg',
-    'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'
-  ]);
-  FK.syncThemeBtn();
-  FK.initInstallUi();
   FK.registerSW();
-  FK.initNotifications(); // 4-hour background local notifications
+  FK.syncThemeBtn();
+  FK.syncOfflineQueue(); // Sync exits cached during offline sessions
 
-  if (FK.store.get('popupDismissed', true)) $('announcementPopup').remove();
-
-  /* ── data ── */
   function normalizeRow(r) {
-    var id = FK.clean(r.id);
+    var id = FK.clean(r.id), wh = FK.clean(r.wh);
     if (!id) return null;
-    var wh = FK.clean(r.wh);
     return {
       id: id,
       name: FK.titleCase(FK.clean(r.nm)) || 'N/A',
@@ -258,35 +167,31 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
-  function loadData(showErr) {
+  function loadData(showErr, preserveSelection) {
     if (loading) return;
     loading = true;
     FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
       if (d && d.error) throw new Error(d.error);
-      if (!Array.isArray(d)) throw new Error('Unexpected response from server');
       db = d.map(normalizeRow).filter(Boolean);
-      lastLoad = Date.now();
       FK.writeCache(CACHE_KEY, db);
+      if(!preserveSelection) selected.clear();
       refreshFilters();
     }).catch(function (e) {
-      if (showErr || !db.length) {
-        FK.toast(FK.isNetworkError(e) ? 'Network error. Please check your connection and refresh.' : 'Error: ' + e.message, true, 5000);
-      }
+      if (showErr || !db.length) FK.toast(FK.isNetworkError(e) ? 'Network Error.' : 'Error: ' + e.message, true, 5000);
     }).then(function () { loading = false; FK.hideLoader(); });
   }
+  
+  // Background Data Sync Every 60 seconds
+  setInterval(function() { if(!document.hidden && navigator.onLine) loadData(false, true); }, 60000);
 
-  /* ── dropdown helpers ── */
   function uniq(arr, key) {
     var seen = {}, out = [];
     arr.forEach(function (r) { if (!seen[r[key]]) { seen[r[key]] = 1; out.push(r[key]); } });
     return out.sort(function (a, b) { return a.localeCompare(b); });
   }
-  function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
 
   function fillSelect(ts, values, keep) {
-    var cur = ts.getValue();
-    ts.clear(true);
-    ts.clearOptions();
+    var cur = ts.getValue(); ts.clear(true); ts.clearOptions();
     values.forEach(function (v) { ts.addOption({ value: v, text: v }); });
     if (keep && cur && values.indexOf(cur) !== -1) ts.setValue(cur, true);
   }
@@ -294,339 +199,237 @@ document.addEventListener('DOMContentLoaded', function () {
   function refreshFilters() {
     fillSelect(cityTS, uniq(db, 'city'), true);
     if (!managerMode) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
-    var live = new Set(db.map(function (i) { return i.id; }));
-    Array.from(selected).forEach(function (id) { if (!live.has(id)) selected.delete(id); });
     render();
   }
+  function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
 
-  function onCityChange() {
-    page = 1; selected.clear();
-    fillSelect(storeTS, storesOf(cityTS.getValue()), false);
-    render();
+  function syncURLParams(city, store, mMode) {
+    var u = new URL(window.location);
+    if(city) u.searchParams.set('city', city); else u.searchParams.delete('city');
+    if(store && !mMode) u.searchParams.set('store', store); else u.searchParams.delete('store');
+    u.searchParams.set('mode', mMode ? '1' : '0');
+    window.history.replaceState({}, '', u);
   }
 
   function setMode(m) {
-    managerMode = m; page = 1; query = ''; selected.clear();
-    $('searchInput').value = '';
-    $('btnNormal').classList.toggle('active', !m); $('btnNormal').setAttribute('aria-pressed', String(!m));
-    $('btnManager').classList.toggle('active', m); $('btnManager').setAttribute('aria-pressed', String(m));
-    $('storeWrapper').style.display = m ? 'none' : '';
-    $('searchWrapper').style.display = m ? 'none' : '';
+    managerMode = m; selected.clear(); $('searchInput').value = '';
+    $('btnNormal').classList.toggle('active', !m); $('btnManager').classList.toggle('active', m);
+    $('storeWrapper').style.display = m ? 'none' : ''; $('searchWrapper').style.display = m ? 'none' : '';
     if (!m) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
+    syncURLParams(cityTS.getValue(), storeTS.getValue(), m);
     render();
   }
 
-  /* ── rendering ── */
-  function groupCount(arr, key) {
-    var map = {};
-    arr.forEach(function (r) { map[r[key]] = (map[r[key]] || 0) + 1; });
-    return Object.keys(map).map(function (k) { return [k, map[k]]; })
-      .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
-  }
   var checkNA = function (v) { return FK.isNA(v) ? '<span class="na-bg">Not Assigned</span>' : esc(v); };
   var badge = function (v) {
-    return v === 'Completed' ? '<span class="badge badge-completed">Completed</span>'
-         : v === 'Pending' ? '<span class="badge badge-pending">Pending</span>' 
-         : v === 'Not Assigned' ? '<span class="na-bg">Not Assigned</span>' : checkNA(v);
+    return v === 'Completed' ? '<span class="badge" style="background:#10b981;color:#fff;">Completed</span>'
+         : v === 'Pending' ? '<span class="badge badge-pending" style="background:#ef4444;color:#fff;">Pending</span>' 
+         : checkNA(v);
   };
 
   function render() {
     var c = cityTS.getValue(), s = storeTS.getValue();
+    syncURLParams(c, s, managerMode);
+    
     if (!c || (!managerMode && !s)) { $('resultArea').style.display = 'none'; updateBatchUI(); return; }
     filtered = db.filter(function (i) {
-      if (i.city !== c || exited.has(i.id)) return false;
-      if (managerMode) return true;
-      if (i.darkStore !== s) return false;
-      return !query || i.name.toLowerCase().indexOf(query) !== -1 || i.id.toLowerCase().indexOf(query) !== -1;
+      if (i.city !== c) return false;
+      return managerMode ? true : i.darkStore === s;
     });
+    
+    var queue = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
     $('countBadge').textContent = filtered.length;
-    $('exitedBadge').textContent = exited.size;
+    $('exitedBadge').textContent = queue.length;
     $('resultArea').style.display = 'flex';
-    renderTable();
-  }
-
-  function pageSlice() { var st = (page - 1) * PAGE_SIZE; return filtered.slice(st, st + PAGE_SIZE); }
-
-  function renderTable() {
-    var tH = $('tableHead'), tB = $('tableBody'), pB = $('paginationBar');
+    
+    var tH = $('tableHead'), tB = $('tableBody');
     if (!filtered.length) {
-      tH.innerHTML = '';
-      tB.innerHTML = '<tr><td class="empty-cell" colspan="' + (managerMode ? 2 : 6) + '">No Records Found</td></tr>';
-      pB.style.display = 'none'; updateBatchUI(); return;
-    }
-    if (managerMode) {
-      pB.style.display = 'none';
-      tH.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-      tB.innerHTML = groupCount(filtered, 'cm').map(function (e) {
-        return '<tr><td>' + checkNA(e[0]) + '</td><td><span class="normal-count">' + e[1] + '</span></td></tr>';
-      }).join('') + '<tr class="total-row"><td>Total</td><td>' + filtered.length + '</td></tr>';
+      tH.innerHTML = ''; tB.innerHTML = '<tr><td class="empty-cell" colspan="6">No Records Found</td></tr>';
       updateBatchUI(); return;
     }
 
-    var pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    page = Math.min(Math.max(page, 1), pages);
-    var st = (page - 1) * PAGE_SIZE, items = pageSlice();
-    $('pageInfo').textContent = 'Showing ' + (st + 1) + '\u2013' + (st + items.length) + ' of ' + filtered.length;
-    $('btnPrev').disabled = page === 1;
-    $('btnNext').disabled = page === pages;
-    pB.style.display = pages > 1 ? 'flex' : 'none';
+    if (managerMode) {
+      tH.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
+      var grouped = {}, rowsHtml = '';
+      filtered.forEach(function(i) { grouped[i.cm] = (grouped[i.cm] || 0) + 1; });
+      Object.keys(grouped).sort().forEach(function(k) {
+        rowsHtml += '<tr><td>' + checkNA(k) + '</td><td><span class="normal-count">' + grouped[k] + '</span></td></tr>';
+      });
+      tB.innerHTML = rowsHtml; updateBatchUI(); return;
+    }
 
-    var allSel = true;
-    tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all on this page"></th>' +
+    // CSS-Display trick for Search Efficiency. Removing pagination entirely.
+    tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck"></th>' +
       '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th><th>Action</th></tr>';
-    tB.innerHTML = items.map(function (i) {
-      var chk = selected.has(i.id), id = esc(i.id);
-      if (!chk) allSel = false;
+    tB.innerHTML = filtered.map(function (i) {
+      var id = esc(i.id), chk = selected.has(id);
       return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
-        '<td><input type="checkbox" class="row-check" data-id="' + id + '" aria-label="Select ' + id + '"' + (chk ? ' checked' : '') + '></td>' +
-        '<td>' + checkNA(i.name) + '</td>' +
-        '<td><button type="button" class="pill-id" data-action="copy" data-id="' + id + '" title="Click to copy">' + id + '</button></td>' +
+        '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
+        '<td class="p-name">' + checkNA(i.name) + '</td>' +
+        '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
         '<td>' + badge(i.ind) + '</td><td>' + badge(i.ref) + '</td>' +
         '<td><button class="btn-exit" data-action="exit" data-id="' + id + '">Exit</button></td></tr>';
     }).join('');
-    $('selectAllCheck').checked = allSel;
+    
+    $('selectAllCheck').checked = selected.size > 0 && selected.size === filtered.length;
     updateBatchUI();
+    
+    // Attach Swipe Events to Table Body
+    var tStartX = 0, tEl = null;
+    tB.addEventListener('touchstart', function(e) { tStartX = e.changedTouches[0].screenX; tEl = e.target.closest('tr'); }, {passive:true});
+    tB.addEventListener('touchend', function(e) {
+      if(!tEl) return;
+      var dx = e.changedTouches[0].screenX - tStartX;
+      var rId = tEl.querySelector('.row-check'); if(!rId) return;
+      var rawId = rId.getAttribute('data-id');
+      if (dx > 80) showExitModal(rawId);
+      else if (dx < -80) { var pill = tEl.querySelector('.pill-id'); if(pill) copyId(rawId, pill); }
+    }, {passive:true});
   }
+
+  /* ── CSS Display Search Toggle ── */
+  $('searchInput').addEventListener('input', function () {
+    var q = this.value.trim().toLowerCase();
+    var rows = $('tableBody').querySelectorAll('tr');
+    rows.forEach(function(r) {
+      var n = r.querySelector('.p-name'), c = r.querySelector('.p-id');
+      if(n && c) r.style.display = (n.textContent.toLowerCase().includes(q) || c.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
 
   function updateBatchUI() {
     $('batchCount').textContent = selected.size;
     $('btnBatchExit').classList.toggle('visible', selected.size > 0 && !managerMode);
   }
 
-  /* selection (event delegation on the table) */
   $('tableHead').addEventListener('change', function (e) {
     if (e.target.id !== 'selectAllCheck') return;
-    pageSlice().forEach(function (i) { if (e.target.checked) selected.add(i.id); else selected.delete(i.id); });
-    renderTable();
+    var rows = $('tableBody').querySelectorAll('tr');
+    rows.forEach(function(r) { if(r.style.display !== 'none') { var id = r.querySelector('.row-check').getAttribute('data-id'); if(e.target.checked) selected.add(id); else selected.delete(id); }});
+    render();
   });
   $('tableBody').addEventListener('change', function (e) {
     if (!e.target.classList.contains('row-check')) return;
     var id = e.target.getAttribute('data-id');
     if (e.target.checked) selected.add(id); else selected.delete(id);
-    var tr = e.target.closest('tr'); if (tr) tr.classList.toggle('tr-selected', e.target.checked);
-    var sa = $('selectAllCheck');
-    if (sa) sa.checked = pageSlice().every(function (i) { return selected.has(i.id); });
-    updateBatchUI();
+    render();
   });
 
   function copyId(id, pill) {
-    var done = function () {
-      FK.toast('Copied: ' + id);
-      pill.classList.add('pill-id-copied'); pill.textContent = 'Copied!';
-      setTimeout(function () { pill.classList.remove('pill-id-copied'); pill.textContent = id; }, 1200);
-    };
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(id).then(done).catch(function () { fallbackCopy(id, done); });
-    } else fallbackCopy(id, done);
-  }
-  function fallbackCopy(text, done) {
-    var ta = document.createElement('textarea');
-    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
-    document.body.appendChild(ta); ta.select();
-    var ok = false;
-    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-    document.body.removeChild(ta);
-    if (ok) done(); else FK.toast('Copy failed', true);
+    var done = function () { pill.classList.add('pill-id-copied'); setTimeout(function () { pill.classList.remove('pill-id-copied'); }, 1200); };
+    if (navigator.clipboard) navigator.clipboard.writeText(id).then(done).catch(noop); else done();
   }
 
-  function setReason(r) {
-    exitReason = r;
-    Array.prototype.forEach.call(document.querySelectorAll('.reason-opt'), function (b) {
-      var on = b.getAttribute('data-reason') === r;
-      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
-    });
-  }
-  function openExitModal(title, text, confirmText) {
-    setReason(DEFAULT_REASON);
-    $('exitModalTitle').textContent = title;
-    $('exitModalName').textContent = text;
-    $('exitConfirmBtn').textContent = confirmText;
-    $('exitModal').style.display = 'flex';
-    $('exitConfirmBtn').focus();
-  }
   function showExitModal(id) {
     var p = filtered.find(function (x) { return x.id === id; });
     exitIsBatch = false; exitTarget = id;
-    openExitModal('Confirm Exit', 'Mark "' + ((p && !FK.isNA(p.name)) ? p.name : id) + '" as exited?', 'Yes, Exit');
+    $('exitModalTitle').textContent = 'Confirm Exit';
+    $('exitModalName').textContent = 'Mark "' + ((p && !FK.isNA(p.name)) ? p.name : id) + '" as exited?';
+    $('exitConfirmBtn').textContent = 'Yes, Exit';
+    $('exitModal').style.display = 'flex';
+    FK.trapFocus($('exitModal'));
+    $('exitConfirmBtn').focus();
   }
+  
   function showBatchExitModal() {
     if (!selected.size) return;
     exitIsBatch = true; exitTarget = null;
-    openExitModal('Batch Exit', 'Mark ' + selected.size + ' picker(s) as exited?', 'Yes, Exit All');
+    $('exitModalTitle').textContent = 'Batch Exit'; $('exitModalName').textContent = 'Mark ' + selected.size + ' picker(s) as exited?';
+    $('exitConfirmBtn').textContent = 'Yes, Exit All';
+    $('exitModal').style.display = 'flex';
+    FK.trapFocus($('exitModal')); $('exitConfirmBtn').focus();
   }
+  
   function closeExitModal() { $('exitModal').style.display = 'none'; exitTarget = null; exitIsBatch = false; }
 
   function confirmExit() {
     var ids = exitIsBatch ? Array.from(selected) : (exitTarget ? [exitTarget] : []);
-    var batch = exitIsBatch, reason = exitReason;
     closeExitModal();
-    submitExits(ids, reason, batch);
-  }
 
-  function submitExits(ids, reason, isBatch) {
-    var set = new Set(ids.filter(function (id) { return !inFlight.has(id); }));
-    var removed = db.filter(function (i) { return set.has(i.id); });
-    if (!removed.length) return;
-    ids = removed.map(function (i) { return i.id; });
-    set = new Set(ids);
+    // Data Sync/Freshness Check
+    var stale = ids.filter(function(i) { return !db.find(function(x) { return x.id === i; }); });
+    if(stale.length > 0) {
+      FK.toast('Some pickers were already cleared. Refreshing data...', true);
+      return loadData(true, false);
+    }
+    
+    if (!navigator.onLine) {
+       var q = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
+       ids.forEach(function(i) { if(q.indexOf(i) === -1) q.push(i); });
+       FK.store.set('fk_offline_exits', JSON.stringify(q));
+       ids.forEach(function(i) { db = db.filter(function(x) { return x.id !== i; }); });
+       selected.clear(); render();
+       return FK.toast('Offline. Exit queued and will sync automatically.');
+    }
 
-    ids.forEach(function (id) { inFlight.add(id); exited.add(id); selected.delete(id); });
-    db = db.filter(function (i) { return !set.has(i.id); });
-    render();
-    var what = isBatch ? ids.length + ' exit(s)' : 'exit';
-    FK.toast('Processing ' + what + '...');
-
-    FK.post({
-      action: 'exit', reason: reason,
-      items: removed.map(function (i) { return { id: i.id, n: FK.clean(i.name), ds: i.darkStore, c: i.city }; })
-    }, { retries: 1, timeout: 45000 }).then(function (res) {
-      if (!res || res.status !== 'Success') throw new Error((res && res.error) || 'Failed');
-      db = db.filter(function (i) { return !set.has(i.id); });
-      FK.writeCache(CACHE_KEY, db);
-      FK.toast(isBatch ? ids.length + ' exits processed' : 'Exit processed');
-    }).catch(function (err) {
-      db = db.filter(function (i) { return !set.has(i.id); }).concat(removed);
-      ids.forEach(function (id) { exited.delete(id); });
-      FK.toast((isBatch ? 'Batch exit' : 'Exit') + ' failed: ' + (FK.isNetworkError(err) ? 'network problem, please retry' : err.message), true, 5000);
-    }).then(function () {
-      ids.forEach(function (id) { inFlight.delete(id); });
-      render();
-    });
-  }
-
-  function setExporting(on) {
-    exporting = on;
-    $('btnPdf').disabled = on; $('btnGSheet').disabled = on;
+    $('fsLoader').classList.add('active');
+    FK.post({ action: 'exit', items: ids.map(function(i) { return {id: i}; }) })
+      .then(function (res) {
+        if (!res || res.status !== 'Success') throw new Error('Failed');
+        ids.forEach(function(i) { db = db.filter(function(x) { return x.id !== i; }); });
+        selected.clear(); render(); FK.toast(ids.length + ' exits processed');
+      })
+      .catch(function (err) { FK.toast('Exit failed. Try again.', true); })
+      .then(function () { $('fsLoader').classList.remove('active'); });
   }
 
   function exportPdf() {
-    if (!filtered.length || exporting) return;
-    setExporting(true);
-    var btn = $('btnPdf'); btn.textContent = 'Generating...';
+    if (!filtered.length) return;
+    if (filtered.length > 500) return FK.toast('Too much data for PDF. Please use G-Sheet Export.', true);
+    
+    var btn = $('btnPdf'); btn.textContent = 'Generating...'; $('fsLoader').classList.add('active');
     FK.ensureJsPdf().then(function () {
-      var doc = new window.jspdf.jsPDF({ compress: true });
-      var y = FK.pdf.loginGuide(doc);
-      var c = cityTS.getValue(), s = storeTS.getValue();
-      y = FK.pdf.title(doc, managerMode ? 'Pendency Summary - ' + c : 'Picker Pendency - ' + (s || c), y);
-      var base = { startY: y + 2, theme: 'grid', styles: FK.pdf.bodyStyles, headStyles: FK.pdf.headStyles,
-                   margin: { left: 15, right: 15, bottom: 16 } };
-
-      if (managerMode) {
-        var rows = groupCount(filtered, 'cm').map(function (e) { return [FK.pdf.safe(e[0]), String(e[1])]; });
-        var last = rows.length;
-        rows.push(['TOTAL', String(filtered.length)]);
-        doc.autoTable(Object.assign({}, base, {
-          head: [['Cluster Manager', 'Pendency']], body: rows,
-          didParseCell: function (d) {
-            if (d.section !== 'body') return;
-            if (d.row.index === last) { d.cell.styles.fontStyle = 'bold'; return; }
-            if (d.column.index === 1) FK.pdf.countCell(d.cell);
-          }
-        }));
-      } else {
-        doc.autoTable(Object.assign({}, base, {
-          head: [['Picker Name', 'Casper ID', 'Induction', 'Refresher']],
-          body: filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), i.ind || '', i.ref || '']; }),
-          didParseCell: function (d) { if (d.section === 'body' && d.column.index > 1) FK.pdf.statusCell(d.cell); }
-        }));
-      }
-      FK.pdf.pageNumbers(doc);
+      var doc = new window.jspdf.jsPDF();
+      var title = managerMode ? 'Pendency Summary - ' + cityTS.getValue() : 'Picker Pendency - ' + storeTS.getValue();
+      var y = FK.pdf.title(doc, title, 15);
       
-      var exportName = managerMode ? 'Cluster_Manager_Pendency.pdf' : ((s || c).replace(/[^a-zA-Z0-9_\-]/g, '_') + '_Pendency.pdf');
-      doc.save(exportName);
-      
-      FK.toast('PDF downloaded');
-    }).catch(function (e) {
-      FK.toast('PDF failed: ' + e.message, true, 5000);
-    }).then(function () { btn.textContent = 'Export PDF'; setExporting(false); });
+      var rows = managerMode ? 
+        Object.keys(filtered.reduce(function(a,c){a[c.cm]=(a[c.cm]||0)+1; return a;},{})).map(function(k) { return [k, String(filtered.filter(function(i){return i.cm===k}).length)]; }) 
+        : filtered.map(function(i) { return [i.name, i.id, i.ind||'', i.ref||'']; });
+        
+      doc.autoTable({ head: managerMode ? [['Cluster Manager', 'Pendency']] : [['Picker Name', 'Casper ID', 'Induction', 'Refresher']], body: rows, startY: y + 2, theme: 'grid' });
+      doc.save(title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
+      FK.toast('PDF Downloaded');
+    }).finally(function () { btn.textContent = 'Export PDF'; $('fsLoader').classList.remove('active'); });
   }
 
   function exportToGSheet() {
-    if (!filtered.length || exporting) return;
-    setExporting(true);
-    var btn = $('btnGSheet'); btn.textContent = 'Preparing...';
-
-    var win = null;
-    try {
-      win = window.open('about:blank', '_blank');
-      if (win && win.document) {
-        win.document.title = 'Generating Google Sheet...';
-        win.document.body.style.cssText = 'font-family:Arial,sans-serif;background:#0f172a;color:#f1f5f9;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center';
-        win.document.body.textContent = 'Generating your Google Sheet... this tab will switch automatically.';
-      }
-    } catch (e) { win = null; }
-    if (!win) FK.toast('Pop-up blocked – a link will appear here when the sheet is ready.', false, 4000);
-
+    if (!filtered.length) return;
+    $('btnGSheet').textContent = 'Preparing...'; $('fsLoader').classList.add('active');
     var c = cityTS.getValue(), s = storeTS.getValue();
-    var summary = [['Cluster Manager', 'Total Pendency']].concat(groupCount(filtered, 'cm'));
-    var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher']].concat(
-      filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind || 'Not Assigned', i.ref || 'Not Assigned']; }));
-    var title = ((managerMode ? 'Cluster_Manager' : (s || c)) + '_Pendency').replace(/[^a-zA-Z0-9_\-]/g, '_');
-
-    FK.post({ action: 'export', f: title, summaryData: summary, detailData: detail }, { timeout: 120000, retries: 0 })
-      .then(function (d) {
-        if (!d || !d.url) throw new Error((d && d.error) || 'No URL returned');
-        if (win && !win.closed) {
-          try { win.opener = null; } catch (x) { }
-          win.location.replace(d.url);
-          FK.toast('G-Sheet created successfully!');
-        } else FK.toastLink('G-Sheet is ready.', d.url, 'Open it');
-      })
-      .catch(function (e) {
-        if (win && !win.closed) { try { win.close(); } catch (x) { } }
-        FK.toast('Export failed: ' + (e.name === 'AbortError' ? 'it took too long, please try again' : (e.message || 'retry')), true, 5000);
-      })
-      .then(function () { btn.textContent = 'Open as G-Sheet'; setExporting(false); });
+    var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher']].concat(filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind, i.ref]; }));
+    
+    FK.post({ action: 'export', f: (managerMode ? c : s), detailData: detail })
+      .then(function (d) { FK.toastLink('G-Sheet is ready.', d.url, 'Open it'); })
+      .catch(function () { FK.toast('Export failed.', true); })
+      .finally(function () { $('btnGSheet').textContent = 'Export G-Sheet'; $('fsLoader').classList.remove('active'); });
   }
 
   FK.delegate({
-    theme: function () { FK.toggleTheme(); },
-    install: function () { FK.install(); },
-    dismissInstall: function () { FK.dismissInstall(); },
-    mode: function (el) { var m = el.getAttribute('data-mode') === '1'; if (m !== managerMode) setMode(m); },
-    page: function (el) { page += parseInt(el.getAttribute('data-dir'), 10); renderTable(); },
-    copy: function (el) { copyId(el.getAttribute('data-id'), el); },
-    exit: function (el) { showExitModal(el.getAttribute('data-id')); },
-    batchExit: showBatchExitModal,
-    reason: function (el) { setReason(el.getAttribute('data-reason')); },
-    confirmExit: confirmExit,
-    closeExit: closeExitModal,
-    pdf: exportPdf,
-    gsheet: exportToGSheet,
-    closePopup: function () {
-      var p = $('announcementPopup'); if (!p) return;
-      p.style.opacity = '0'; p.style.transform = 'scale(.8) translateY(12px)';
-      setTimeout(function () { p.remove(); }, 300);
-      FK.store.set('popupDismissed', '1', true);
-    }
+    theme: FK.toggleTheme, notify: FK.requestNotifications, mode: function(el) { setMode(el.getAttribute('data-mode')==='1'); },
+    copy: function(el) { copyId(el.getAttribute('data-id'), el); }, exit: function(el) { showExitModal(el.getAttribute('data-id')); },
+    batchExit: showBatchExitModal, confirmExit: confirmExit, closeExit: closeExitModal, pdf: exportPdf, gsheet: exportToGSheet
   });
-  $('exitModal').addEventListener('click', function (e) { if (e.target === this) closeExitModal(); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && $('exitModal').style.display === 'flex') closeExitModal();
-  });
-  $('searchInput').addEventListener('input', function () {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(function () { query = $('searchInput').value.trim().toLowerCase(); page = 1; render(); }, 240);
-  });
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS && !inFlight.size && !exporting) loadData(false);
-  });
+  
+  $('exitModal').addEventListener('click', function(e) { if(e.target===this) closeExitModal(); });
 
-  /* ── init ── */
-  var tsRender = {
-    item: function (d, e) { return '<div style="text-align:center;width:100%;display:block">' + e(d.text) + '</div>'; },
-    option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; }
-  };
-  cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, sortField: { field: 'text' },
-    render: tsRender, onChange: onCityChange, dropdownParent: 'body' });
-  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Dark Store', create: false, sortField: { field: 'text' },
-    render: tsRender, onChange: function () { page = 1; selected.clear(); render(); }, dropdownParent: 'body' });
+  /* ── Init & URL History Loader ── */
+  var tsRender = { item: function(d,e){ return '<div style="display:block;width:100%">' + e(d.text) + '</div>'; }, option: function(d,e){ return '<div>' + e(d.text) + '</div>'; } };
+  cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, render: tsRender, onChange: onCityChange });
+  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Store', create: false, render: tsRender, onChange: function(){ selected.clear(); render(); }});
 
   var cached = FK.readCache(CACHE_KEY);
-  if (cached && cached.data.length) { db = cached.data; refreshFilters(); FK.hideLoader(); }
-  loadData(!cached);
-
-  if ('requestIdleCallback' in window) requestIdleCallback(FK.initSnow, { timeout: 1500 }); else setTimeout(FK.initSnow, 300);
+  if (cached && cached.data.length) { db = cached.data; }
+  
+  // Wait for initial load to parse URL params
+  FK.fetchJson(FK.API_URL + '?action=getData').then(function(d){
+    db = d.map(normalizeRow).filter(Boolean); FK.writeCache(CACHE_KEY, db);
+    var u = new URLSearchParams(window.location.search);
+    refreshFilters();
+    if(u.get('city')) cityTS.setValue(u.get('city'), true);
+    if(u.get('store')) { fillSelect(storeTS, storesOf(u.get('city')), false); storeTS.setValue(u.get('store'), true); }
+    if(u.get('mode') === '1') setMode(true); else render();
+  }).finally(FK.hideLoader);
 });
 </script>
 </body>
