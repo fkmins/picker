@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    Flipkart Minutes — shared helpers
    ═══════════════════════════════════════════════════════════════ */
-// System Dark Mode Detection before render
 try {
   if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     document.documentElement.classList.add('dark-mode');
@@ -12,7 +11,6 @@ try {
   'use strict';
   var FK = g.FK = {};
   
-  // REPLACE THIS URL IF YOUR GOOGLE DEPLOYMENT URL CHANGES
   FK.API_URL = 'https://script.google.com/macros/s/AKfycbwG40qfn0MTw9c6n21R3zkSqdR1Nb7sRHEH3MbuLrptD95wAfucauTOAn-z93vIxeEP/exec';
   
   var $ = FK.$ = function (id) { return document.getElementById(id); };
@@ -69,7 +67,6 @@ try {
     var init = { method: (opts.method || 'GET').toUpperCase(), redirect: 'follow' };
     if (opts.headers) init.headers = opts.headers;
     if (opts.body) init.body = opts.body;
-    
     return fetch(url, init).then(function (r) {
       if (!r.ok) throw new Error('Server returned HTTP ' + r.status);
       return r.json();
@@ -85,7 +82,7 @@ try {
     if (!q.length || !navigator.onLine) return;
     FK.post({ action: 'exit', items: q.map(function(id) { return {id: id}; }) }).then(function(res) {
       if(res && res.status === 'Success') { FK.store.set('fk_offline_exits', '[]'); FK.toast('Offline edits synced.'); }
-    }).catch(noop);
+    }).catch(function(){});
   };
   g.addEventListener('online', FK.syncOfflineQueue);
 
@@ -102,27 +99,50 @@ try {
     };
   };
 
-  /* ── Notifications Opt-in & Loop ── */
-  FK.requestNotifications = function () {
-    if (!('Notification' in window)) return FK.toast('Notifications not supported.', true);
-    Notification.requestPermission().then(function(p) {
-      if(p === 'granted') {
-        FK.toast('Alerts Enabled!');
-        FK.startNotificationLoop();
-      } else FK.toast('Permission denied.', true);
-    });
-  };
-  
+  /* ── Notifications Loop ── */
   FK.startNotificationLoop = function() {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     setInterval(function () {
       new Notification('Flipkart Minutes', { body: 'It has been 4 hours. Check dashboard for pending pickers!', icon: 'icons/icon-192.png' });
-    }, 4 * 60 * 60 * 1000); // 4 hours
+    }, 4 * 60 * 60 * 1000); 
   };
   
   if ('Notification' in window && Notification.permission === 'granted') FK.startNotificationLoop();
 
-  /* ── PDF Helpers (with Memory Check) ── */
+  /* ── PWA Install & Notification Merge ── */
+  var deferredPrompt = null;
+  function isStandalone() { return (g.matchMedia && g.matchMedia('(display-mode: standalone)').matches) || g.navigator.standalone === true; }
+  function isIOS() { return /iphone|ipad|ipod/i.test(g.navigator.userAgent) && !g.MSStream; }
+  function updateInstallUi() {
+    var btn = $('installBtn'), card = $('pwaInstallCard');
+    if (btn) btn.hidden = isStandalone();
+    var dismissed = FK.store.get('pwaDismissed') === '1';
+    if (card) card.hidden = !(deferredPrompt && !dismissed && !isStandalone());
+  }
+  
+  g.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; updateInstallUi(); });
+  g.addEventListener('appinstalled', function () { deferredPrompt = null; updateInstallUi(); FK.toast('App installed successfully!'); });
+  
+  FK.install = function () {
+    // Silently request notifications during the install intent
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission().then(function(p) { if(p === 'granted') FK.startNotificationLoop(); });
+    }
+    
+    if (deferredPrompt) {
+      var p = deferredPrompt; deferredPrompt = null; updateInstallUi();
+      p.prompt();
+      p.userChoice.then(function (c) { if (c.outcome === 'accepted') FK.toast('Installing...'); });
+      return;
+    }
+    if (isStandalone()) { FK.toast('App is already installed.'); return; }
+    FK.toast(isIOS() ? 'iPhone / iPad: tap Share, then "Add to Home Screen".' : 'Open the browser menu and choose "Install app" or "Add to Home screen".', false, 6000);
+  };
+  
+  FK.dismissInstall = function () { FK.store.set('pwaDismissed', '1'); var c = $('pwaInstallCard'); if (c) c.hidden = true; };
+  FK.initInstallUi = updateInstallUi;
+
+  /* ── PDF Helpers ── */
   var loaded = {};
   FK.loadScript = function (src) {
     if (loaded[src]) return loaded[src];
@@ -204,8 +224,7 @@ try {
   };
 
   /* ── Service Worker & Delegation ── */
-  var noop = function () {};
-  FK.registerSW = function () { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(noop); };
+  FK.registerSW = function () { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function(){}); };
   
   FK.delegate = function (handlers) {
     document.addEventListener('click', function (e) {
