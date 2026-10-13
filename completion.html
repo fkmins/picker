@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="FK Minutes">
+<meta name="apple-mobile-web-app-title" content="Flipkart Minutes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -92,7 +92,7 @@
   <div class="pwa-card-title">Install app</div>
   <div class="pwa-card-info">
     <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
-    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">FK Minutes Dashboard</div></div>
+    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
   </div>
   <div class="pwa-card-actions">
     <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
@@ -108,7 +108,7 @@
 <main class="glass-panel">
   <div class="hdr">
     <div class="hdr-brand">
-      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="FK Minutes" decoding="async">
+      <img src="https://2dioqsev90.ucarecd.net/1e9d129e-8ea7-488c-919d-345bc4d7dcc4/l71720260823162158.webp" class="hdr-logo" alt="Flipkart Minutes" decoding="async">
       <div>
         <h1 class="hdr-title">Completion Report</h1>
         <div class="hdr-sub">East - L&amp;D [Flipkart Minutes]</div>
@@ -156,8 +156,6 @@ document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
   var CACHE_KEY = 'completionReport_v10', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
-  /* SHA-256 of the access password (the plain text is not shipped in the page source).
-     NOTE: this is a UI gate only – the same data is public on the dashboard and the API. */
   var AUTH_HASH = '6e077073d1d6a2571a403f0da77a08610904bb64c88e68f122158d33f3b5a522';
   var UNMAPPED_CM = 'Unmapped';
 
@@ -171,8 +169,9 @@ document.addEventListener('DOMContentLoaded', function () {
   FK.syncThemeBtn();
   FK.initInstallUi();
   FK.registerSW();
+  FK.initNotifications(); // Setup interval push notifications
 
-  /* ── auth (remembered for this browser tab session) ── */
+  /* ── auth ── */
   var authInput = $('authInput'), overlay = $('authOverlay');
   function sha256(s) {
     if (!(window.crypto && crypto.subtle)) return Promise.reject(new Error('insecure'));
@@ -198,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
     authInput.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter') return;
       sha256(authInput.value.trim()).then(function (h) { if (h !== AUTH_HASH) window.location.href = 'index.html'; })
-        .catch(function () { /* message already shown by the input handler */ });
+        .catch(function () { });
     });
     authInput.focus();
   }
@@ -212,7 +211,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var cm = FK.titleCase(FK.clean(r.cm)) || UNMAPPED_CM;
     return {
       id: id,
-      /* who the row is grouped under in the dropdown: trainer, else the CM, so no picker is ever hidden */
       owner: trainer || (cm !== UNMAPPED_CM ? cm : 'Unassigned'),
       store: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
@@ -238,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }).then(function () { loading = false; FK.hideLoader(); });
   }
 
-  /* Tom Select's clearOptions() keeps selected options, so clear the selection first, then restore what still exists */
   function populateTrainers() {
     var prev = selectedOwners(), seen = {}, list = [];
     rawData.forEach(function (r) { if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); } });
@@ -262,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function groupBy(arr, key) {
     var map = {};
-    arr.forEach(function (r) { map[r[key]] = (map[r[key]] || 0) + 1; });   // nothing is dropped → totals always reconcile
+    arr.forEach(function (r) { map[r[key]] = (map[r[key]] || 0) + 1; });
     var entries = Object.keys(map).map(function (k) { return [k, map[k]]; })
       .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0]); });
     return { entries: entries, total: arr.length };
@@ -320,7 +317,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
       FK.pdf.pageNumbers(doc);
-      doc.save('Disprz_Pendency_data_(' + FK.dateStamp() + ').pdf');
+      
+      var exportName = m.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
+      doc.save(exportName);
+      
       FK.toast('PDF downloaded');
       shareText = 'Hello team, please find the ' + m.title + ' attached for your reference.';
       openShare();
