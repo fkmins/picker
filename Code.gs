@@ -338,6 +338,10 @@ function trackFileForDeletion_(fileId) {
     var ex = props.getProperty("FILES_TO_DELETE");
     if (ex) files = JSON.parse(ex);
     files.push({ id: fileId, timestamp: Date.now() });
+    if (files.length > 150) {
+      var cutoff = Date.now() - (48 * 60 * 60 * 1000);
+      files = files.filter(function(item) { return item.timestamp > cutoff; });
+    }
     props.setProperty("FILES_TO_DELETE", JSON.stringify(files));
   } catch (_) {}
 }
@@ -385,7 +389,7 @@ function cleanOldLogs_() {
 }
 
 /**
- * Sets up 4-hour triggers for data controller and daily trigger for runDailyCleanup.
+ * Sets up daily trigger for runDailyCleanup at 3 AM.
  */
 function setupTriggers() {
   var triggers = ScriptApp.getProjectTriggers();

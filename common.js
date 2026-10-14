@@ -2,7 +2,7 @@
    Flipkart Minutes — Shared Utilities & Lightweight PDF Engine
    ═══════════════════════════════════════════════════════════════ */
 
-// 1. Restore Flipkart flap wallpaper randomizer
+// 1. Wallpaper auto-rotator that randomly selects Flipkart flap banner images
 (function () {
   try {
     if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -18,6 +18,26 @@
   var style = document.createElement('style');
   style.textContent = 'body::before{background-image:url("' + chosen + '")}';
   document.head.appendChild(style);
+})();
+
+// 2. Preload Disprz Logo for crisp vector PDF embedding
+var disprzLogoDataUrl = null;
+(function preloadDisprzLogo() {
+  try {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      try {
+        var cv = document.createElement('canvas');
+        cv.width = img.naturalWidth || 100;
+        cv.height = img.naturalHeight || 100;
+        var ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        disprzLogoDataUrl = cv.toDataURL('image/png');
+      } catch (e) {}
+    };
+    img.src = 'icons/disprz.logo.webp';
+  } catch (e) {}
 })();
 
 (function (g) {
@@ -71,7 +91,7 @@
     toastTimer = setTimeout(function () { t.classList.add('hidden'); }, ms || 3500);
   };
 
-  /* ── Theme ── */
+  /* ── Theme Toggle ── */
   FK.syncThemeBtn = function () {
     var b = $('themeBtn');
     if (b) {
@@ -192,7 +212,7 @@
       fontSize: 9.5,
       lineWidth: 0.25,
       lineColor: [0, 0, 0],
-      cellPadding: 3,
+      cellPadding: 2.8,
       overflow: 'linebreak'
     },
     countCell: function (cell) {
@@ -206,10 +226,9 @@
       var n = doc.internal.getNumberOfPages();
       for (var i = 1; i <= n; i++) {
         doc.setPage(i);
-        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(120, 120, 120);
-        // Exact format requested
+        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(100, 100, 100);
         var txt = 'Page ' + i + ' of ' + n + ' | Flipkart Minutes East L&D | Generated: ' + FK.dateStamp();
-        doc.text(txt, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 7, { align: 'center' });
+        doc.text(txt, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
       }
     },
     centeredPair: function (doc, y, label, value, url) {
@@ -224,65 +243,85 @@
       if (url) doc.textWithLink(value, x + lw + 2, y, { url: url });
       else doc.text(value, x + lw + 2, y);
     },
-    /* ── Mobile-Safe Center-Aligned Login Guide (Generous spacing, Zero overlap) ── */
+    /* ── Mobile & Desktop Safe Center-Aligned Login Guide (Generous spacing, Zero overlap) ── */
     loginGuide: function (doc) {
-      var pw = doc.internal.pageSize.getWidth(); // 210 mm
-      var M = 15; // 15 mm margin
-      var y = 14;
+      var pw = doc.internal.pageSize.getWidth(); // A4 mm = 210
+      var M = 14; // 14 mm margin
+      var y = 11;
       var PLAY = 'https://play.google.com/store/apps/details?id=com.disprz';
       var APPLE = 'https://apps.apple.com/in/app/disprz/id1458716803';
 
-      // Title: "Picker Login Guide"
-      doc.setFont('helvetica', 'bold').setFontSize(15).setTextColor(186, 8, 67);
-      doc.text('Picker Login Guide', pw / 2, y, { align: 'center' });
-      y += 5;
+      // Embed Disprz Logo if preloaded
+      if (disprzLogoDataUrl) {
+        try {
+          doc.addImage(disprzLogoDataUrl, 'PNG', (pw - 9) / 2, y, 9, 9);
+          y += 13.5;
+        } catch (e) {
+          y += 2;
+        }
+      } else {
+        y += 4;
+      }
 
-      // Divider Line
+      // Title: "Picker Login Guide"
+      doc.setFont('helvetica', 'bold').setFontSize(14.5).setTextColor(186, 8, 67);
+      doc.text('Picker Login Guide', pw / 2, y, { align: 'center' });
+      y += 5.5;
+
+      // Gold Divider Line
       doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(M, y, pw - M, y);
       y += 7.5;
 
       // Step 1: Download Disprz App (Blue Icon)
-      doc.setFont('helvetica', 'bold').setFontSize(10.5).setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(0, 0, 0);
       doc.text('Step 1: Download the Disprz App (blue icon)', pw / 2, y, { align: 'center' });
-      y += 6.5;
+      y += 6;
 
-      // App Links (Centered)
-      FK.pdf.centeredPair(doc, y, 'Play Store:', PLAY, PLAY);
+      // App Links (Centered with generous line height)
+      FK.pdf.centeredPair(doc, y, 'Android App Link: ', PLAY, PLAY);
       y += 5.5;
-      FK.pdf.centeredPair(doc, y, 'App Store:', APPLE, APPLE);
+      FK.pdf.centeredPair(doc, y, 'iPhone App Link: ', APPLE, APPLE);
       y += 8.5;
 
-      // 3 Centered Boxes with ample space (No overlapping possible)
-      var gap = 4, bw = (pw - 2 * M - 2 * gap) / 3, boxH = 10.5;
+      // 3 Centered Boxes with ample space (Zero overlap)
+      var gap = 5, bw = (pw - 2 * M - 2 * gap) / 3, boxH = 13.5;
 
       // Box 1: Organisational URL (Border Red, Inside Yellow)
       var x1 = M;
       doc.setFillColor(254, 240, 138); // Yellow inside
       doc.setDrawColor(220, 38, 38);   // Border red
-      doc.setLineWidth(0.4);
+      doc.setLineWidth(0.45);
       doc.roundedRect(x1, y, bw, boxH, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
-      doc.text('URL: edl.disprz.com', x1 + bw / 2, y + 6.8, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(7.5).setTextColor(186, 8, 67);
+      doc.text('Orginistaional Url', x1 + bw / 2, y + 5.2, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(0, 0, 0);
+      doc.text('edl.disprz.com', x1 + bw / 2, y + 10.2, { align: 'center' });
 
-      // Box 2: User ID
+      // Box 2: User ID (Casper ID without ca.)
       var x2 = M + bw + gap;
       doc.setFillColor(248, 250, 252);
-      doc.setDrawColor(180, 180, 180);
-      doc.setLineWidth(0.3);
+      doc.setDrawColor(71, 85, 105);
+      doc.setLineWidth(0.35);
       doc.roundedRect(x2, y, bw, boxH, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold').setFontSize(8).setTextColor(0, 0, 0);
-      doc.text('User: Casper ID (no "ca")', x2 + bw / 2, y + 6.8, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(7.5).setTextColor(71, 85, 105);
+      doc.text('User ID', x2 + bw / 2, y + 4.8, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
+      doc.text('Casper ID (456354)', x2 + bw / 2, y + 9.2, { align: 'center' });
+      doc.setFont('helvetica', 'normal').setFontSize(6.8).setTextColor(100, 116, 139);
+      doc.text('[without ca.]', x2 + bw / 2, y + 12.2, { align: 'center' });
 
       // Box 3: Password (Border Red, Inside Yellow)
       var x3 = M + 2 * (bw + gap);
       doc.setFillColor(254, 240, 138); // Yellow inside
       doc.setDrawColor(220, 38, 38);   // Border red
-      doc.setLineWidth(0.4);
+      doc.setLineWidth(0.45);
       doc.roundedRect(x3, y, bw, boxH, 2, 2, 'FD');
-      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
-      doc.text('Password: Edl@123', x3 + bw / 2, y + 6.8, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(7.5).setTextColor(186, 8, 67);
+      doc.text('Password', x3 + bw / 2, y + 5.2, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(0, 0, 0);
+      doc.text('Edl@123', x3 + bw / 2, y + 10.2, { align: 'center' });
 
-      y += boxH + 6.5;
+      y += boxH + 6;
 
       // Bottom Divider Line
       doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(M, y, pw - M, y);
@@ -290,10 +329,10 @@
     },
     title: function (doc, text, y) {
       var pw = doc.internal.pageSize.getWidth();
-      doc.setFont('helvetica', 'bold').setFontSize(12.5).setTextColor(0, 0, 0);
-      var lines = doc.splitTextToSize(FK.pdf.safe(text), pw - 30);
+      doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(0, 0, 0);
+      var lines = doc.splitTextToSize(FK.pdf.safe(text), pw - 28);
       doc.text(lines, pw / 2, y, { align: 'center' });
-      return y + lines.length * 5.5 + 2;
+      return y + lines.length * 5.2 + 2;
     }
   };
 
@@ -310,15 +349,15 @@
       '*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}' +
       'body{font-family:Inter,sans-serif;background:#0f172a;color:#f8fafc;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;}' +
       '.card{background:#1e293b;border:1px solid rgba(255,255,255,0.15);border-radius:22px;padding:36px 28px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.5);}' +
-      '.brand{font-size:18px;font-weight:900;margin-bottom:16px;}' +
+      '.brand{font-size:20px;font-weight:900;margin-bottom:18px;}' +
       '.fk-yellow{color:#FFD200;font-style:italic;}' +
       '.fk-red{color:#BA0843;text-transform:uppercase;}' +
-      '.spinner{width:46px;height:46px;border:3px solid rgba(255,255,255,0.15);border-top-color:#FFD200;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}' +
+      '.spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,0.15);border-top-color:#FFD200;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}' +
       '@keyframes spin{to{transform:rotate(360deg)}}' +
       '.h1{font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;}' +
       '.sub{font-size:13.5px;color:#94a3b8;margin-bottom:22px;line-height:1.5;}' +
       '.guide-box{background:rgba(254,240,138,0.1);border:1px solid rgba(254,240,138,0.3);border-radius:12px;padding:12px;font-size:12px;color:#fde047;margin-bottom:20px;}' +
-      '.btn-open{display:none;background:#10b981;color:#fff;text-decoration:none;padding:12px 26px;border-radius:50px;font-weight:800;font-size:14px;cursor:pointer;border:none;margin-top:8px;}' +
+      '.btn-open{display:none;background:#10b981;color:#fff;text-decoration:none;padding:12px 28px;border-radius:50px;font-weight:800;font-size:14px;cursor:pointer;border:none;margin-top:8px;}' +
       '</style></head><body>' +
       '<div class="card">' +
       '<div class="brand"><span class="fk-yellow">Flipkart</span> <span class="fk-red">Minutes</span></div>' +
@@ -328,7 +367,7 @@
       '<div class="guide-box">' +
       '<strong>Quick Login Info:</strong><br>' +
       'URL: <strong>edl.disprz.com</strong> | Password: <strong>Edl@123</strong><br>' +
-      'User: <strong>Casper ID (no "ca")</strong>' +
+      'User: <strong>Casper ID (456354) [without ca.]</strong>' +
       '</div>' +
       '<a href="#" target="_self" class="btn-open" id="openBtn">Open Google Sheet Now ↗</a>' +
       '</div>' +
