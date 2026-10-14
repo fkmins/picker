@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   Flipkart Minutes — Professional Human-Crafted Stylesheet
+   Flipkart Minutes — Common Stylesheet (Clean, Human & High-Performance)
+   Theme: Flipkart Minutes Crimson (#BA0843) & Yellow (#FFD200)
    ═══════════════════════════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
@@ -9,12 +10,12 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
 :root{
   color-scheme:light;
   --fk-blue:#2874F0;
-  --fk-yellow:#FFB400;
-  --fk-yellow-brand:#FFD200;
   --fk-crimson:#BA0843;
+  --fk-crimson-light:#E11D48;
+  --fk-yellow:#FFD200;
   --gold:#D4AF37;
   --gold-light:#F5E6B8;
-  --gold-glow:rgba(212,175,55,.25);
+  --gold-glow:rgba(212,175,55,.28);
   --danger:#ef4444;
   --success:#10b981;
   --bg-panel:rgba(255,255,255,.92);
@@ -26,9 +27,9 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}
   --text-main:#0f172a;
   --text-muted:#64748b;
   --border-color:rgba(203,213,225,.8);
-  --shadow-panel:0 20px 50px rgba(0,0,0,.18);
+  --shadow-panel:0 24px 60px rgba(0,0,0,.20);
   --shadow-card:0 4px 16px rgba(0,0,0,.06);
-  --blur:blur(18px);
+  --blur:blur(20px);
 }
 
 :root.dark-mode{
@@ -61,7 +62,7 @@ body{
   transition:color .3s ease;
 }
 
-/* Background Auto Image Wallpaper */
+/* Background Wallpaper Auto-Changer */
 body::before{
   content:"";
   position:fixed;
@@ -84,7 +85,7 @@ body::after{
 :root.dark-mode body::after{background:rgba(5,10,25,.72)}
 
 @keyframes fadeOnly{from{opacity:0}to{opacity:1}}
-@keyframes panelUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes panelUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseTxt{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
@@ -100,7 +101,7 @@ body::after{
   z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease;
 }
 #appLoader.hidden{opacity:0;pointer-events:none}
-.loader-svg{width:105px;height:105px;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
+.loader-svg{width:110px;height:110px;object-fit:contain;margin-bottom:10px;filter:drop-shadow(0 0 16px var(--gold-glow))}
 .loading-text{font-weight:800;font-size:14px;color:var(--gold-light);letter-spacing:.5px;animation:pulseTxt 1.6s ease-in-out infinite}
 
 #fsLoader{
@@ -109,12 +110,12 @@ body::after{
   opacity:0;pointer-events:none;transition:opacity .3s ease;
 }
 #fsLoader.active{opacity:1;pointer-events:auto}
-.spinner{width:42px;height:42px;border:3.5px solid rgba(255,255,255,.2);border-top-color:var(--fk-crimson);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
+.spinner{width:44px;height:44px;border:3.5px solid rgba(255,255,255,.2);border-top-color:var(--fk-crimson);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .glass-panel{
   background:var(--bg-panel);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
-  border-radius:26px;padding:34px 30px;width:100%;max-width:940px;
+  border-radius:28px;padding:36px 32px;width:100%;max-width:940px;
   border:1px solid var(--border-color);box-shadow:var(--shadow-panel);
   position:relative;z-index:10;animation:panelUp .45s cubic-bezier(.22,1,.36,1) both;
 }
@@ -125,7 +126,7 @@ body::after{
 
 .hdr-title{
   font-weight:900;
-  font-size:25px;
+  font-size:26px;
   letter-spacing:-.4px;
   line-height:1.2;
   display:inline-flex;
@@ -135,16 +136,16 @@ body::after{
   justify-content:center;
 }
 
-/* Flipkart = Yellow with golden shimmer */
+/* Flipkart in Yellow */
 .fk-brand-yellow{
-  color:var(--fk-yellow-brand);
+  color:var(--fk-yellow);
   font-style:italic;
   font-weight:900;
   text-shadow:0 0 16px var(--gold-glow), 0 2px 4px rgba(0,0,0,.6);
   letter-spacing:-.3px;
 }
 
-/* Minutes = Red */
+/* Minutes in Red */
 .fk-brand-red{
   color:var(--fk-crimson);
   font-weight:900;
@@ -153,7 +154,7 @@ body::after{
   text-shadow:0 0 14px rgba(186,8,67,.35), 0 2px 4px rgba(0,0,0,.5);
 }
 
-/* Dashboard / Report = White */
+/* Dashboard / Report in White */
 .fk-brand-white{
   color:#ffffff;
   font-weight:900;
@@ -164,17 +165,17 @@ body::after{
   text-shadow:0 1px 2px rgba(0,0,0,.15);
 }
 
-/* East - L&D Button Logo (Clean, No Glowing Dot) */
+/* East - L&D Button Logo (Clean Button Badge, No Annoying Glowing Dot) */
 .hdr-sub{margin-top:4px;display:flex;justify-content:center}
 .btn-logo-tag{
   display:inline-flex;
   align-items:center;
-  padding:5px 16px;
+  padding:5px 18px;
   border-radius:50px;
   background:var(--card-bg);
   border:1.5px solid var(--border-color);
   color:var(--text-main);
-  font-size:11.5px;
+  font-size:12px;
   font-weight:800;
   letter-spacing:.6px;
   text-transform:uppercase;
@@ -186,6 +187,7 @@ body::after{
   border-color:var(--fk-crimson);
   color:var(--fk-crimson);
   transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(186,8,67,.2);
 }
 
 .hdr-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:center}
@@ -236,7 +238,7 @@ body::after{
   white-space:nowrap!important;display:inline-flex!important;align-items:center!important;
 }
 
-/* ═══ Clean Center-Aligned Tables ═══ */
+/* ═══ Clean Tables (Center Aligned) ═══ */
 .table-holder,.tbl-wrap{
   background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);
   overflow:auto;box-shadow:var(--shadow-card);max-height:480px;
@@ -261,13 +263,13 @@ body::after{
 }
 .normal-count{font-weight:800;font-size:15px;color:var(--text-main)}
 
-/* ═══ Casper ID Pill (Single Clean Feedback, No Extra Badges) ═══ */
+/* ═══ Casper ID Pill (Single Clean Feedback) ═══ */
 .pill-id{
   background:rgba(40,116,240,.1);color:var(--fk-blue);padding:5px 14px;border-radius:50px;
   font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2);
   cursor:pointer;min-width:88px;font-family:inherit;transition:all .2s ease;
 }
-:root.dark-mode .pill-id{background:rgba(255,210,0,.1);color:var(--fk-yellow-brand);border-color:rgba(255,210,0,.25)}
+:root.dark-mode .pill-id{background:rgba(255,210,0,.1);color:var(--fk-yellow);border-color:rgba(255,210,0,.25)}
 .pill-id:hover{transform:translateY(-1px);border-color:var(--gold)}
 .pill-id-copied{
   background:rgba(16,185,129,.18)!important;color:#10b981!important;

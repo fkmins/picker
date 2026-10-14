@@ -149,7 +149,7 @@
     };
   };
 
-  /* ── PDF Helpers (Optimized for Small File Size & Smartphone Alignment) ── */
+  /* ── PDF Helpers (jsPDF + AutoTable) ── */
   var loaded = {};
   FK.loadScript = function (src) {
     if (loaded[src]) return loaded[src];
@@ -181,18 +181,18 @@
       fontStyle: 'bold',
       halign: 'center',
       valign: 'middle',
-      lineWidth: 0.2,
+      lineWidth: 0.25,
       lineColor: [0, 0, 0],
-      fontSize: 9.5
+      fontSize: 10
     },
     bodyStyles: {
       halign: 'center',
       valign: 'middle',
       textColor: [0, 0, 0],
-      fontSize: 9,
-      lineWidth: 0.2,
+      fontSize: 9.5,
+      lineWidth: 0.25,
       lineColor: [0, 0, 0],
-      cellPadding: 2.5,
+      cellPadding: 3,
       overflow: 'linebreak'
     },
     countCell: function (cell) {
@@ -206,70 +206,91 @@
       var n = doc.internal.getNumberOfPages();
       for (var i = 1; i <= n; i++) {
         doc.setPage(i);
-        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(110, 110, 110);
-        // Exact format requested: Page 1 of 2 | Flipkart Minutes East L&D | Generated: 14-10-2026
+        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(120, 120, 120);
+        // Exact format requested
         var txt = 'Page ' + i + ' of ' + n + ' | Flipkart Minutes East L&D | Generated: ' + FK.dateStamp();
         doc.text(txt, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 7, { align: 'center' });
       }
     },
-    // Login guide strictly center-aligned & mobile-friendly (fits on smartphone screens without text overflow)
+    centeredPair: function (doc, y, label, value, url) {
+      var pw = doc.internal.pageSize.getWidth();
+      doc.setFont('helvetica', 'bold').setFontSize(9);
+      var lw = doc.getTextWidth(label);
+      doc.setFont('helvetica', 'normal').setFontSize(9);
+      var vw = doc.getTextWidth(value);
+      var x = (pw - (lw + 2 + vw)) / 2;
+      doc.setFont('helvetica', 'bold').setTextColor(186, 8, 67).text(label, x, y);
+      doc.setFont('helvetica', 'normal').setTextColor(40, 116, 240);
+      if (url) doc.textWithLink(value, x + lw + 2, y, { url: url });
+      else doc.text(value, x + lw + 2, y);
+    },
+    /* ── Mobile-Safe Center-Aligned Login Guide (Generous spacing, Zero overlap) ── */
     loginGuide: function (doc) {
-      var pw = doc.internal.pageSize.getWidth(), y = 14;
+      var pw = doc.internal.pageSize.getWidth(); // 210 mm
+      var M = 15; // 15 mm margin
+      var y = 14;
       var PLAY = 'https://play.google.com/store/apps/details?id=com.disprz';
       var APPLE = 'https://apps.apple.com/in/app/disprz/id1458716803';
 
-      // Title
-      doc.setFont('helvetica', 'bold').setFontSize(14).setTextColor(186, 8, 67);
+      // Title: "Picker Login Guide"
+      doc.setFont('helvetica', 'bold').setFontSize(15).setTextColor(186, 8, 67);
       doc.text('Picker Login Guide', pw / 2, y, { align: 'center' });
-      y += 4;
-      doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(15, y, pw - 15, y);
-      y += 7;
-
-      // App Links
-      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(0, 0, 0);
-      doc.text('Step 1: Download Disprz App (Blue Icon)', pw / 2, y, { align: 'center' });
-      y += 5.5;
-
-      doc.setFont('helvetica', 'normal').setFontSize(8.5).setTextColor(40, 116, 240);
-      doc.textWithLink('Android App Link = "https://play.google.com/store/apps/details?id=com.disprz"', pw / 2, y, { url: PLAY, align: 'center' });
       y += 5;
-      doc.textWithLink('Iphone App Link = "https://apps.apple.com/in/app/disprz/id1458716803"', pw / 2, y, { url: APPLE, align: 'center' });
+
+      // Divider Line
+      doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(M, y, pw - M, y);
       y += 7.5;
 
-      // Exact Credentials as specified:
-      // Organisational Url = "edl.disprz.com" (border red, inside yellow)
-      // User ID = Casper ID (456354) [without ca.]
-      // Password: Edl@123 (border red, inside yellow)
-      var boxW = 150, boxH = 7.5, bx = (pw - boxW) / 2;
+      // Step 1: Download Disprz App (Blue Icon)
+      doc.setFont('helvetica', 'bold').setFontSize(10.5).setTextColor(0, 0, 0);
+      doc.text('Step 1: Download the Disprz App (blue icon)', pw / 2, y, { align: 'center' });
+      y += 6.5;
 
-      // 1. Organisational URL Box
+      // App Links (Centered)
+      FK.pdf.centeredPair(doc, y, 'Play Store:', PLAY, PLAY);
+      y += 5.5;
+      FK.pdf.centeredPair(doc, y, 'App Store:', APPLE, APPLE);
+      y += 8.5;
+
+      // 3 Centered Boxes with ample space (No overlapping possible)
+      var gap = 4, bw = (pw - 2 * M - 2 * gap) / 3, boxH = 10.5;
+
+      // Box 1: Organisational URL (Border Red, Inside Yellow)
+      var x1 = M;
       doc.setFillColor(254, 240, 138); // Yellow inside
       doc.setDrawColor(220, 38, 38);   // Border red
       doc.setLineWidth(0.4);
-      doc.roundedRect(bx, y, boxW, boxH, 1.5, 1.5, 'FD');
+      doc.roundedRect(x1, y, bw, boxH, 2, 2, 'FD');
       doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
-      doc.text('Orginistaional Url = "edl.disprz.com"', pw / 2, y + 5.2, { align: 'center' });
-      y += boxH + 2.5;
+      doc.text('URL: edl.disprz.com', x1 + bw / 2, y + 6.8, { align: 'center' });
 
-      // 2. User ID Text (Plain centered text)
-      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
-      doc.text('User ID = Casper ID (456354) [without ca.]', pw / 2, y + 4.5, { align: 'center' });
-      y += boxH + 1.5;
+      // Box 2: User ID
+      var x2 = M + bw + gap;
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(x2, y, bw, boxH, 2, 2, 'FD');
+      doc.setFont('helvetica', 'bold').setFontSize(8).setTextColor(0, 0, 0);
+      doc.text('User: Casper ID (no "ca")', x2 + bw / 2, y + 6.8, { align: 'center' });
 
-      // 3. Password Box
+      // Box 3: Password (Border Red, Inside Yellow)
+      var x3 = M + 2 * (bw + gap);
       doc.setFillColor(254, 240, 138); // Yellow inside
       doc.setDrawColor(220, 38, 38);   // Border red
-      doc.roundedRect(bx, y, boxW, boxH, 1.5, 1.5, 'FD');
+      doc.setLineWidth(0.4);
+      doc.roundedRect(x3, y, bw, boxH, 2, 2, 'FD');
       doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
-      doc.text('Password: Edl@123', pw / 2, y + 5.2, { align: 'center' });
-      y += boxH + 5;
+      doc.text('Password: Edl@123', x3 + bw / 2, y + 6.8, { align: 'center' });
 
-      doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(15, y, pw - 15, y);
-      return y + 7;
+      y += boxH + 6.5;
+
+      // Bottom Divider Line
+      doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(M, y, pw - M, y);
+      return y + 8;
     },
     title: function (doc, text, y) {
       var pw = doc.internal.pageSize.getWidth();
-      doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold').setFontSize(12.5).setTextColor(0, 0, 0);
       var lines = doc.splitTextToSize(FK.pdf.safe(text), pw - 30);
       doc.text(lines, pw / 2, y, { align: 'center' });
       return y + lines.length * 5.5 + 2;

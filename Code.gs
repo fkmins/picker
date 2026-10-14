@@ -240,6 +240,9 @@ function generateExportSheet_(payload) {
     logSystemError_('generateExportSheet_ Drive sharing', driveErr);
   }
 
+  // Track file for auto-cleanup after 24h
+  trackFileForDeletion_(spreadsheet.getId());
+
   return { url: spreadsheet.getUrl(), status: 'Success' };
 }
 
@@ -271,7 +274,6 @@ function createGuideSheet_(spreadsheet) {
   sheet.getRange('A6:A8').setFontWeight('bold');
 
   // Format Credentials: Border Red (#DC2626), Inside Yellow (#FEF08A)
-  // Row 6 (Orginistaional Url) & Row 8 (Password)
   var cred1 = sheet.getRange('B6');
   cred1.setBackground('#FEF08A').setFontWeight('bold')
     .setBorder(true, true, true, true, true, true, '#DC2626', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
@@ -322,6 +324,87 @@ function fetchSheetData_(ss, sheetName) {
   return parsed;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   AUTOMATIC CLEANUP & HOUSEKEEPING
+   ═══════════════════════════════════════════════════════════════════ */
+
+/**
+ * Tracks generated export files in ScriptProperties for auto-deletion after 24h.
+ */
+function trackFileForDeletion_(fileId) {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var files = [];
+    var ex = props.getProperty("FILES_TO_DELETE");
+    if (ex) files = JSON.parse(ex);
+    files.push({ id: fileId, timestamp: Date.now() });
+    props.setProperty("FILES_TO_DELETE", JSON.stringify(files));
+  } catch (_) {}
+}
+
+/**
+ * Runs daily to trash export files older than 24 hours and clean error logs.
+ */
+function runDailyCleanup() {
+  var props = PropertiesService.getScriptProperties();
+  var files = [];
+  try {
+    var ex = props.getProperty("FILES_TO_DELETE");
+    if (ex) files = JSON.parse(ex);
+  } catch (e) { return; }
+
+  if (files && files.length > 0) {
+    var now = Date.now(), ONE_DAY = 24 * 60 * 60 * 1000, remaining = [];
+    for (var i = 0; i < files.length; i++) {
+      if (now - files[i].timestamp > ONE_DAY) {
+        try { DriveApp.getFileById(files[i].id).setTrashed(true); } catch (_) {}
+      } else {
+        remaining.push(files[i]);
+      }
+    }
+    props.setProperty("FILES_TO_DELETE", JSON.stringify(remaining));
+  }
+
+  // Clean old logs: keep only the latest 200 rows in "Log Error"
+  cleanOldLogs_();
+}
+
+/**
+ * Keeps Log Error sheet compact to prevent script performance degradation.
+ */
+function cleanOldLogs_() {
+  try {
+    var ss = SpreadsheetApp.openById(SS_ID);
+    var sheet = ss.getSheetByName(LOG_SHEET);
+    if (!sheet) return;
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 250) {
+      sheet.deleteRows(2, lastRow - 200);
+    }
+  } catch (_) {}
+}
+
+/**
+ * Sets up 4-hour triggers for data controller and daily trigger for runDailyCleanup.
+ */
+function setupTriggers() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    var fn = triggers[i].getHandlerFunction();
+    if (fn === "runDailyCleanup" || fn === "runDataController") {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger("runDailyCleanup").timeBased().atHour(3).everyDays(1).create();
+}
+
+/**
+ * Manual cleanup trigger.
+ */
+function manualCleanup() {
+  runDailyCleanup();
+}
+
 /* ── Error Logging ── */
 function logSystemError_(source, error) {
   try {
@@ -339,8 +422,8 @@ function logSystemError_(source, error) {
   } catch (_) {}
 }
 
-/* ── One-Time Authorization Function ──
-   RUN THIS FUNCTION ONCE IN SCRIPT EDITOR TO GRANT DRIVE & SHEETS PERMISSIONS!
+/* ── One-Time Authorization Helper Function ──
+   Run this once from the Apps Script Editor to grant permissions for Drive & Sheets!
 */
 function authorizeDrive() {
   var root = DriveApp.getRootFolder();
