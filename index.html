@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <title>Flipkart Minutes | Picker Pendency Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#BA0843">
-<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2874F0">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -17,83 +16,71 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
 <script defer src="common.js"></script>
 <style>
-.tab-container{display:flex;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.tab-container{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
 .btn-tab{
-  border:1.5px solid var(--border-color);padding:12px 28px;border-radius:50px;
-  font-weight:900;font-size:13.5px;background:var(--card-bg);color:var(--text-muted);
-  transition:all .22s ease;flex:1;max-width:240px;cursor:pointer;font-family:inherit;
+  border:1.5px solid var(--border-color);padding:11px 26px;border-radius:50px;font-weight:800;
+  font-size:13px;background:var(--card-bg);color:var(--text-muted);transition:all .22s ease;
+  flex:1;max-width:220px;cursor:pointer;font-family:inherit;
 }
-.btn-tab:hover:not(.active){border-color:var(--fk-yellow);color:var(--fk-yellow);transform:translateY(-2px)}
+.btn-tab:hover:not(.active){border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
 .btn-tab.active{
-  background:linear-gradient(135deg,var(--fk-crimson),#920633);
-  color:#fff;border-color:var(--fk-crimson);
-  box-shadow:0 6px 20px var(--fk-crimson-glow);
+  background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);
+  box-shadow:0 6px 18px rgba(40,116,240,.35);
 }
 
-.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:18px;width:100%}
-.filter-col{flex:1 1 260px;max-width:440px}
+.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
+.filter-col{flex:1 1 260px;max-width:420px}
 
 .search-wrapper{width:100%;margin-bottom:20px}
 .search-box{
   width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);
-  font-weight:700;font-size:14px;font-family:inherit;background:var(--card-bg);
+  font-weight:600;font-size:14px;font-family:inherit;background:var(--card-bg);
   color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s;
 }
-.search-box:focus{border-color:var(--fk-crimson-light);outline:none;box-shadow:0 0 0 3px var(--fk-crimson-glow)}
+.search-box:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
 
 #resultArea{display:none;margin-top:22px;flex-direction:column;align-items:center;width:100%;animation:fadeIn .4s ease both}
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;width:100%;margin-bottom:20px}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;margin-bottom:18px}
 .metric-card{
-  background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:20px;
+  background:var(--card-bg);border:1px solid var(--border-color);border-radius:18px;
   padding:22px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-card);
 }
 .metric-card::before{
-  content:"";position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,var(--fk-crimson),var(--fk-yellow),var(--fk-crimson));
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--gold),var(--fk-yellow),var(--gold));
 }
 .metric-card .val{
-  font-size:38px;font-weight:900;
-  background:linear-gradient(135deg,var(--fk-crimson-light),#ff4d79);
+  font-size:36px;font-weight:900;
+  background:linear-gradient(135deg,var(--fk-blue),#4f9cf9);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;
 }
-:root.dark-mode .metric-card .val{
-  background:linear-gradient(135deg,var(--fk-yellow),#ffe773);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.metric-card .lbl{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--text-muted);letter-spacing:1px}
+.metric-card .lbl{font-size:11.5px;font-weight:800;text-transform:uppercase;color:var(--text-muted);letter-spacing:.8px}
 
-.action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:22px;width:100%}
+.action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:22px;width:100%}
 .btn-action{
-  border:none;padding:14px 26px;border-radius:14px;font-weight:900;font-size:13.5px;
-  font-family:inherit;flex:1;min-width:160px;cursor:pointer;color:#fff;
-  transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;padding:13px 22px;border-radius:14px;font-weight:800;font-size:13px;
+  font-family:inherit;flex:1;min-width:150px;cursor:pointer;color:#fff;transition:transform .2s ease;
 }
-.btn-action:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.btn-pdf{background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid rgba(255,255,255,.15)}
-.btn-sheet{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 4px 14px rgba(5,150,105,.3)}
+.btn-action:hover{transform:translateY(-1px)}
+.btn-pdf{background:linear-gradient(135deg,#334155,#1e293b)}
+.btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669)}
+.btn-batch{background:linear-gradient(135deg,var(--danger),#b91c1c);display:none}
+.btn-batch.visible{display:inline-block}
 
-/* Interactive Row Selection & Copy Popover */
-.row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-crimson);vertical-align:middle}
-.row-clickable{cursor:pointer}
-.copied-badge{
-  position:absolute;top:-26px;left:50%;transform:translateX(-50%);
-  background:#10b981;color:#fff;font-size:11px;font-weight:900;
-  padding:3px 8px;border-radius:6px;pointer-events:none;white-space:nowrap;
-  box-shadow:0 4px 10px rgba(0,0,0,.3);animation:panelUp .2s ease both;
-}
+.row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
 
 /* Exit Modal */
-.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
+.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);animation:fadeIn .2s ease}
 .exit-modal{
-  background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;
-  padding:34px 28px 28px;width:90%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.5);
+  background:var(--solid);border:1.5px solid var(--border-color);border-radius:22px;
+  padding:32px 26px 26px;width:90%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.35);
   animation:panelUp .3s cubic-bezier(.22,1,.36,1);
 }
-.exit-modal-title{font-weight:900;font-size:20px;margin-bottom:8px}
-.exit-modal-name{font-weight:800;font-size:16px;color:var(--fk-crimson-light);margin-bottom:20px;word-break:break-word}
-.exit-modal-actions{display:flex;gap:12px;justify-content:center;margin-top:24px}
-.exit-modal-btn{padding:12px 28px;border-radius:50px;font-weight:900;font-size:14px;border:none;cursor:pointer;font-family:inherit}
-.exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.35)}
+.exit-modal-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.exit-modal-name{font-weight:800;font-size:15px;color:var(--fk-blue);margin-bottom:16px;word-break:break-word}
+.exit-modal-actions{display:flex;gap:12px;justify-content:center;margin-top:22px}
+.exit-modal-btn{padding:11px 26px;border-radius:12px;font-weight:800;font-size:13.5px;border:none;cursor:pointer;font-family:inherit}
+.exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff}
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)}
 </style>
 </head>
@@ -103,29 +90,24 @@
 
 <div id="appLoader">
   <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading">
-  <div class="loading-text">Loading Flipkart Minutes Dashboard</div>
+  <div class="loading-text">Loading Dashboard Data</div>
 </div>
 
 <main class="glass-panel" id="mainPanel">
   <div class="hdr">
     <div class="hdr-brand">
-      <div class="hdr-title-wrap">
-        <h1 class="hdr-title">
-          <span class="fk-brand-yellow">Flipkart</span>
-          <span class="fk-brand-red">Minutes</span>
-          <span class="fk-brand-white">Dashboard</span>
-        </h1>
-      </div>
+      <h1 class="hdr-title">
+        <span class="fk-brand-yellow">Flipkart</span>
+        <span class="fk-brand-red">Minutes</span>
+        <span class="fk-brand-white">Dashboard</span>
+      </h1>
       <div class="hdr-sub">
-        <span class="btn-logo-tag">
-          <span class="btn-logo-dot"></span>
-          East - L&amp;D
-        </span>
+        <span class="btn-logo-tag">East - L&amp;D</span>
       </div>
     </div>
     <div class="hdr-actions">
       <a href="completion.html" class="icon-btn">Completion Report</a>
-      <button class="icon-btn" id="themeBtn" data-action="theme">&#9790; Dark Mode</button>
+      <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
   <hr class="divider">
@@ -146,17 +128,12 @@
       <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Inactive Picker</div></div>
     </div>
     <div class="search-wrapper" id="searchWrapper">
-      <input type="search" id="searchInput" class="search-box" placeholder="Search Picker Name or Casper ID..." autocomplete="off">
+      <input type="search" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off">
     </div>
     <div class="action-buttons">
-      <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-        Export PDF
-      </button>
-      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-        Export G-Sheet
-      </button>
+      <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">Export PDF</button>
+      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">Export G-Sheet</button>
+      <button class="btn-action btn-batch" id="btnBatchExit" data-action="batchExit">Mark Inactive (<span id="batchCount">0</span>)</button>
     </div>
     <div class="table-holder">
       <table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
@@ -164,17 +141,10 @@
   </div>
 </main>
 
-<!-- Floating Exit Action Bar -->
-<div id="exitActionBar" class="exit-action-bar">
-  <span class="exit-action-info"><span id="exitSelectedCount">0</span> Picker(s) Selected</span>
-  <button class="exit-action-btn" data-action="batchExit">Mark as Inactive</button>
-  <button class="icon-btn" data-action="clearSelection">Clear</button>
-</div>
-
-<!-- Exit Confirmation Modal -->
+<!-- Inactive / Exit Confirmation Modal -->
 <div id="exitModal" class="exit-overlay" style="display:none" role="dialog" aria-modal="true">
   <div class="exit-modal">
-    <div class="exit-modal-title" id="exitModalTitle">Mark as Inactive</div>
+    <div class="exit-modal-title" id="exitModalTitle">Confirm Inactive</div>
     <div class="exit-modal-name" id="exitModalName"></div>
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">This picker will be moved to the Exits list and removed from active pendency.</p>
     <div class="exit-modal-actions">
@@ -190,20 +160,14 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v14';
+  var CACHE_KEY = 'pickerDash_v15';
   var db = [], filtered = [], selected = new Set();
   var cityTS, storeTS, managerMode = false, loading = false;
   var exitTarget = null, exitIsBatch = false;
-  var disprzImgData = null;
 
   FK.registerSW();
   FK.syncThemeBtn();
   FK.syncOfflineQueue();
-
-  // Preload Disprz logo for PDF embedding
-  FK.getImageDataUrl('icons/disprz.logo.webp').then(function(res) {
-    disprzImgData = res;
-  });
 
   function normalizeRow(r) {
     var id = FK.clean(r.id), wh = FK.clean(r.wh);
@@ -213,8 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
       name: FK.titleCase(FK.clean(r.nm)) || 'N/A',
       darkStore: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
-      cm: FK.titleCase(FK.clean(r.cm)) || 'N/A',
-      trainer: FK.titleCase(FK.clean(r.tn)) || 'Unassigned'
+      cm: FK.titleCase(FK.clean(r.cm)) || 'N/A'
     };
   }
 
@@ -291,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!c || (!managerMode && !s)) {
       $('resultArea').style.display = 'none';
-      updateSelectionBar();
+      updateBatchUI();
       return;
     }
 
@@ -308,8 +271,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var tH = $('tableHead'), tB = $('tableBody');
     if (!filtered.length) {
       tH.innerHTML = '';
-      tB.innerHTML = '<tr><td class="empty-cell" colspan="4">No Records Found</td></tr>';
-      updateSelectionBar();
+      tB.innerHTML = '<tr><td class="empty-cell" colspan="3">No Records Found</td></tr>';
+      updateBatchUI();
       return;
     }
 
@@ -322,25 +285,25 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       rowsHtml += '<tr class="total-row"><td>Total</td><td>' + total + '</td></tr>';
       tB.innerHTML = rowsHtml;
-      updateSelectionBar();
+      updateBatchUI();
       return;
     }
 
-    // Dark store mode: Checkbox | Picker Name | Casper ID (No Induction/Refresher, No Exit button column)
+    // Exact columns: Checkbox | Picker Name | Casper ID (No Induction/Refresher, No Exit Action column)
     tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
       '<th>Picker Name</th><th>Casper ID</th></tr>';
 
     tB.innerHTML = filtered.map(function (i) {
       var id = esc(i.id), chk = selected.has(id);
-      return '<tr class="row-clickable' + (chk ? ' tr-selected' : '') + '" data-id="' + id + '">' +
+      return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
         '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
         '<td class="p-name">' + checkNA(i.name) + '</td>' +
-        '<td class="p-id" style="position:relative"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '" title="Click to copy">' +
-        id + '</button></td></tr>';
+        '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
+        '</tr>';
     }).join('');
 
     $('selectAllCheck').checked = selected.size > 0 && selected.size === filtered.length;
-    updateSelectionBar();
+    updateBatchUI();
   }
 
   $('searchInput').addEventListener('input', function () {
@@ -349,21 +312,14 @@ document.addEventListener('DOMContentLoaded', function () {
     rows.forEach(function (r) {
       var n = r.querySelector('.p-name'), c = r.querySelector('.p-id');
       if (n && c) {
-        var match = n.textContent.toLowerCase().includes(q) || c.textContent.toLowerCase().includes(q);
-        r.style.display = match ? '' : 'none';
+        r.style.display = (n.textContent.toLowerCase().includes(q) || c.textContent.toLowerCase().includes(q)) ? '' : 'none';
       }
     });
   });
 
-  function updateSelectionBar() {
-    var bar = $('exitActionBar');
-    if (!bar) return;
-    $('exitSelectedCount').textContent = selected.size;
-    if (selected.size > 0 && !managerMode) {
-      bar.classList.add('visible');
-    } else {
-      bar.classList.remove('visible');
-    }
+  function updateBatchUI() {
+    $('batchCount').textContent = selected.size;
+    $('btnBatchExit').classList.toggle('visible', selected.size > 0 && !managerMode);
   }
 
   $('tableHead').addEventListener('change', function (e) {
@@ -388,69 +344,29 @@ document.addEventListener('DOMContentLoaded', function () {
     render();
   });
 
-  // Clicking anywhere on the row (except the copy button) toggles selection
-  $('tableBody').addEventListener('click', function (e) {
-    if (e.target.closest('[data-action="copy"]') || e.target.classList.contains('row-check')) return;
-    var tr = e.target.closest('tr.row-clickable');
-    if (!tr) return;
-    var id = tr.getAttribute('data-id');
-    if (!id) return;
-    if (selected.has(id)) selected.delete(id); else selected.add(id);
-    render();
-  });
-
-  // Long press / Context menu on row triggers single exit modal
-  $('tableBody').addEventListener('contextmenu', function (e) {
-    var tr = e.target.closest('tr.row-clickable');
-    if (!tr) return;
-    e.preventDefault();
-    var id = tr.getAttribute('data-id');
-    if (id) showSingleExitModal(id);
-  });
-
-  /* ── Casper ID Click to Copy with Animation ── */
+  /* ── Casper ID Click to Copy (Single Clean Feedback, No Extra Animations) ── */
   function copyCasperId(id, pill) {
-    var anim = function () {
-      pill.classList.add('pill-id-copied');
-      var badge = document.createElement('span');
-      badge.className = 'copied-badge';
-      badge.textContent = 'Copied!';
-      pill.parentNode.appendChild(badge);
-      setTimeout(function () {
-        pill.classList.remove('pill-id-copied');
-        if (badge.parentNode) badge.parentNode.removeChild(badge);
-      }, 1400);
-    };
+    var orig = pill.textContent;
+    pill.textContent = '✓ Copied';
+    pill.classList.add('pill-id-copied');
+    setTimeout(function () {
+      pill.textContent = orig;
+      pill.classList.remove('pill-id-copied');
+    }, 1200);
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(id).then(function () {
-        anim();
-        FK.toast('Copied Casper ID: ' + id);
-      }).catch(anim);
-    } else {
-      anim();
-      FK.toast('Copied Casper ID: ' + id);
+      navigator.clipboard.writeText(id).catch(function () {});
     }
+    FK.toast('Copied Casper ID: ' + id);
   }
 
-  /* ── Exit Modal Handlers ── */
-  function showSingleExitModal(id) {
-    var p = filtered.find(function (x) { return x.id === id; });
-    exitIsBatch = false; exitTarget = id;
-    $('exitModalTitle').textContent = 'Mark Picker as Inactive';
-    $('exitModalName').textContent = (p && !FK.isNA(p.name)) ? p.name + ' (' + id + ')' : 'Casper ID: ' + id;
-    $('exitConfirmBtn').textContent = 'Yes, Mark Inactive';
-    $('exitModal').style.display = 'flex';
-    FK.trapFocus($('exitModal'));
-    $('exitConfirmBtn').focus();
-  }
-
+  /* ── Exit Modal ── */
   function showBatchExitModal() {
     if (!selected.size) return;
     exitIsBatch = true; exitTarget = null;
-    $('exitModalTitle').textContent = 'Batch Inactive Action';
+    $('exitModalTitle').textContent = 'Confirm Inactive Pickers';
     $('exitModalName').textContent = 'Mark ' + selected.size + ' selected picker(s) as Inactive?';
-    $('exitConfirmBtn').textContent = 'Yes, Mark All ' + selected.size + ' Inactive';
+    $('exitConfirmBtn').textContent = 'Yes, Mark Inactive';
     $('exitModal').style.display = 'flex';
     FK.trapFocus($('exitModal'));
     $('exitConfirmBtn').focus();
@@ -463,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function confirmExit() {
-    var ids = exitIsBatch ? Array.from(selected) : (exitTarget ? [exitTarget] : []);
+    var ids = Array.from(selected);
     closeExitModal();
     if (!ids.length) return;
 
@@ -482,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     FK.post({ action: 'exit', items: ids.map(function (i) { return { id: i }; }) })
       .then(function (res) {
-        if (!res || res.status !== 'Success') throw new Error('Failed to update exits');
+        if (!res || res.status !== 'Success') throw new Error('Failed');
         db = db.filter(function (x) { return ids.indexOf(x.id) === -1; });
         selected.clear();
         render();
@@ -494,19 +410,19 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function () { $('fsLoader').classList.remove('active'); });
   }
 
-  /* ── Export PDF (Center-Aligned, Black Borders, Login Guide, Picker Name & Casper ID) ── */
+  /* ── Lightweight PDF Export (<20KB, Center-Aligned, Black Borders, Login Guide) ── */
   function exportPdf() {
     if (!filtered.length) return FK.toast('No records to export.', true);
 
-    var btn = $('btnPdf'), orig = btn.innerHTML;
-    btn.textContent = 'Generating PDF...';
-    $('fsLoaderText').textContent = 'Generating Center-Aligned PDF...';
+    var btn = $('btnPdf'), orig = btn.textContent;
+    btn.textContent = 'Generating...';
+    $('fsLoaderText').textContent = 'Generating PDF...';
     $('fsLoader').classList.add('active');
 
     FK.ensureJsPdf().then(function () {
-      var doc = new window.jspdf.jsPDF();
+      var doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4', compress: true });
       var title = managerMode ? 'Pendency Summary - ' + cityTS.getValue() : 'Picker Pendency - ' + storeTS.getValue();
-      var y = FK.pdf.loginGuide(doc, disprzImgData);
+      var y = FK.pdf.loginGuide(doc);
       y = FK.pdf.title(doc, title, y);
 
       var headers, body;
@@ -517,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
         body = Object.keys(grp).sort().map(function (k) { return [k, String(grp[k])]; });
         body.push(['TOTAL', String(filtered.length)]);
       } else {
-        // As requested: Only Picker Name and Casper ID (Induction/Refresher omitted)
+        // Picker Name & Casper ID only as requested
         headers = [['Picker Name', 'Casper ID']];
         body = filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id)]; });
       }
@@ -540,10 +456,10 @@ document.addEventListener('DOMContentLoaded', function () {
       FK.pdf.pageNumbers(doc);
       doc.save(title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
       FK.toast('PDF Downloaded successfully!');
-    }).catch(function (e) {
-      FK.toast('PDF export failed. Try again.', true);
+    }).catch(function () {
+      FK.toast('PDF export failed.', true);
     }).then(function () {
-      btn.innerHTML = orig;
+      btn.textContent = orig;
       $('fsLoader').classList.remove('active');
     });
   }
@@ -556,14 +472,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var c = cityTS.getValue(), s = storeTS.getValue();
     var targetName = managerMode ? c : s;
 
-    // Build data array for Google Sheet: Dark Store, Picker Name, Casper ID, Cluster Manager, City
     var detail = [['Dark Store', 'Picker Name', 'Casper ID', 'Cluster Manager', 'City']].concat(
       filtered.map(function (i) {
         return [i.darkStore, i.name, i.id, i.cm, i.city];
       })
     );
-
-    if (processWin) processWin.updateStep(2);
 
     FK.post({
       action: 'export',
@@ -571,13 +484,10 @@ document.addEventListener('DOMContentLoaded', function () {
       detailData: detail
     }).then(function (res) {
       if (res && res.url) {
-        if (processWin) {
-          processWin.updateStep(4);
-          processWin.done(res.url);
-        }
-        FK.toast('Google Sheet created successfully!');
+        if (processWin) processWin.done(res.url);
+        FK.toast('Google Sheet ready!');
       } else {
-        throw new Error(res && res.error ? res.error : 'Unknown server response');
+        throw new Error(res && res.error ? res.error : 'Server response error');
       }
     }).catch(function (err) {
       if (processWin) processWin.error(err.message || 'Export failed.');
@@ -590,7 +500,6 @@ document.addEventListener('DOMContentLoaded', function () {
     mode: function (el) { setMode(el.getAttribute('data-mode') === '1'); },
     copy: function (el) { copyCasperId(el.getAttribute('data-id'), el); },
     batchExit: showBatchExitModal,
-    clearSelection: function () { selected.clear(); render(); },
     confirmExit: confirmExit,
     closeExit: closeExitModal,
     pdf: exportPdf,
@@ -604,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
     option: function (d, e) { return '<div>' + e(d.text) + '</div>'; }
   };
   cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, render: tsRender, onChange: onCityChange });
-  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Dark Store', create: false, render: tsRender, onChange: function () { selected.clear(); render(); } });
+  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Store', create: false, render: tsRender, onChange: function () { selected.clear(); render(); } });
 
   var cached = FK.readCache(CACHE_KEY);
   if (cached && cached.data.length) { db = cached.data; }

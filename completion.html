@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Flipkart Minutes | Completion Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#BA0843">
+<meta name="theme-color" content="#2874F0">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -18,75 +18,71 @@
 <script defer src="common.js"></script>
 <style>
 /* Auth overlay */
-.auth-overlay{position:fixed;inset:0;background:#0a0f1d;z-index:999999;display:flex;align-items:center;justify-content:center;transition:opacity .3s ease}
+.auth-overlay{position:fixed;inset:0;background:#0f172a;z-index:999999;display:flex;align-items:center;justify-content:center;transition:opacity .3s ease}
 .auth-modal{
   background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;
-  padding:38px 32px;width:90%;max-width:390px;box-shadow:0 24px 64px rgba(0,0,0,.65);
+  padding:36px 32px;width:90%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.6);
   animation:panelUp .4s cubic-bezier(.22,1,.36,1);text-align:center;
 }
 .auth-icon{font-size:46px;margin-bottom:12px;line-height:1}
-.auth-title{font-size:18px;font-weight:900;margin-bottom:14px;color:var(--text-main)}
 .auth-input{
   width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);
-  font-weight:800;font-size:16px;font-family:inherit;background:var(--bg-panel);
+  font-weight:700;font-size:16px;font-family:inherit;background:var(--bg-panel);
   color:var(--text-main);text-align:center;margin-bottom:20px;letter-spacing:4px;
 }
-.auth-input:focus{border-color:var(--fk-crimson-light);outline:none;box-shadow:0 0 0 3px var(--fk-crimson-glow)}
+.auth-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
 .auth-btn{
-  width:100%;padding:14px;border-radius:50px;font-weight:900;font-size:14px;
+  width:100%;padding:14px;border-radius:14px;font-weight:800;font-size:14px;
   border:1.5px solid var(--border-color);cursor:pointer;font-family:inherit;
   transition:all .2s;background:transparent;color:var(--text-main);
 }
-.auth-btn:hover{border-color:var(--fk-crimson);color:var(--fk-crimson)}
+.auth-btn:hover{border-color:var(--danger);color:var(--danger)}
 .auth-error{color:var(--danger);font-size:13px;font-weight:800;margin-top:16px;min-height:18px}
 
-.filter-area{display:flex;justify-content:center;margin-bottom:22px;width:100%}
-.filter-col{flex:1 1 320px;max-width:540px}
+.filter-area{display:flex;justify-content:center;margin-bottom:24px;width:100%}
+.filter-col{flex:1 1 320px;max-width:520px}
 
 /* Trainer summary section */
-.trainer-summary-section{margin-bottom:28px;width:100%}
+.trainer-summary-section{margin-bottom:26px;width:100%}
 .trainer-row-item{cursor:pointer;transition:background .2s}
 .trainer-row-item:hover{background:var(--dropdown-hover)!important}
 
 #results{display:none;animation:fadeIn .4s ease both}
-.export-row{display:flex;gap:12px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
+.export-row{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
 .btn-export{
-  border:none;padding:14px 24px;border-radius:14px;font-weight:900;font-size:13.5px;
-  font-family:inherit;cursor:pointer;transition:all .2s ease;
-  background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;
-  border:1px solid rgba(255,255,255,.15);display:inline-flex;align-items:center;gap:6px;
+  border:none;padding:14px 26px;border-radius:14px;font-weight:800;font-size:14px;
+  font-family:inherit;cursor:pointer;transition:all .2s;
+  background:linear-gradient(135deg,#334155,#1e293b);color:#fff;
 }
-.btn-export:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.btn-export:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
 .btn-export:disabled{opacity:.55;cursor:wait}
 
 .section{margin-bottom:28px}
 .section-title{
   font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:1px;
-  color:var(--fk-yellow);margin-bottom:12px;text-shadow:0 1px 2px rgba(0,0,0,.3);
-  display:inline-block;
+  color:var(--fk-yellow);margin-bottom:12px;text-shadow:0 1px 2px rgba(0,0,0,.2);
 }
-:root:not(.dark-mode) .section-title{color:var(--fk-crimson)}
 
-.wa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100003;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px);opacity:0;transition:opacity .2s}
+.wa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100003;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px);opacity:0;transition:opacity .2s}
 .wa-modal.show{display:flex;opacity:1}
-.wa-modal-content{background:var(--solid);padding:26px;border-radius:20px;width:100%;max-width:400px;border:1.5px solid var(--border-color);box-shadow:0 14px 40px rgba(0,0,0,.4);transform:scale(.95);transition:transform .2s}
+.wa-modal-content{background:var(--solid);padding:24px;border-radius:16px;width:100%;max-width:400px;border:1px solid var(--border-color);box-shadow:0 12px 40px rgba(0,0,0,.3);transform:scale(.95);transition:transform .2s}
 .wa-modal.show .wa-modal-content{transform:scale(1)}
-.wa-modal h3{margin-bottom:12px;font-size:18px;font-weight:900}
+.wa-modal h3{margin-bottom:12px;font-size:18px}
 .wa-modal p{margin-bottom:20px;font-size:14px;color:var(--text-muted);line-height:1.5}
 .wa-actions{display:flex;gap:12px;justify-content:flex-end}
-.wa-share{background:#25D366!important;color:#fff!important;border:none!important;padding:10px 24px!important;border-radius:50px!important;font-weight:900!important}
+.wa-share{background:#25D366!important;color:#fff!important;border:none!important;padding:10px 22px!important}
+@media(max-width:768px){.btn-export{width:100%}}
 </style>
 </head>
 <body>
 
-<div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;" id="fsLoaderText">Generating PDF...</div></div>
+<div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;">Generating PDF...</div></div>
 
 <div id="authOverlay" class="auth-overlay">
   <div class="auth-modal">
     <div class="auth-icon" aria-hidden="true">&#x1F510;</div>
-    <div class="auth-title">East L&amp;D Authentication</div>
     <input type="password" id="authInput" class="auth-input" placeholder="Enter Password" autocomplete="off" aria-label="Password">
-    <button class="auth-btn" data-action="goHome">Back to Homepage</button>
+    <button class="auth-btn" data-action="goHome">Homepage</button>
     <div id="authError" class="auth-error" role="alert"></div>
   </div>
 </div>
@@ -99,37 +95,32 @@
 <main class="glass-panel">
   <div class="hdr">
     <div class="hdr-brand">
-      <div class="hdr-title-wrap">
-        <h1 class="hdr-title">
-          <span class="fk-brand-yellow">Flipkart</span>
-          <span class="fk-brand-red">Minutes</span>
-          <span class="fk-brand-white">Completion Report</span>
-        </h1>
-      </div>
+      <h1 class="hdr-title">
+        <span class="fk-brand-yellow">Flipkart</span>
+        <span class="fk-brand-red">Minutes</span>
+        <span class="fk-brand-white">Completion Report</span>
+      </h1>
       <div class="hdr-sub">
-        <span class="btn-logo-tag">
-          <span class="btn-logo-dot"></span>
-          East - L&amp;D
-        </span>
+        <span class="btn-logo-tag">East - L&amp;D</span>
       </div>
     </div>
     <div class="hdr-actions">
       <a href="index.html" class="icon-btn">Dashboard</a>
-      <button class="icon-btn" id="themeBtn" data-action="theme">&#9790; Dark Mode</button>
+      <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
   <hr class="divider">
 
-  <!-- Trainer Selection (Center-Aligned) -->
+  <!-- Trainer Selection (Center Aligned) -->
   <div class="filter-area">
     <div class="filter-col">
-      <select id="trainerSelect" autocomplete="off" multiple aria-label="Select Trainer"></select>
+      <select id="trainerSelect" autocomplete="off" multiple aria-label="Trainer"></select>
     </div>
   </div>
 
-  <!-- Trainer Pendency Summary Section (Always visible, shows all trainers by default or selected trainer) -->
+  <!-- Trainer Pendency Summary Section -->
   <div class="trainer-summary-section" id="trainerSummarySection">
-    <div class="section-title">~ : Trainer Wise Pendency Summary : ~</div>
+    <div class="section-title">~ : Trainer Wise Pendency : ~</div>
     <div class="tbl-wrap">
       <table class="tbl">
         <thead><tr><th>Trainer</th><th>Pendency</th></tr></thead>
@@ -142,18 +133,9 @@
 
   <div id="results">
     <div class="export-row">
-      <button class="btn-export" data-action="pdf" data-mode="store">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        Export Store Wise PDF
-      </button>
-      <button class="btn-export" data-action="pdf" data-mode="cm">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        Export CM Wise PDF
-      </button>
-      <button class="btn-export" data-action="pdf" data-mode="city">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        Export City Wise PDF
-      </button>
+      <button class="btn-export" data-action="pdf" data-mode="store">Export Store Wise PDF</button>
+      <button class="btn-export" data-action="pdf" data-mode="cm">Export CM Wise PDF</button>
+      <button class="btn-export" data-action="pdf" data-mode="city">Export City Wise PDF</button>
     </div>
 
     <div class="section">
@@ -175,11 +157,11 @@
 
 <div id="waModal" class="wa-modal" role="dialog" aria-modal="true" aria-labelledby="waTitle">
   <div class="wa-modal-content">
-    <h3 id="waTitle">PDF Generated Successfully</h3>
-    <p>Would you like to share the report summary on WhatsApp now?<br>(You can attach the downloaded PDF file after WhatsApp opens.)</p>
+    <h3 id="waTitle">PDF Generated</h3>
+    <p>Would you like to share this on WhatsApp now?<br>(You will need to attach the PDF manually after WhatsApp opens.)</p>
     <div class="wa-actions">
-      <button class="icon-btn" data-action="waClose">Close</button>
-      <button class="icon-btn wa-share" data-action="waShare">Share via WhatsApp</button>
+      <button class="icon-btn" data-action="waClose">Cancel</button>
+      <button class="icon-btn wa-share" data-action="waShare">Share</button>
     </div>
   </div>
 </div>
@@ -190,52 +172,40 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'completionReport_v14', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
+  var CACHE_KEY = 'completionReport_v15', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
   var AUTH_HASH = '6e077073d1d6a2571a403f0da77a08610904bb64c88e68f122158d33f3b5a522';
   var UNMAPPED_CM = 'Unmapped';
 
   var rawData = [], trainerTS = null, shareText = '', loading = false, lastLoad = 0;
-  var disprzImgData = null;
 
   FK.syncThemeBtn();
   FK.registerSW();
 
-  // Preload Disprz logo for PDF embedding
-  FK.getImageDataUrl('icons/disprz.logo.webp').then(function(res) {
-    disprzImgData = res;
-  });
-
-  /* ── Authentication ── */
+  /* ── Auth ── */
   var authInput = $('authInput'), overlay = $('authOverlay');
   function sha256(s) {
-    if (!(window.crypto && crypto.subtle)) return Promise.reject(new Error('Insecure crypto environment'));
+    if (!(window.crypto && crypto.subtle)) return Promise.reject(new Error('insecure'));
     return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function (buf) {
       return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
     });
   }
-
   function unlock() {
     FK.store.set(AUTH_KEY, AUTH_HASH);
     overlay.style.opacity = '0';
     setTimeout(function () { overlay.style.display = 'none'; }, 300);
     authInput.blur();
   }
-
   if (FK.store.get(AUTH_KEY) === AUTH_HASH) {
     overlay.style.display = 'none';
   } else {
     authInput.addEventListener('input', function () {
       var v = authInput.value.trim();
       if (!v) return;
-      sha256(v).then(function (h) {
-        if (h === AUTH_HASH && overlay.style.display !== 'none') unlock();
-      }).catch(function () {});
+      sha256(v).then(function (h) { if (h === AUTH_HASH && overlay.style.display !== 'none') unlock(); }).catch(function () {});
     });
     authInput.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter') return;
-      sha256(authInput.value.trim()).then(function (h) {
-        if (h !== AUTH_HASH) window.location.href = 'index.html';
-      }).catch(function () {});
+      sha256(authInput.value.trim()).then(function (h) { if (h !== AUTH_HASH) window.location.href = 'index.html'; }).catch(function () {});
     });
     authInput.focus();
   }
@@ -248,7 +218,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return {
       id: id,
       owner: trainer || (cm !== UNMAPPED_CM ? cm : 'Unassigned'),
-      trainer: trainer || 'Unassigned',
       store: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
       cm: cm
@@ -268,20 +237,14 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!rawData.length) FK.toast('No pending pickers found.');
     }).catch(function (e) {
       if (showErr || !rawData.length) FK.toast('Network Error or Data Missing.', true, 5000);
-    }).then(function () {
-      loading = false;
-      FK.hideLoader();
-    });
+    }).then(function () { loading = false; FK.hideLoader(); });
   }
 
   function populateTrainers() {
     var prev = selectedOwners(), seen = {}, list = [];
-    rawData.forEach(function (r) {
-      if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); }
-    });
+    rawData.forEach(function (r) { if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); } });
     list.sort(function (a, b) { return a.localeCompare(b); });
-    trainerTS.clear(true);
-    trainerTS.clearOptions();
+    trainerTS.clear(true); trainerTS.clearOptions();
     list.forEach(function (t) { trainerTS.addOption({ value: t, text: t }); });
     trainerTS.setValue(prev.filter(function (v) { return seen[v]; }), true);
     renderTrainerPendencySummary();
@@ -307,8 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return { entries: entries, total: arr.length };
   }
 
-  /* ── Trainer Pendency Summary Section ──
-     Shows all trainers and pendencies by default; updates to selected trainers when selected */
+  /* ── Trainer Pendency Summary ── */
   function renderTrainerPendencySummary() {
     var tbody = $('trainerSummaryBody');
     if (!tbody) return;
@@ -332,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function () {
     tbody.innerHTML = html;
   }
 
-  // Clicking a row in Trainer Pendency Summary toggles that trainer in the select
   $('trainerSummaryBody').addEventListener('click', function (e) {
     var tr = e.target.closest('tr.trainer-row-item');
     if (!tr) return;
@@ -346,10 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function renderSection(thId, tbId, header, g) {
     $(thId).innerHTML = '<tr><th>' + esc(header) + '</th><th>Pendency</th></tr>';
-    if (!g.entries.length) {
-      $(tbId).innerHTML = '<tr><td class="empty-cell" colspan="2">No Data</td></tr>';
-      return;
-    }
+    if (!g.entries.length) { $(tbId).innerHTML = '<tr><td class="empty-cell" colspan="2">No Data</td></tr>'; return; }
     $(tbId).innerHTML = g.entries.map(function (e) {
       return '<tr><td>' + esc(e[0]) + '</td><td><span class="normal-count">' + e[1] + '</span></td></tr>';
     }).join('') + '<tr class="total-row"><td>Total</td><td>' + g.total + '</td></tr>';
@@ -358,16 +316,10 @@ document.addEventListener('DOMContentLoaded', function () {
   function render() {
     renderTrainerPendencySummary();
     var selected = selectedOwners();
-    if (!selected.length) {
-      $('results').style.display = 'none';
-      return;
-    }
+    if (!selected.length) { $('results').style.display = 'none'; return; }
 
     var data = rowsFor(selected);
-    if (!data.length) {
-      $('results').style.display = 'none';
-      return;
-    }
+    if (!data.length) { $('results').style.display = 'none'; return; }
 
     renderSection('th1', 'tb1', 'Store Name', groupBy(data, 'store'));
     renderSection('th2', 'tb2', 'Cluster Manager', groupBy(data, 'cm'));
@@ -375,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('results').style.display = 'block';
   }
 
-  /* ── PDF Export (Center-Aligned, Black Borders, Login Guide, No artificial size limits) ── */
+  /* ── Lightweight PDF Export (<20KB, Center-Aligned, Black Borders, Login Guide) ── */
   var MODES = {
     store: { key: 'store', head: 'Store Name', title: 'Store Name Wise Pendency' },
     cm:    { key: 'cm',    head: 'Cluster Manager', title: 'Cluster Manager Wise Pendency' },
@@ -387,68 +339,59 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!m) return;
     var selected = selectedOwners();
     var data = rowsFor(selected);
-    if (!data.length) return FK.toast('Please select at least one trainer first.', true);
+    if (!data.length) return FK.toast('Select a trainer first.', true);
 
-    var buttons = document.querySelectorAll('.btn-export'), orig = btn.innerHTML;
+    var buttons = document.querySelectorAll('.btn-export'), orig = btn.textContent;
     Array.prototype.forEach.call(buttons, function (b) { b.disabled = true; });
-    $('fsLoaderText').textContent = 'Generating Center-Aligned ' + m.title + '...';
     $('fsLoader').classList.add('active');
 
     FK.ensureJsPdf().then(function () {
-      var doc = new window.jspdf.jsPDF({ compress: true });
-      var y = FK.pdf.loginGuide(doc, disprzImgData);
+      var doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4', compress: true });
+      var y = FK.pdf.loginGuide(doc);
       y = FK.pdf.title(doc, m.title + ' (' + selected.join(', ') + ')', y);
 
       var g = groupBy(data, m.key);
       var rows = g.entries.map(function (e) { return [FK.pdf.safe(e[0]), String(e[1])]; });
-      var lastIdx = rows.length;
+      var last = rows.length;
       rows.push(['TOTAL', String(g.total)]);
 
       doc.autoTable({
-        head: [[m.head, 'Pendency Count']],
+        head: [[m.head, 'Pendency']],
         body: rows,
         startY: y + 2,
         theme: 'grid',
         styles: FK.pdf.bodyStyles,
         headStyles: FK.pdf.headStyles,
-        margin: { left: 15, right: 15, bottom: 16 },
+        margin: { left: 24, right: 24, bottom: 20 },
         didParseCell: function (d) {
           if (d.section !== 'body') return;
-          if (d.row.index === lastIdx) {
-            d.cell.styles.fontStyle = 'bold';
-            d.cell.styles.fillColor = [240, 240, 240];
-            return;
-          }
+          if (d.row.index === last) { d.cell.styles.fontStyle = 'bold'; return; }
           if (d.column.index === 1) FK.pdf.countCell(d.cell);
         }
       });
 
       FK.pdf.pageNumbers(doc);
-      var filename = m.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
-      doc.save(filename);
+      doc.save(m.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
 
-      FK.toast('PDF Downloaded successfully!');
+      FK.toast('PDF Downloaded');
       shareText = 'Hello team, please find the ' + m.title + ' attached for your reference.';
       openShare();
     }).catch(function (e) {
-      FK.toast('PDF generation failed. Try again.', true, 5000);
+      FK.toast('PDF failed.', true, 5000);
     }).finally(function () {
-      btn.innerHTML = orig;
+      btn.textContent = orig;
       Array.prototype.forEach.call(buttons, function (b) { b.disabled = false; });
       $('fsLoader').classList.remove('active');
     });
   }
 
   function openShare() {
-    var modal = $('waModal');
-    modal.style.display = 'flex';
+    var modal = $('waModal'); modal.style.display = 'flex';
     setTimeout(function () { modal.classList.add('show'); }, 10);
     FK.trapFocus(modal);
   }
-
   function closeShare() {
-    var modal = $('waModal');
-    modal.classList.remove('show');
+    var modal = $('waModal'); modal.classList.remove('show');
     setTimeout(function () { modal.style.display = 'none'; }, 200);
   }
 
@@ -471,19 +414,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!document.hidden && lastLoad && Date.now() - lastLoad > STALE_MS) loadData(false);
   });
 
-  /* ── Trainer Select Initialization (Center-Aligned) ── */
+  /* ── Init ── */
   trainerTS = new TomSelect('#trainerSelect', {
-    placeholder: 'Choose a Trainer',
-    create: false,
-    maxItems: null,
-    plugins: ['remove_button'],
-    sortField: { field: 'text' },
-    dropdownParent: 'body',
-    onChange: render,
-    render: {
-      item: function (d, e) { return '<div>' + e(d.text) + '</div>'; },
-      option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; }
-    }
+    placeholder: 'Choose a Trainer', create: false, maxItems: null, plugins: ['remove_button'], sortField: { field: 'text' }, dropdownParent: 'body', onChange: render,
+    render: { item: function (d, e) { return '<div>' + e(d.text) + '</div>'; }, option: function (d, e) { return '<div style="text-align:center">' + e(d.text) + '</div>'; } }
   });
 
   var cached = FK.readCache(CACHE_KEY);
@@ -502,12 +436,9 @@ document.addEventListener('DOMContentLoaded', function () {
     populateTrainers();
     renderTrainerPendencySummary();
     if (!rawData.length) FK.toast('No pending pickers found.');
-  }).catch(function () {
+  }).catch(function (e) {
     FK.toast('Network Error or Data Missing.', true, 5000);
-  }).then(function () {
-    loading = false;
-    FK.hideLoader();
-  });
+  }).then(function () { loading = false; FK.hideLoader(); });
 });
 </script>
 </body>

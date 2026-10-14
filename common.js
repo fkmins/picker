@@ -1,12 +1,24 @@
 /* ═══════════════════════════════════════════════════════════════
-   Flipkart Minutes — Shared Helpers, PDF Engine & Interactive G-Sheet
-   Theme: Flipkart Minutes (Crimson & Yellow)
+   Flipkart Minutes — Shared Utilities & Lightweight PDF Engine
    ═══════════════════════════════════════════════════════════════ */
-try {
-  if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.documentElement.classList.add('dark-mode');
-  }
-} catch (e) {}
+
+// 1. Restore Flipkart flap wallpaper randomizer
+(function () {
+  try {
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark-mode');
+    }
+  } catch (e) {}
+
+  var wallpapers = [
+    'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/9058b9427a302777.jpg',
+    'https://rukminim2.flixcart.com/fk-p-flap/1600/780/image/addb7fb32c963374.png'
+  ];
+  var chosen = wallpapers[Math.floor(Math.random() * wallpapers.length)];
+  var style = document.createElement('style');
+  style.textContent = 'body::before{background-image:url("' + chosen + '")}';
+  document.head.appendChild(style);
+})();
 
 (function (g) {
   'use strict';
@@ -24,7 +36,7 @@ try {
 
   FK.isNA = function (v) {
     var s = String(v == null ? '' : v).trim().toUpperCase();
-    return !s || s === 'N/A' || s === '#N/A' || s === 'NOT ASSIGNED' || s === 'UNDEFINED';
+    return !s || s === 'N/A' || s === '#N/A' || s === 'NOT ASSIGNED';
   };
 
   FK.clean = function (v) { return FK.isNA(v) ? '' : String(v).trim(); };
@@ -64,7 +76,7 @@ try {
     var b = $('themeBtn');
     if (b) {
       var isDark = document.documentElement.classList.contains('dark-mode');
-      b.innerHTML = isDark ? '&#9728; Light Mode' : '&#9790; Dark Mode';
+      b.textContent = isDark ? 'Damage Your Eyes' : 'Save Your Eyes';
     }
   };
 
@@ -74,7 +86,6 @@ try {
     FK.syncThemeBtn();
   };
 
-  /* ── Loader ── */
   FK.hideLoader = function () {
     var l = $('appLoader');
     if (l && !l.classList.contains('hidden')) {
@@ -83,7 +94,6 @@ try {
     }
   };
 
-  /* ── Cache Helpers ── */
   FK.readCache = function (key) {
     try {
       var c = JSON.parse(FK.store.get(key) || 'null');
@@ -127,7 +137,6 @@ try {
   };
   g.addEventListener('online', FK.syncOfflineQueue);
 
-  /* ── Focus Trap for Modals ── */
   FK.trapFocus = function (modal) {
     var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     if (!focusable.length) return;
@@ -140,29 +149,7 @@ try {
     };
   };
 
-  /* ── Image to PNG DataURL (Supports WebP) ── */
-  FK.getImageDataUrl = function (src) {
-    return new Promise(function (resolve) {
-      var img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.onload = function () {
-        try {
-          var canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-          var ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          resolve({ dataUrl: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height });
-        } catch (e) {
-          resolve(null);
-        }
-      };
-      img.onerror = function () { resolve(null); };
-      img.src = src;
-    });
-  };
-
-  /* ── PDF Helpers (jsPDF + AutoTable) ── */
+  /* ── PDF Helpers (Optimized for Small File Size & Smartphone Alignment) ── */
   var loaded = {};
   FK.loadScript = function (src) {
     if (loaded[src]) return loaded[src];
@@ -170,7 +157,7 @@ try {
       var s = document.createElement('script');
       s.src = src; s.async = true; s.crossOrigin = 'anonymous';
       s.onload = res;
-      s.onerror = function () { delete loaded[src]; s.remove(); rej(new Error('Failed to load: ' + src)); };
+      s.onerror = function () { delete loaded[src]; s.remove(); rej(new Error('Load failed: ' + src)); };
       document.head.appendChild(s);
     });
     return loaded[src];
@@ -194,112 +181,102 @@ try {
       fontStyle: 'bold',
       halign: 'center',
       valign: 'middle',
-      lineWidth: 0.3,
+      lineWidth: 0.2,
       lineColor: [0, 0, 0],
-      fontSize: 10
+      fontSize: 9.5
     },
     bodyStyles: {
       halign: 'center',
       valign: 'middle',
       textColor: [0, 0, 0],
-      fontSize: 9.5,
-      lineWidth: 0.3,
+      fontSize: 9,
+      lineWidth: 0.2,
       lineColor: [0, 0, 0],
-      cellPadding: 3,
+      cellPadding: 2.5,
       overflow: 'linebreak'
     },
     countCell: function (cell) {
       var v = parseInt(cell.raw, 10);
       if (isNaN(v)) return;
-      if (v > 20) { cell.styles.fillColor = [254, 226, 226]; cell.styles.textColor = [153, 27, 27]; cell.styles.fontStyle = 'bold'; }
-      else if (v >= 10) { cell.styles.fillColor = [254, 240, 138]; cell.styles.textColor = [133, 77, 14]; cell.styles.fontStyle = 'bold'; }
-      else { cell.styles.fillColor = [220, 252, 231]; cell.styles.textColor = [22, 101, 52]; cell.styles.fontStyle = 'bold'; }
+      if (v > 20) { cell.styles.fillColor = [254, 226, 226]; cell.styles.textColor = [153, 27, 27]; }
+      else if (v >= 10) { cell.styles.fillColor = [254, 240, 138]; cell.styles.textColor = [133, 77, 14]; }
+      else { cell.styles.fillColor = [220, 252, 231]; cell.styles.textColor = [22, 101, 52]; }
     },
     pageNumbers: function (doc) {
       var n = doc.internal.getNumberOfPages();
       for (var i = 1; i <= n; i++) {
         doc.setPage(i);
-        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(120, 120, 120);
-        doc.text('Page ' + i + ' of ' + n + ' | Flipkart Minutes East L&D | Generated: ' + FK.dateStamp(),
-          doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 7, { align: 'center' });
+        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(110, 110, 110);
+        // Exact format requested: Page 1 of 2 | Flipkart Minutes East L&D | Generated: 14-10-2026
+        var txt = 'Page ' + i + ' of ' + n + ' | Flipkart Minutes East L&D | Generated: ' + FK.dateStamp();
+        doc.text(txt, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 7, { align: 'center' });
       }
     },
-    centeredPair: function (doc, y, label, value, url) {
-      var pw = doc.internal.pageSize.getWidth();
-      doc.setFont('helvetica', 'bold').setFontSize(9);
-      var lw = doc.getTextWidth(label);
-      doc.setFont('helvetica', 'normal');
-      var vw = doc.getTextWidth(value);
-      var x = (pw - (lw + 2 + vw)) / 2;
-      doc.setFont('helvetica', 'bold').setTextColor(186, 8, 67).text(label, x, y);
-      doc.setFont('helvetica', 'normal').setTextColor(40, 116, 240);
-      if (url) doc.textWithLink(value, x + lw + 2, y, { url: url });
-      else doc.text(value, x + lw + 2, y);
-    },
-    loginGuide: function (doc, logoImg) {
-      var pw = doc.internal.pageSize.getWidth(), M = 14, y = 14;
+    // Login guide strictly center-aligned & mobile-friendly (fits on smartphone screens without text overflow)
+    loginGuide: function (doc) {
+      var pw = doc.internal.pageSize.getWidth(), y = 14;
       var PLAY = 'https://play.google.com/store/apps/details?id=com.disprz';
       var APPLE = 'https://apps.apple.com/in/app/disprz/id1458716803';
 
-      // Disprz Logo if available
-      if (logoImg && logoImg.dataUrl) {
-        var iw = 22, ih = (logoImg.height / logoImg.width) * iw;
-        doc.addImage(logoImg.dataUrl, 'PNG', (pw - iw) / 2, y, iw, ih);
-        y += ih + 4;
-      }
-
       // Title
-      doc.setFont('helvetica', 'bold').setFontSize(16).setTextColor(186, 8, 67)
-        .text('Picker Login Guide', pw / 2, y, { align: 'center' });
+      doc.setFont('helvetica', 'bold').setFontSize(14).setTextColor(186, 8, 67);
+      doc.text('Picker Login Guide', pw / 2, y, { align: 'center' });
       y += 4;
-      doc.setDrawColor(225, 29, 72).setLineWidth(0.6).line(M, y, pw - M, y);
+      doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(15, y, pw - 15, y);
       y += 7;
 
-      // App Download
-      doc.setFont('helvetica', 'bold').setFontSize(10.5).setTextColor(0, 0, 0)
-        .text('Step 1: Download the Disprz App (blue icon)', pw / 2, y, { align: 'center' });
-      y += 6;
-      FK.pdf.centeredPair(doc, y, 'Android App Link:', PLAY, PLAY);
+      // App Links
+      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(0, 0, 0);
+      doc.text('Step 1: Download Disprz App (Blue Icon)', pw / 2, y, { align: 'center' });
       y += 5.5;
-      FK.pdf.centeredPair(doc, y, 'iPhone App Link:', APPLE, APPLE);
-      y += 8;
 
-      // Credentials 3-Boxes (Border Red, Inside Yellow)
-      var gap = 4, bw = (pw - 2 * M - 2 * gap) / 3;
-      var boxes = [
-        { label: 'Organisational URL', val: 'edl.disprz.com' },
-        { label: 'User ID', val: 'Casper ID (no "ca")' },
-        { label: 'Password', val: 'Edl@123' }
-      ];
+      doc.setFont('helvetica', 'normal').setFontSize(8.5).setTextColor(40, 116, 240);
+      doc.textWithLink('Android App Link = "https://play.google.com/store/apps/details?id=com.disprz"', pw / 2, y, { url: PLAY, align: 'center' });
+      y += 5;
+      doc.textWithLink('Iphone App Link = "https://apps.apple.com/in/app/disprz/id1458716803"', pw / 2, y, { url: APPLE, align: 'center' });
+      y += 7.5;
 
-      boxes.forEach(function (b, i) {
-        var x = M + i * (bw + gap);
-        // Yellow fill (#FEF08A = [254, 240, 138]), Red border (#DC2626 = [220, 38, 38])
-        doc.setFillColor(254, 240, 138);
-        doc.setDrawColor(220, 38, 38);
-        doc.setLineWidth(0.5);
-        doc.roundedRect(x, y, bw, 13, 2, 2, 'FD');
+      // Exact Credentials as specified:
+      // Organisational Url = "edl.disprz.com" (border red, inside yellow)
+      // User ID = Casper ID (456354) [without ca.]
+      // Password: Edl@123 (border red, inside yellow)
+      var boxW = 150, boxH = 7.5, bx = (pw - boxW) / 2;
 
-        doc.setFont('helvetica', 'bold').setFontSize(8).setTextColor(153, 27, 27)
-          .text(b.label, x + bw / 2, y + 4.8, { align: 'center' });
-        doc.setFont('helvetica', 'bold').setFontSize(9.5).setTextColor(0, 0, 0)
-          .text(b.val, x + bw / 2, y + 10, { align: 'center' });
-      });
+      // 1. Organisational URL Box
+      doc.setFillColor(254, 240, 138); // Yellow inside
+      doc.setDrawColor(220, 38, 38);   // Border red
+      doc.setLineWidth(0.4);
+      doc.roundedRect(bx, y, boxW, boxH, 1.5, 1.5, 'FD');
+      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
+      doc.text('Orginistaional Url = "edl.disprz.com"', pw / 2, y + 5.2, { align: 'center' });
+      y += boxH + 2.5;
 
-      y += 18;
-      doc.setDrawColor(225, 29, 72).setLineWidth(0.6).line(M, y, pw - M, y);
-      return y + 8;
+      // 2. User ID Text (Plain centered text)
+      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
+      doc.text('User ID = Casper ID (456354) [without ca.]', pw / 2, y + 4.5, { align: 'center' });
+      y += boxH + 1.5;
+
+      // 3. Password Box
+      doc.setFillColor(254, 240, 138); // Yellow inside
+      doc.setDrawColor(220, 38, 38);   // Border red
+      doc.roundedRect(bx, y, boxW, boxH, 1.5, 1.5, 'FD');
+      doc.setFont('helvetica', 'bold').setFontSize(8.5).setTextColor(0, 0, 0);
+      doc.text('Password: Edl@123', pw / 2, y + 5.2, { align: 'center' });
+      y += boxH + 5;
+
+      doc.setDrawColor(212, 175, 55).setLineWidth(0.4).line(15, y, pw - 15, y);
+      return y + 7;
     },
     title: function (doc, text, y) {
       var pw = doc.internal.pageSize.getWidth();
-      doc.setFont('helvetica', 'bold').setFontSize(13).setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(0, 0, 0);
       var lines = doc.splitTextToSize(FK.pdf.safe(text), pw - 30);
       doc.text(lines, pw / 2, y, { align: 'center' });
-      return y + lines.length * 6 + 1;
+      return y + lines.length * 5.5 + 2;
     }
   };
 
-  /* ═══ Interactive Google Sheet Generation Screen ═══ */
+  /* ── Interactive Google Sheet Generation Screen ── */
   FK.createInteractiveGSheetWindow = function () {
     var win = window.open('about:blank', '_blank');
     if (!win) return null;
@@ -310,37 +287,24 @@ try {
       '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">' +
       '<style>' +
       '*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}' +
-      'body{font-family:Inter,sans-serif;background:#0a0f1d;color:#f8fafc;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;}' +
-      '.card{background:rgba(18,24,40,0.96);border:1.5px solid rgba(225,29,72,0.3);border-radius:28px;padding:40px 32px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.6),0 0 30px rgba(225,29,72,0.2);position:relative;overflow:hidden;}' +
-      '.card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#FFD200,#BA0843,#FFD200);}' +
-      '.brand{font-size:20px;font-weight:900;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:6px;}' +
+      'body{font-family:Inter,sans-serif;background:#0f172a;color:#f8fafc;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;}' +
+      '.card{background:#1e293b;border:1px solid rgba(255,255,255,0.15);border-radius:22px;padding:36px 28px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.5);}' +
+      '.brand{font-size:18px;font-weight:900;margin-bottom:16px;}' +
       '.fk-yellow{color:#FFD200;font-style:italic;}' +
-      '.fk-red{color:#E11D48;text-transform:uppercase;}' +
-      '.radar{width:70px;height:70px;border-radius:50%;border:4px solid rgba(225,29,72,0.2);border-top-color:#E11D48;border-right-color:#FFD200;animation:spin 1s linear infinite;margin:0 auto 24px;}' +
+      '.fk-red{color:#BA0843;text-transform:uppercase;}' +
+      '.spinner{width:46px;height:46px;border:3px solid rgba(255,255,255,0.15);border-top-color:#FFD200;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}' +
       '@keyframes spin{to{transform:rotate(360deg)}}' +
-      '.h1{font-size:22px;font-weight:900;color:#FFFFFF;margin-bottom:12px;letter-spacing:-0.3px;}' +
-      '.sub{font-size:14px;color:#94a3b8;margin-bottom:28px;line-height:1.5;}' +
-      '.steps{display:flex;flex-direction:column;gap:12px;text-align:left;background:rgba(10,15,29,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px 20px;margin-bottom:28px;}' +
-      '.step{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:#94a3b8;}' +
-      '.step.active{color:#FFD200;}' +
-      '.step.done{color:#10b981;}' +
-      '.step-icon{width:20px;text-align:center;font-size:14px;}' +
-      '.guide-preview{background:rgba(254,240,138,0.12);border:1px dashed #FFD200;border-radius:14px;padding:14px;font-size:12px;color:#FFD200;margin-bottom:24px;}' +
-      '.btn-open{display:none;background:linear-gradient(135deg,#10b981,#059669);color:#fff;text-decoration:none;padding:14px 28px;border-radius:50px;font-weight:900;font-size:15px;box-shadow:0 4px 18px rgba(16,185,129,0.4);cursor:pointer;border:none;margin-top:10px;}' +
-      '.btn-open:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(16,185,129,0.6);}' +
+      '.h1{font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;}' +
+      '.sub{font-size:13.5px;color:#94a3b8;margin-bottom:22px;line-height:1.5;}' +
+      '.guide-box{background:rgba(254,240,138,0.1);border:1px solid rgba(254,240,138,0.3);border-radius:12px;padding:12px;font-size:12px;color:#fde047;margin-bottom:20px;}' +
+      '.btn-open{display:none;background:#10b981;color:#fff;text-decoration:none;padding:12px 26px;border-radius:50px;font-weight:800;font-size:14px;cursor:pointer;border:none;margin-top:8px;}' +
       '</style></head><body>' +
       '<div class="card">' +
       '<div class="brand"><span class="fk-yellow">Flipkart</span> <span class="fk-red">Minutes</span></div>' +
-      '<div class="radar" id="radar"></div>' +
+      '<div class="spinner" id="spinner"></div>' +
       '<h1 class="h1" id="mainTitle">Google Sheet generation under process</h1>' +
-      '<p class="sub" id="subTitle">Please wait while the workbook, Login Guide, and Anyone-with-link permissions are configured...</p>' +
-      '<div class="steps">' +
-      '<div class="step done" id="s1"><span class="step-icon">✓</span> Fetching active pendency records</div>' +
-      '<div class="step active" id="s2"><span class="step-icon">⟳</span> Structuring Google Sheets workbook</div>' +
-      '<div class="step" id="s3"><span class="step-icon">○</span> Embedding Picker Login Guide</div>' +
-      '<div class="step" id="s4"><span class="step-icon">○</span> Setting permission: Anyone with link can view</div>' +
-      '</div>' +
-      '<div class="guide-preview">' +
+      '<p class="sub" id="subTitle">Please wait while the workbook, Login Guide, and Anyone-with-link permissions are generated...</p>' +
+      '<div class="guide-box">' +
       '<strong>Quick Login Info:</strong><br>' +
       'URL: <strong>edl.disprz.com</strong> | Password: <strong>Edl@123</strong><br>' +
       'User: <strong>Casper ID (no "ca")</strong>' +
@@ -357,26 +321,6 @@ try {
 
     return {
       win: win,
-      updateStep: function (stepNum) {
-        try {
-          if (!win || win.closed) return;
-          var doc = win.document;
-          for (var i = 1; i <= 4; i++) {
-            var el = doc.getElementById('s' + i);
-            if (!el) continue;
-            if (i < stepNum) {
-              el.className = 'step done';
-              el.querySelector('.step-icon').textContent = '✓';
-            } else if (i === stepNum) {
-              el.className = 'step active';
-              el.querySelector('.step-icon').textContent = '⟳';
-            } else {
-              el.className = 'step';
-              el.querySelector('.step-icon').textContent = '○';
-            }
-          }
-        } catch (e) {}
-      },
       done: function (url) {
         try {
           if (!win || win.closed) {
@@ -384,24 +328,17 @@ try {
             return;
           }
           var doc = win.document;
-          for (var i = 1; i <= 4; i++) {
-            var el = doc.getElementById('s' + i);
-            if (el) { el.className = 'step done'; el.querySelector('.step-icon').textContent = '✓'; }
-          }
-          var radar = doc.getElementById('radar');
-          if (radar) { radar.style.borderColor = '#10b981'; radar.style.animation = 'none'; radar.innerHTML = '<span style="font-size:36px;line-height:62px;color:#10b981">✓</span>'; }
+          var sp = doc.getElementById('spinner');
+          if (sp) { sp.style.borderColor = '#10b981'; sp.style.animation = 'none'; sp.innerHTML = '<span style="color:#10b981;font-size:24px;line-height:40px">✓</span>'; }
           var mt = doc.getElementById('mainTitle');
           if (mt) mt.textContent = 'Google Sheet Ready!';
           var st = doc.getElementById('subTitle');
           if (st) st.textContent = 'Redirecting to your spreadsheet...';
           var btn = doc.getElementById('openBtn');
-          if (btn) {
-            btn.href = url;
-            btn.style.display = 'inline-block';
-          }
+          if (btn) { btn.href = url; btn.style.display = 'inline-block'; }
           setTimeout(function () {
             try { win.location.href = url; } catch (e) {}
-          }, 1200);
+          }, 1000);
         } catch (e) {
           window.open(url, '_blank');
         }
@@ -410,8 +347,8 @@ try {
         try {
           if (!win || win.closed) return;
           var doc = win.document;
-          var radar = doc.getElementById('radar');
-          if (radar) { radar.style.borderColor = '#ef4444'; radar.style.animation = 'none'; radar.innerHTML = '<span style="font-size:36px;line-height:62px;color:#ef4444">✕</span>'; }
+          var sp = doc.getElementById('spinner');
+          if (sp) { sp.style.borderColor = '#ef4444'; sp.style.animation = 'none'; sp.innerHTML = '<span style="color:#ef4444;font-size:24px;line-height:40px">✕</span>'; }
           var mt = doc.getElementById('mainTitle');
           if (mt) { mt.textContent = 'Generation Failed'; mt.style.color = '#ef4444'; }
           var st = doc.getElementById('subTitle');
@@ -421,7 +358,6 @@ try {
     };
   };
 
-  /* ── Service Worker & Event Delegation ── */
   FK.registerSW = function () {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function () {});

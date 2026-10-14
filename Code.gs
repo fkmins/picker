@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Flipkart Minutes — Google Apps Script Backend (code.gs)
-   Handles Data Fetching, Batch Exits, and Google Sheet Export
+   Flipkart Minutes — Google Apps Script Backend (Code.gs)
    ═══════════════════════════════════════════════════════════════ */
 
 var SS_ID = '1iKahNXSOsdzDHf0M8QGez2HQOO2vJuRff8KV439koPM';
@@ -9,7 +8,6 @@ var REF_SHEET = 'Raw - Picker - Refresher';
 var EXIT_SHEET = 'Exits';
 var LOG_SHEET = 'Log Error';
 
-// Statuses indicating pendency
 var PENDING_STATUSES = {
   'Not Started': 1,
   'In-Progress': 1,
@@ -66,10 +64,7 @@ function sanitizeString_(value) {
   return (trimmed === '' || trimmed === '#N/A' || trimmed.toUpperCase() === 'N/A') ? '' : trimmed;
 }
 
-/* ── Fetch Dashboard Data ──
-   Reads Induction & Refresher sheets, filters by pending statuses,
-   excludes exited pickers, and returns a clean, compact JSON array.
-*/
+/* ── Fetch Dashboard Data ── */
 function fetchDashboardData_() {
   var ss = SpreadsheetApp.openById(SS_ID);
   var indData = fetchSheetData_(ss, IND_SHEET);
@@ -92,7 +87,7 @@ function fetchDashboardData_() {
 
   var resultList = [];
   for (var id in relevantIds) {
-    if (exitedIds[id]) continue; // Skip exited / inactive pickers
+    if (exitedIds[id]) continue;
 
     var indRecord = indMap[id];
     var refRecord = refMap[id];
@@ -125,7 +120,6 @@ function fetchExitedIds_(ss) {
   var exitSheet = ss.getSheetByName(EXIT_SHEET);
   if (!exitSheet || exitSheet.getLastRow() < 2) return {};
 
-  // Casper ID is in Column B (Column 2)
   var exitVals = exitSheet.getRange(2, 2, exitSheet.getLastRow() - 1, 1).getValues();
   var exited = {};
   for (var i = 0; i < exitVals.length; i++) {
@@ -138,7 +132,7 @@ function fetchExitedIds_(ss) {
 /* ── Process Batch Inactive / Exits ── */
 function processBatchExits_(payload) {
   if (!payload || !payload.items || !payload.items.length) {
-    throw new Error('No items provided for exit.');
+    throw new Error('No items provided.');
   }
 
   var ss = SpreadsheetApp.openById(SS_ID);
@@ -165,7 +159,6 @@ function processBatchExits_(payload) {
     var pCity = canonical ? canonical.city : (sanitizeString_(payload.items[k].city) || 'N/A');
     var pStore = canonical ? canonical.store : (sanitizeString_(payload.items[k].store) || 'N/A');
 
-    // Schema: Name | Casper ID | City | Dark Store Name
     rowsToAppend.push([pName, id, pCity, pStore]);
     existingExits[id] = true;
   }
@@ -178,7 +171,7 @@ function processBatchExits_(payload) {
   return { status: 'Success', count: rowsToAppend.length };
 }
 
-/* ── Generate Google Sheet Export with Anyone-with-link View Permissions ── */
+/* ── Generate Google Sheet Export (Deletes All Empty Cells + Anyone with link sharing) ── */
 function generateExportSheet_(payload) {
   if (!payload) throw new Error('No export payload provided.');
 
@@ -214,12 +207,22 @@ function generateExportSheet_(payload) {
     dataRange.setHorizontalAlignment('center')
       .setVerticalAlignment('middle');
 
-    // Set thin borders
+    // Thin Black Border
     range.setBorder(true, true, true, true, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID);
 
     dataSheet.setFrozenRows(1);
     for (var col = 1; col <= numCols; col++) {
       dataSheet.autoResizeColumn(col);
+    }
+
+    // ── DELETE ALL EMPTY CELLS (No extra empty columns, No extra empty rows) ──
+    var maxCols = dataSheet.getMaxColumns();
+    if (maxCols > numCols) {
+      dataSheet.deleteColumns(numCols + 1, maxCols - numCols);
+    }
+    var maxRows = dataSheet.getMaxRows();
+    if (maxRows > numRows) {
+      dataSheet.deleteRows(numRows + 1, maxRows - numRows);
     }
   }
 
@@ -229,7 +232,7 @@ function generateExportSheet_(payload) {
     try { spreadsheet.deleteSheet(defaultSheet); } catch (_) {}
   }
 
-  // Ensure default permission: Anyone with the link can view
+  // Set default sharing: Anyone with link can view
   try {
     var file = DriveApp.getFileById(spreadsheet.getId());
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
@@ -240,21 +243,19 @@ function generateExportSheet_(payload) {
   return { url: spreadsheet.getUrl(), status: 'Success' };
 }
 
-/* ── Create Guide Sheet with Yellow Box & Red Border ── */
+/* ── Create Guide Sheet (Deletes All Empty Cells + Formats Red Border & Yellow Inside) ── */
 function createGuideSheet_(spreadsheet) {
   var sheet = spreadsheet.insertSheet('Picker Login Guide');
 
   var guideData = [
     ['Picker Login Guide', ''],
     ['', ''],
-    ['Step 1: Download Disprz App (Blue Icon)', ''],
-    ['Android App Link:', 'https://play.google.com/store/apps/details?id=com.disprz'],
-    ['iPhone App Link:', 'https://apps.apple.com/in/app/disprz/id1458716803'],
+    ['Android App Link', 'https://play.google.com/store/apps/details?id=com.disprz'],
+    ['Iphone App Link', 'https://apps.apple.com/in/app/disprz/id1458716803'],
     ['', ''],
-    ['Step 2: Login Credentials', ''],
-    ['Organisational URL:', 'edl.disprz.com'],
-    ['User ID:', 'Casper ID (456354) [without ca.]'],
-    ['Password:', 'Edl@123']
+    ['Orginistaional Url', 'edl.disprz.com'],
+    ['User ID', 'Casper ID (456354) [without ca.]'],
+    ['Password', 'Edl@123']
   ];
 
   sheet.getRange(1, 1, guideData.length, 2).setValues(guideData);
@@ -262,26 +263,35 @@ function createGuideSheet_(spreadsheet) {
   // Main Header
   sheet.getRange('A1:B1').merge()
     .setFontWeight('bold')
-    .setFontSize(16)
+    .setFontSize(15)
     .setFontColor('#BA0843')
     .setHorizontalAlignment('center');
 
-  // Step Headers
-  sheet.getRange('A3:B3').merge().setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center');
-  sheet.getRange('A7:B7').merge().setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center');
+  sheet.getRange('A3:A4').setFontWeight('bold');
+  sheet.getRange('A6:A8').setFontWeight('bold');
 
-  sheet.getRange('A4:A5').setFontWeight('bold');
-  sheet.getRange('A8:A10').setFontWeight('bold');
+  // Format Credentials: Border Red (#DC2626), Inside Yellow (#FEF08A)
+  // Row 6 (Orginistaional Url) & Row 8 (Password)
+  var cred1 = sheet.getRange('B6');
+  cred1.setBackground('#FEF08A').setFontWeight('bold')
+    .setBorder(true, true, true, true, true, true, '#DC2626', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  // Highlight Credentials: Border Red (#DC2626), Inside Yellow (#FEF08A)
-  var credRange = sheet.getRange('B8:B10');
-  credRange.setBackground('#FEF08A')
-    .setFontWeight('bold')
-    .setFontColor('#000000')
+  var cred2 = sheet.getRange('B8');
+  cred2.setBackground('#FEF08A').setFontWeight('bold')
     .setBorder(true, true, true, true, true, true, '#DC2626', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.autoResizeColumn(1);
   sheet.autoResizeColumn(2);
+
+  // ── DELETE ALL EMPTY CELLS ON GUIDE SHEET ──
+  var maxGCols = sheet.getMaxColumns();
+  if (maxGCols > 2) {
+    sheet.deleteColumns(3, maxGCols - 2);
+  }
+  var maxGRows = sheet.getMaxRows();
+  if (maxGRows > guideData.length) {
+    sheet.deleteRows(guideData.length + 1, maxGRows - guideData.length);
+  }
 }
 
 /* ── Read Raw Sheet Data safely ── */
@@ -289,7 +299,6 @@ function fetchSheetData_(ss, sheetName) {
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet || sheet.getLastRow() < 2) return [];
 
-  // Read up to 9 columns: Casper ID (0), Name (1), Status (2), WhID (3), SM (4), CM (5), Trainer (6), City (7), Store (8)
   var lastRow = sheet.getLastRow();
   var numRows = lastRow - 1;
   var data = sheet.getRange(2, 1, numRows, 9).getValues();
@@ -330,8 +339,8 @@ function logSystemError_(source, error) {
   } catch (_) {}
 }
 
-/* ── One-Time Authorization Helper Function ──
-   Run this once from the Apps Script Editor to grant permissions for Drive & Sheets!
+/* ── One-Time Authorization Function ──
+   RUN THIS FUNCTION ONCE IN SCRIPT EDITOR TO GRANT DRIVE & SHEETS PERMISSIONS!
 */
 function authorizeDrive() {
   var root = DriveApp.getRootFolder();
