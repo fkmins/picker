@@ -232,18 +232,51 @@ function generateExportSheet_(payload) {
     try { spreadsheet.deleteSheet(defaultSheet); } catch (_) {}
   }
 
-  // Set default sharing: Anyone with link can view
-  try {
-    var file = DriveApp.getFileById(spreadsheet.getId());
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  } catch (driveErr) {
-    logSystemError_('generateExportSheet_ Drive sharing', driveErr);
-  }
+  // Set default sharing: Anyone with link can view (with dual DriveApp + REST fallback)
+  setSharingAnyoneWithLink_(spreadsheet.getId());
 
   // Track file for auto-cleanup after 24h
   trackFileForDeletion_(spreadsheet.getId());
 
   return { url: spreadsheet.getUrl(), status: 'Success' };
+}
+
+/* ── Robust Sharing Helper: Sets "Anyone with the link can view" ── */
+function setSharingAnyoneWithLink_(fileId) {
+  // Method 1: DriveApp standard
+  try {
+    var file = DriveApp.getFileById(fileId);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return true;
+  } catch (driveAppErr) {
+    logSystemError_('DriveApp.setSharing failed, trying REST API', driveAppErr);
+  }
+
+  // Method 2: Drive REST API v3 via UrlFetchApp with OAuth Token
+  try {
+    var url = 'https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions?supportsAllDrives=true';
+    var response = UrlFetchApp.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + ScriptApp.getOAuthToken(),
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify({
+        'role': 'reader',
+        'type': 'anyone'
+      }),
+      muteHttpExceptions: true
+    });
+    var code = response.getResponseCode();
+    if (code >= 200 && code < 300) {
+      return true;
+    } else {
+      logSystemError_('Drive REST API failed (' + code + ')', new Error(response.getContentText()));
+    }
+  } catch (restErr) {
+    logSystemError_('setSharingAnyoneWithLink_ REST error', restErr);
+  }
+  return false;
 }
 
 /* ── Create Guide Sheet (Deletes All Empty Cells + Formats Red Border & Yellow Inside) ── */
@@ -430,7 +463,12 @@ function logSystemError_(source, error) {
    Run this once from the Apps Script Editor to grant permissions for Drive & Sheets!
 */
 function authorizeDrive() {
-  var root = DriveApp.getRootFolder();
-  var ss = SpreadsheetApp.openById(SS_ID);
-  Logger.log('Authorized Drive & Sheets successfully for: ' + ss.getName());
+  Logger.log('Starting full Drive authorization check...');
+  var temp = SpreadsheetApp.create('Auth_Test_' + Date.now());
+  var tempId = temp.getId();
+  var success = setSharingAnyoneWithLink_(tempId);
+  try {
+    DriveApp.getFileById(tempId).setTrashed(true);
+  } catch (_) {}
+  Logger.log('Authorization complete! Sharing test succeeded: ' + success);
 }
