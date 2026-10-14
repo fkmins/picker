@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <title>Flipkart Minutes | Picker Pendency Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2874F0">
+<meta name="theme-color" content="#BA0843">
+<meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -16,84 +17,115 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
 <script defer src="common.js"></script>
 <style>
-.tab-container{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-.btn-tab{border:1.5px solid var(--border-color);padding:11px 26px;border-radius:50px;font-weight:800;font-size:13px;background:var(--card-bg);color:var(--text-muted);transition:all .22s ease;flex:1;max-width:220px;cursor:pointer;font-family:inherit}
-.btn-tab:hover:not(.active){border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
-.btn-tab.active{background:linear-gradient(135deg,var(--fk-blue),#1a5dbf);color:#fff;border-color:var(--fk-blue);box-shadow:0 6px 18px rgba(40,116,240,.35)}
-.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:16px;width:100%}
-.filter-col{flex:1 1 260px;max-width:420px;}
-.ts-wrapper{position:relative!important; text-align:center!important;}
-.ts-wrapper .ts-control{border-radius:14px!important;padding:12px 18px!important;border:1.5px solid var(--border-color)!important;font-weight:700!important;font-size:14px!important;font-family:inherit!important;background:var(--card-bg)!important;color:var(--text-main)!important;display:flex!important;justify-content:center!important;align-items:center!important;text-align:center!important;transition:border-color .2s,box-shadow .2s!important;box-shadow:none!important}
-.ts-wrapper.single .ts-control > input { text-align: center!important; }
-.ts-wrapper.single .ts-control > .item { text-align: center!important; width: 100%!important; display: block!important; }
+.tab-container{display:flex;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.btn-tab{
+  border:1.5px solid var(--border-color);padding:12px 28px;border-radius:50px;
+  font-weight:900;font-size:13.5px;background:var(--card-bg);color:var(--text-muted);
+  transition:all .22s ease;flex:1;max-width:240px;cursor:pointer;font-family:inherit;
+}
+.btn-tab:hover:not(.active){border-color:var(--fk-yellow);color:var(--fk-yellow);transform:translateY(-2px)}
+.btn-tab.active{
+  background:linear-gradient(135deg,var(--fk-crimson),#920633);
+  color:#fff;border-color:var(--fk-crimson);
+  box-shadow:0 6px 20px var(--fk-crimson-glow);
+}
+
+.filter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:18px;width:100%}
+.filter-col{flex:1 1 260px;max-width:440px}
+
 .search-wrapper{width:100%;margin-bottom:20px}
-.search-box{width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);font-weight:600;font-size:14px;font-family:inherit;background:var(--card-bg);color:var(--text-main);text-align:center;}
-.search-box:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px var(--gold-glow)}
+.search-box{
+  width:100%;border-radius:14px;padding:14px 22px;border:1.5px solid var(--border-color);
+  font-weight:700;font-size:14px;font-family:inherit;background:var(--card-bg);
+  color:var(--text-main);text-align:center;transition:border-color .2s,box-shadow .2s;
+}
+.search-box:focus{border-color:var(--fk-crimson-light);outline:none;box-shadow:0 0 0 3px var(--fk-crimson-glow)}
+
 #resultArea{display:none;margin-top:22px;flex-direction:column;align-items:center;width:100%;animation:fadeIn .4s ease both}
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;margin-bottom:18px}
-.metric-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:18px;padding:22px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-card)}
-.metric-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--fk-yellow),var(--gold))}
-.metric-card .val{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--fk-blue),#4f9cf9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
-.metric-card .lbl{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-muted);letter-spacing:.8px}
-.action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:22px;width:100%}
-.btn-action{border:none;padding:13px 22px;border-radius:14px;font-weight:800;font-size:13px;font-family:inherit;flex:1;min-width:150px;cursor:pointer;color:#fff}
-.btn-pdf{background:linear-gradient(135deg,#334155,#1e293b)}
-.btn-sheet{background:linear-gradient(135deg,var(--success),#0d9669)}
-.btn-batch{background:linear-gradient(135deg,#f59e0b,#d97706);display:none}
-.btn-batch.visible{display:inline-block}
-.table-holder{background:var(--card-bg);border-radius:18px;width:100%;border:1px solid var(--border-color);max-height:500px;overflow:auto;box-shadow:var(--shadow-card)}
-.table{border-collapse:collapse;width:100%;min-width:480px;color:var(--text-main)}
-.table th,.table td{text-align:center;padding:14px;vertical-align:middle;border-bottom:1px solid var(--border-color)}
-.table thead th{background:var(--table-header);color:var(--text-muted);font-size:13px;font-weight:800;position:sticky;top:0;z-index:3;border-bottom:2px solid var(--border-color)}
-.table td{font-weight:600;font-size:14px;}
-.table tbody tr:nth-child(even) td{background:var(--table-hover)}
-.table tbody tr:hover td{background:var(--dropdown-hover)}
-.empty-cell{padding:32px!important;color:var(--text-muted);font-weight:700}
-.na-bg{background:rgba(239,68,68,.1);color:var(--danger);padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(239,68,68,.2);display:inline-block}
-.btn-exit{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;transition:transform .2s}
-.btn-exit:hover{transform:translateY(-2px)}
-.pill-id{background:rgba(40,116,240,.1);color:var(--fk-blue);padding:4px 12px;border-radius:50px;font-weight:800;font-size:13px;display:inline-block;border:1px solid rgba(40,116,240,.2);cursor:pointer;min-width:84px;font-family:inherit}
-.pill-id-copied{background:rgba(16,185,129,.15)!important;color:var(--success)!important;border-color:var(--success)!important}
-.row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-blue);vertical-align:middle}
-.tr-selected td{background:rgba(40,116,240,.08)!important}
-.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
-.exit-modal{background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;padding:32px 26px 26px;width:90%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.35);animation:panelUp .3s cubic-bezier(.22,1,.36,1)}
-.exit-modal-title{font-weight:900;font-size:20px;margin-bottom:6px}
-.exit-modal-name{font-weight:800;font-size:16px;color:var(--fk-blue);margin-bottom:18px;word-break:break-word}
-.exit-modal-actions{display:flex;gap:12px;justify-content:center;margin-top:22px;}
-.exit-modal-btn{padding:12px 28px;border-radius:14px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:inherit;}
-.exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;width:100%;margin-bottom:20px}
+.metric-card{
+  background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:20px;
+  padding:22px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-card);
+}
+.metric-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--fk-crimson),var(--fk-yellow),var(--fk-crimson));
+}
+.metric-card .val{
+  font-size:38px;font-weight:900;
+  background:linear-gradient(135deg,var(--fk-crimson-light),#ff4d79);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;
+}
+:root.dark-mode .metric-card .val{
+  background:linear-gradient(135deg,var(--fk-yellow),#ffe773);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.metric-card .lbl{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--text-muted);letter-spacing:1px}
+
+.action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:22px;width:100%}
+.btn-action{
+  border:none;padding:14px 26px;border-radius:14px;font-weight:900;font-size:13.5px;
+  font-family:inherit;flex:1;min-width:160px;cursor:pointer;color:#fff;
+  transition:all .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-action:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.btn-pdf{background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid rgba(255,255,255,.15)}
+.btn-sheet{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 4px 14px rgba(5,150,105,.3)}
+
+/* Interactive Row Selection & Copy Popover */
+.row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-crimson);vertical-align:middle}
+.row-clickable{cursor:pointer}
+.copied-badge{
+  position:absolute;top:-26px;left:50%;transform:translateX(-50%);
+  background:#10b981;color:#fff;font-size:11px;font-weight:900;
+  padding:3px 8px;border-radius:6px;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 10px rgba(0,0,0,.3);animation:panelUp .2s ease both;
+}
+
+/* Exit Modal */
+.exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
+.exit-modal{
+  background:var(--solid);border:1.5px solid var(--border-color);border-radius:24px;
+  padding:34px 28px 28px;width:90%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.5);
+  animation:panelUp .3s cubic-bezier(.22,1,.36,1);
+}
+.exit-modal-title{font-weight:900;font-size:20px;margin-bottom:8px}
+.exit-modal-name{font-weight:800;font-size:16px;color:var(--fk-crimson-light);margin-bottom:20px;word-break:break-word}
+.exit-modal-actions{display:flex;gap:12px;justify-content:center;margin-top:24px}
+.exit-modal-btn{padding:12px 28px;border-radius:50px;font-weight:900;font-size:14px;border:none;cursor:pointer;font-family:inherit}
+.exit-btn-confirm{background:linear-gradient(135deg,var(--danger),#b91c1c);color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.35)}
 .exit-btn-cancel{background:var(--card-bg);color:var(--text-main);border:1.5px solid var(--border-color)}
 </style>
 </head>
 <body>
 
-<div id="pwaInstallCard" class="pwa-install-card" hidden>
-  <div class="pwa-card-title">Install app</div>
-  <div class="pwa-card-info">
-    <img src="icons/icon-192.png" class="pwa-card-icon" alt="">
-    <div><div class="pwa-card-name">Flipkart Minutes</div><div class="pwa-card-origin">Flipkart Minutes Dashboard</div></div>
-  </div>
-  <div class="pwa-card-actions">
-    <button class="pwa-card-btn pwa-card-install" data-action="install">Install</button>
-    <button class="pwa-card-btn pwa-card-cancel" data-action="dismissInstall">Not now</button>
-  </div>
-</div>
+<div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;" id="fsLoaderText">Processing...</div></div>
 
-<div id="fsLoader"><div class="spinner"></div><div style="font-weight:700;color:#fff;">Processing...</div></div>
 <div id="appLoader">
   <img class="loader-svg" src="https://2dioqsev90.ucarecd.net/aeeac257-6b3a-4e9e-a8ac-10f5a73d9bc1/Loadercat1.svg" alt="Loading">
-  <div class="loading-text">Loading Dashboard Data</div>
+  <div class="loading-text">Loading Flipkart Minutes Dashboard</div>
 </div>
 
 <main class="glass-panel" id="mainPanel">
   <div class="hdr">
     <div class="hdr-brand">
-      <div><h1 class="hdr-title">Flipkart Minutes Dashboard</h1><div class="hdr-sub">East - L&amp;D</div></div>
+      <div class="hdr-title-wrap">
+        <h1 class="hdr-title">
+          <span class="fk-brand-yellow">Flipkart</span>
+          <span class="fk-brand-red">Minutes</span>
+          <span class="fk-brand-white">Dashboard</span>
+        </h1>
+      </div>
+      <div class="hdr-sub">
+        <span class="btn-logo-tag">
+          <span class="btn-logo-dot"></span>
+          East - L&amp;D
+        </span>
+      </div>
     </div>
     <div class="hdr-actions">
-      <button class="icon-btn accent" id="installBtn" data-action="install" hidden>Install App</button>
-      <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
+      <a href="completion.html" class="icon-btn">Completion Report</a>
+      <button class="icon-btn" id="themeBtn" data-action="theme">&#9790; Dark Mode</button>
     </div>
   </div>
   <hr class="divider">
@@ -102,6 +134,7 @@
     <button id="btnNormal" class="btn-tab active" data-action="mode" data-mode="0">Dark Store Wise</button>
     <button id="btnManager" class="btn-tab" data-action="mode" data-mode="1">Cluster Manager Wise</button>
   </div>
+  
   <div class="filter-row">
     <div class="filter-col"><select id="citySelect" autocomplete="off" aria-label="City"></select></div>
     <div class="filter-col" id="storeWrapper"><select id="storeSelect" autocomplete="off" aria-label="Dark store"></select></div>
@@ -110,26 +143,42 @@
   <div id="resultArea">
     <div class="metrics-grid">
       <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
-      <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Exited (Offline Queue)</div></div>
+      <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Inactive Picker</div></div>
     </div>
     <div class="search-wrapper" id="searchWrapper">
-      <input type="search" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off">
+      <input type="search" id="searchInput" class="search-box" placeholder="Search Picker Name or Casper ID..." autocomplete="off">
     </div>
     <div class="action-buttons">
-      <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">Export PDF</button>
-      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">Export G-Sheet</button>
-      <button class="btn-action btn-batch" id="btnBatchExit" data-action="batchExit">Batch Exit (<span id="batchCount">0</span>)</button>
+      <button class="btn-action btn-pdf" id="btnPdf" data-action="pdf">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Export PDF
+      </button>
+      <button class="btn-action btn-sheet" id="btnGSheet" data-action="gsheet">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+        Export G-Sheet
+      </button>
     </div>
-    <div class="table-holder"><table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+    <div class="table-holder">
+      <table class="table"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+    </div>
   </div>
 </main>
 
+<!-- Floating Exit Action Bar -->
+<div id="exitActionBar" class="exit-action-bar">
+  <span class="exit-action-info"><span id="exitSelectedCount">0</span> Picker(s) Selected</span>
+  <button class="exit-action-btn" data-action="batchExit">Mark as Inactive</button>
+  <button class="icon-btn" data-action="clearSelection">Clear</button>
+</div>
+
+<!-- Exit Confirmation Modal -->
 <div id="exitModal" class="exit-overlay" style="display:none" role="dialog" aria-modal="true">
   <div class="exit-modal">
-    <div class="exit-modal-title" id="exitModalTitle">Confirm Exit</div>
+    <div class="exit-modal-title" id="exitModalTitle">Mark as Inactive</div>
     <div class="exit-modal-name" id="exitModalName"></div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">This picker will be moved to the Exits list and removed from active pendency.</p>
     <div class="exit-modal-actions">
-      <button class="exit-modal-btn exit-btn-confirm" id="exitConfirmBtn" data-action="confirmExit">Yes, Exit</button>
+      <button class="exit-modal-btn exit-btn-confirm" id="exitConfirmBtn" data-action="confirmExit">Yes, Mark Inactive</button>
       <button class="exit-modal-btn exit-btn-cancel" data-action="closeExit">Cancel</button>
     </div>
   </div>
@@ -141,15 +190,20 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v13';
+  var CACHE_KEY = 'pickerDash_v14';
   var db = [], filtered = [], selected = new Set();
   var cityTS, storeTS, managerMode = false, loading = false;
   var exitTarget = null, exitIsBatch = false;
+  var disprzImgData = null;
 
   FK.registerSW();
   FK.syncThemeBtn();
-  FK.initInstallUi();
   FK.syncOfflineQueue();
+
+  // Preload Disprz logo for PDF embedding
+  FK.getImageDataUrl('icons/disprz.logo.webp').then(function(res) {
+    disprzImgData = res;
+  });
 
   function normalizeRow(r) {
     var id = FK.clean(r.id), wh = FK.clean(r.wh);
@@ -160,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
       darkStore: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
       cm: FK.titleCase(FK.clean(r.cm)) || 'N/A',
-      ind: r.ind, ref: r.ref
+      trainer: FK.titleCase(FK.clean(r.tn)) || 'Unassigned'
     };
   }
 
@@ -171,14 +225,16 @@ document.addEventListener('DOMContentLoaded', function () {
       if (d && d.error) throw new Error(d.error);
       db = d.map(normalizeRow).filter(Boolean);
       FK.writeCache(CACHE_KEY, db);
-      if(!preserveSelection) selected.clear();
+      if (!preserveSelection) selected.clear();
       refreshFilters();
     }).catch(function (e) {
       if (showErr || !db.length) FK.toast(FK.isNetworkError(e) ? 'Network Error.' : 'Error: ' + e.message, true, 5000);
     }).then(function () { loading = false; FK.hideLoader(); });
   }
-  
-  setInterval(function() { if(!document.hidden && navigator.onLine) loadData(false, true); }, 60000);
+
+  setInterval(function () {
+    if (!document.hidden && navigator.onLine) loadData(false, true);
+  }, 60000);
 
   function uniq(arr, key) {
     var seen = {}, out = [];
@@ -187,7 +243,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function fillSelect(ts, values, keep) {
-    var cur = ts.getValue(); ts.clear(true); ts.clearOptions();
+    var cur = ts.getValue();
+    ts.clear(true); ts.clearOptions();
     values.forEach(function (v) { ts.addOption({ value: v, text: v }); });
     if (keep && cur && values.indexOf(cur) !== -1) ts.setValue(cur, true);
   }
@@ -197,9 +254,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!managerMode) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
     render();
   }
-  
-  function storesOf(city) { return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : []; }
-  
+
+  function storesOf(city) {
+    return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : [];
+  }
+
   function onCityChange() {
     selected.clear();
     fillSelect(storeTS, storesOf(cityTS.getValue()), false);
@@ -208,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function syncURLParams(city, store, mMode) {
     var u = new URL(window.location);
-    if(city) u.searchParams.set('city', city); else u.searchParams.delete('city');
-    if(store && !mMode) u.searchParams.set('store', store); else u.searchParams.delete('store');
+    if (city) u.searchParams.set('city', city); else u.searchParams.delete('city');
+    if (store && !mMode) u.searchParams.set('store', store); else u.searchParams.delete('store');
     u.searchParams.set('mode', mMode ? '1' : '0');
     window.history.replaceState({}, '', u);
   }
@@ -217,97 +276,111 @@ document.addEventListener('DOMContentLoaded', function () {
   function setMode(m) {
     managerMode = m; selected.clear(); $('searchInput').value = '';
     $('btnNormal').classList.toggle('active', !m); $('btnManager').classList.toggle('active', m);
-    $('storeWrapper').style.display = m ? 'none' : ''; $('searchWrapper').style.display = m ? 'none' : '';
+    $('storeWrapper').style.display = m ? 'none' : '';
+    $('searchWrapper').style.display = m ? 'none' : '';
     if (!m) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
     syncURLParams(cityTS.getValue(), storeTS.getValue(), m);
     render();
   }
 
-  var checkNA = function (v) { return FK.isNA(v) ? '<span class="na-bg">Not Assigned</span>' : esc(v); };
-  var badge = function (v) {
-    return v === 'Completed' ? '<span class="badge" style="background:#10b981;color:#fff;">Completed</span>'
-         : v === 'Pending' ? '<span class="badge badge-pending" style="background:#ef4444;color:#fff;">Pending</span>' 
-         : checkNA(v);
-  };
+  var checkNA = function (v) { return FK.isNA(v) ? '<span style="color:var(--text-muted)">N/A</span>' : esc(v); };
 
   function render() {
     var c = cityTS.getValue(), s = storeTS.getValue();
     syncURLParams(c, s, managerMode);
-    
-    if (!c || (!managerMode && !s)) { $('resultArea').style.display = 'none'; updateBatchUI(); return; }
+
+    if (!c || (!managerMode && !s)) {
+      $('resultArea').style.display = 'none';
+      updateSelectionBar();
+      return;
+    }
+
     filtered = db.filter(function (i) {
       if (i.city !== c) return false;
       return managerMode ? true : i.darkStore === s;
     });
-    
+
     var queue = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
     $('countBadge').textContent = filtered.length;
     $('exitedBadge').textContent = queue.length;
     $('resultArea').style.display = 'flex';
-    
+
     var tH = $('tableHead'), tB = $('tableBody');
     if (!filtered.length) {
-      tH.innerHTML = ''; tB.innerHTML = '<tr><td class="empty-cell" colspan="6">No Records Found</td></tr>';
-      updateBatchUI(); return;
+      tH.innerHTML = '';
+      tB.innerHTML = '<tr><td class="empty-cell" colspan="4">No Records Found</td></tr>';
+      updateSelectionBar();
+      return;
     }
 
     if (managerMode) {
       tH.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
-      var grouped = {}, rowsHtml = '';
-      filtered.forEach(function(i) { grouped[i.cm] = (grouped[i.cm] || 0) + 1; });
-      Object.keys(grouped).sort().forEach(function(k) {
+      var grouped = {}, rowsHtml = '', total = 0;
+      filtered.forEach(function (i) { grouped[i.cm] = (grouped[i.cm] || 0) + 1; total++; });
+      Object.keys(grouped).sort().forEach(function (k) {
         rowsHtml += '<tr><td>' + checkNA(k) + '</td><td><span class="normal-count">' + grouped[k] + '</span></td></tr>';
       });
-      tB.innerHTML = rowsHtml; updateBatchUI(); return;
+      rowsHtml += '<tr class="total-row"><td>Total</td><td>' + total + '</td></tr>';
+      tB.innerHTML = rowsHtml;
+      updateSelectionBar();
+      return;
     }
 
-    tH.innerHTML = '<tr><th><input type="checkbox" class="select-all-check" id="selectAllCheck"></th>' +
-      '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th><th>Action</th></tr>';
+    // Dark store mode: Checkbox | Picker Name | Casper ID (No Induction/Refresher, No Exit button column)
+    tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
+      '<th>Picker Name</th><th>Casper ID</th></tr>';
+
     tB.innerHTML = filtered.map(function (i) {
       var id = esc(i.id), chk = selected.has(id);
-      return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
+      return '<tr class="row-clickable' + (chk ? ' tr-selected' : '') + '" data-id="' + id + '">' +
         '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
         '<td class="p-name">' + checkNA(i.name) + '</td>' +
-        '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
-        '<td>' + badge(i.ind) + '</td><td>' + badge(i.ref) + '</td>' +
-        '<td><button class="btn-exit" data-action="exit" data-id="' + id + '">Exit</button></td></tr>';
+        '<td class="p-id" style="position:relative"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '" title="Click to copy">' +
+        id + '</button></td></tr>';
     }).join('');
-    
+
     $('selectAllCheck').checked = selected.size > 0 && selected.size === filtered.length;
-    updateBatchUI();
-    
-    var tStartX = 0, tEl = null;
-    tB.addEventListener('touchstart', function(e) { tStartX = e.changedTouches[0].screenX; tEl = e.target.closest('tr'); }, {passive:true});
-    tB.addEventListener('touchend', function(e) {
-      if(!tEl) return;
-      var dx = e.changedTouches[0].screenX - tStartX;
-      var rId = tEl.querySelector('.row-check'); if(!rId) return;
-      var rawId = rId.getAttribute('data-id');
-      if (dx > 80) showExitModal(rawId);
-      else if (dx < -80) { var pill = tEl.querySelector('.pill-id'); if(pill) copyId(rawId, pill); }
-    }, {passive:true});
+    updateSelectionBar();
   }
 
   $('searchInput').addEventListener('input', function () {
     var q = this.value.trim().toLowerCase();
     var rows = $('tableBody').querySelectorAll('tr');
-    rows.forEach(function(r) {
+    rows.forEach(function (r) {
       var n = r.querySelector('.p-name'), c = r.querySelector('.p-id');
-      if(n && c) r.style.display = (n.textContent.toLowerCase().includes(q) || c.textContent.toLowerCase().includes(q)) ? '' : 'none';
+      if (n && c) {
+        var match = n.textContent.toLowerCase().includes(q) || c.textContent.toLowerCase().includes(q);
+        r.style.display = match ? '' : 'none';
+      }
     });
   });
 
-  function updateBatchUI() {
-    $('batchCount').textContent = selected.size;
-    $('btnBatchExit').classList.toggle('visible', selected.size > 0 && !managerMode);
+  function updateSelectionBar() {
+    var bar = $('exitActionBar');
+    if (!bar) return;
+    $('exitSelectedCount').textContent = selected.size;
+    if (selected.size > 0 && !managerMode) {
+      bar.classList.add('visible');
+    } else {
+      bar.classList.remove('visible');
+    }
   }
 
   $('tableHead').addEventListener('change', function (e) {
     if (e.target.id !== 'selectAllCheck') return;
     var rows = $('tableBody').querySelectorAll('tr');
-    rows.forEach(function(r) { if(r.style.display !== 'none') { var id = r.querySelector('.row-check').getAttribute('data-id'); if(e.target.checked) selected.add(id); else selected.delete(id); }});
+    rows.forEach(function (r) {
+      if (r.style.display !== 'none') {
+        var chk = r.querySelector('.row-check');
+        if (chk) {
+          var id = chk.getAttribute('data-id');
+          if (e.target.checked) selected.add(id); else selected.delete(id);
+        }
+      }
+    });
     render();
   });
+
   $('tableBody').addEventListener('change', function (e) {
     if (!e.target.classList.contains('row-check')) return;
     var id = e.target.getAttribute('data-id');
@@ -315,136 +388,239 @@ document.addEventListener('DOMContentLoaded', function () {
     render();
   });
 
-  function copyId(id, pill) {
-    var done = function () { pill.classList.add('pill-id-copied'); setTimeout(function () { pill.classList.remove('pill-id-copied'); }, 1200); };
-    if (navigator.clipboard) navigator.clipboard.writeText(id).then(done).catch(function(){}); else done();
+  // Clicking anywhere on the row (except the copy button) toggles selection
+  $('tableBody').addEventListener('click', function (e) {
+    if (e.target.closest('[data-action="copy"]') || e.target.classList.contains('row-check')) return;
+    var tr = e.target.closest('tr.row-clickable');
+    if (!tr) return;
+    var id = tr.getAttribute('data-id');
+    if (!id) return;
+    if (selected.has(id)) selected.delete(id); else selected.add(id);
+    render();
+  });
+
+  // Long press / Context menu on row triggers single exit modal
+  $('tableBody').addEventListener('contextmenu', function (e) {
+    var tr = e.target.closest('tr.row-clickable');
+    if (!tr) return;
+    e.preventDefault();
+    var id = tr.getAttribute('data-id');
+    if (id) showSingleExitModal(id);
+  });
+
+  /* ── Casper ID Click to Copy with Animation ── */
+  function copyCasperId(id, pill) {
+    var anim = function () {
+      pill.classList.add('pill-id-copied');
+      var badge = document.createElement('span');
+      badge.className = 'copied-badge';
+      badge.textContent = 'Copied!';
+      pill.parentNode.appendChild(badge);
+      setTimeout(function () {
+        pill.classList.remove('pill-id-copied');
+        if (badge.parentNode) badge.parentNode.removeChild(badge);
+      }, 1400);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id).then(function () {
+        anim();
+        FK.toast('Copied Casper ID: ' + id);
+      }).catch(anim);
+    } else {
+      anim();
+      FK.toast('Copied Casper ID: ' + id);
+    }
   }
 
-  function showExitModal(id) {
+  /* ── Exit Modal Handlers ── */
+  function showSingleExitModal(id) {
     var p = filtered.find(function (x) { return x.id === id; });
     exitIsBatch = false; exitTarget = id;
-    $('exitModalTitle').textContent = 'Confirm Exit';
-    $('exitModalName').textContent = 'Mark "' + ((p && !FK.isNA(p.name)) ? p.name : id) + '" as exited?';
-    $('exitConfirmBtn').textContent = 'Yes, Exit';
+    $('exitModalTitle').textContent = 'Mark Picker as Inactive';
+    $('exitModalName').textContent = (p && !FK.isNA(p.name)) ? p.name + ' (' + id + ')' : 'Casper ID: ' + id;
+    $('exitConfirmBtn').textContent = 'Yes, Mark Inactive';
     $('exitModal').style.display = 'flex';
     FK.trapFocus($('exitModal'));
     $('exitConfirmBtn').focus();
   }
-  
+
   function showBatchExitModal() {
     if (!selected.size) return;
     exitIsBatch = true; exitTarget = null;
-    $('exitModalTitle').textContent = 'Batch Exit'; $('exitModalName').textContent = 'Mark ' + selected.size + ' picker(s) as exited?';
-    $('exitConfirmBtn').textContent = 'Yes, Exit All';
+    $('exitModalTitle').textContent = 'Batch Inactive Action';
+    $('exitModalName').textContent = 'Mark ' + selected.size + ' selected picker(s) as Inactive?';
+    $('exitConfirmBtn').textContent = 'Yes, Mark All ' + selected.size + ' Inactive';
     $('exitModal').style.display = 'flex';
-    FK.trapFocus($('exitModal')); $('exitConfirmBtn').focus();
+    FK.trapFocus($('exitModal'));
+    $('exitConfirmBtn').focus();
   }
-  
-  function closeExitModal() { $('exitModal').style.display = 'none'; exitTarget = null; exitIsBatch = false; }
+
+  function closeExitModal() {
+    $('exitModal').style.display = 'none';
+    exitTarget = null;
+    exitIsBatch = false;
+  }
 
   function confirmExit() {
     var ids = exitIsBatch ? Array.from(selected) : (exitTarget ? [exitTarget] : []);
     closeExitModal();
+    if (!ids.length) return;
 
-    var stale = ids.filter(function(i) { return !db.find(function(x) { return x.id === i; }); });
-    if(stale.length > 0) {
-      FK.toast('Some pickers were already cleared. Refreshing data...', true);
-      return loadData(true, false);
-    }
-    
     if (!navigator.onLine) {
-       var q = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
-       ids.forEach(function(i) { if(q.indexOf(i) === -1) q.push(i); });
-       FK.store.set('fk_offline_exits', JSON.stringify(q));
-       ids.forEach(function(i) { db = db.filter(function(x) { return x.id !== i; }); });
-       selected.clear(); render();
-       return FK.toast('Offline. Exit queued and will sync automatically.');
+      var q = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
+      ids.forEach(function (i) { if (q.indexOf(i) === -1) q.push(i); });
+      FK.store.set('fk_offline_exits', JSON.stringify(q));
+      db = db.filter(function (x) { return ids.indexOf(x.id) === -1; });
+      selected.clear();
+      render();
+      return FK.toast('Offline. ' + ids.length + ' picker(s) marked inactive and queued for auto-sync.');
     }
 
+    $('fsLoaderText').textContent = 'Updating Inactive Pickers...';
     $('fsLoader').classList.add('active');
-    FK.post({ action: 'exit', items: ids.map(function(i) { return {id: i}; }) })
+
+    FK.post({ action: 'exit', items: ids.map(function (i) { return { id: i }; }) })
       .then(function (res) {
-        if (!res || res.status !== 'Success') throw new Error('Failed');
-        ids.forEach(function(i) { db = db.filter(function(x) { return x.id !== i; }); });
-        selected.clear(); render(); FK.toast(ids.length + ' exits processed');
+        if (!res || res.status !== 'Success') throw new Error('Failed to update exits');
+        db = db.filter(function (x) { return ids.indexOf(x.id) === -1; });
+        selected.clear();
+        render();
+        FK.toast(ids.length + ' picker(s) marked as Inactive');
       })
-      .catch(function (err) { FK.toast('Exit failed. Try again.', true); })
+      .catch(function () {
+        FK.toast('Failed to record inactive status. Please retry.', true);
+      })
       .then(function () { $('fsLoader').classList.remove('active'); });
   }
 
+  /* ── Export PDF (Center-Aligned, Black Borders, Login Guide, Picker Name & Casper ID) ── */
   function exportPdf() {
-    if (!filtered.length) return;
-    if (filtered.length > 500) return FK.toast('Too much data for PDF. Please use G-Sheet Export.', true);
-    
-    var btn = $('btnPdf'); btn.textContent = 'Generating...'; $('fsLoader').classList.add('active');
+    if (!filtered.length) return FK.toast('No records to export.', true);
+
+    var btn = $('btnPdf'), orig = btn.innerHTML;
+    btn.textContent = 'Generating PDF...';
+    $('fsLoaderText').textContent = 'Generating Center-Aligned PDF...';
+    $('fsLoader').classList.add('active');
+
     FK.ensureJsPdf().then(function () {
       var doc = new window.jspdf.jsPDF();
       var title = managerMode ? 'Pendency Summary - ' + cityTS.getValue() : 'Picker Pendency - ' + storeTS.getValue();
-      var y = FK.pdf.title(doc, title, 15);
-      
-      var rows = managerMode ? 
-        Object.keys(filtered.reduce(function(a,c){a[c.cm]=(a[c.cm]||0)+1; return a;},{})).map(function(k) { return [k, String(filtered.filter(function(i){return i.cm===k}).length)]; }) 
-        : filtered.map(function(i) { return [i.name, i.id, i.ind||'', i.ref||'']; });
-        
-      doc.autoTable({ head: managerMode ? [['Cluster Manager', 'Pendency']] : [['Picker Name', 'Casper ID', 'Induction', 'Refresher']], body: rows, startY: y + 2, theme: 'grid' });
+      var y = FK.pdf.loginGuide(doc, disprzImgData);
+      y = FK.pdf.title(doc, title, y);
+
+      var headers, body;
+      if (managerMode) {
+        headers = [['Cluster Manager', 'Pendency Count']];
+        var grp = {};
+        filtered.forEach(function (i) { grp[i.cm] = (grp[i.cm] || 0) + 1; });
+        body = Object.keys(grp).sort().map(function (k) { return [k, String(grp[k])]; });
+        body.push(['TOTAL', String(filtered.length)]);
+      } else {
+        // As requested: Only Picker Name and Casper ID (Induction/Refresher omitted)
+        headers = [['Picker Name', 'Casper ID']];
+        body = filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id)]; });
+      }
+
+      doc.autoTable({
+        head: headers,
+        body: body,
+        startY: y + 2,
+        theme: 'grid',
+        styles: FK.pdf.bodyStyles,
+        headStyles: FK.pdf.headStyles,
+        didParseCell: function (data) {
+          if (data.section === 'body' && managerMode && data.row.index === body.length - 1) {
+            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.fillColor = [240, 240, 240];
+          }
+        }
+      });
+
+      FK.pdf.pageNumbers(doc);
       doc.save(title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
-      FK.toast('PDF Downloaded');
-    }).catch(function() {
-      FK.toast('PDF failed.', true, 5000);
-    }).then(function () { btn.textContent = 'Export PDF'; $('fsLoader').classList.remove('active'); });
+      FK.toast('PDF Downloaded successfully!');
+    }).catch(function (e) {
+      FK.toast('PDF export failed. Try again.', true);
+    }).then(function () {
+      btn.innerHTML = orig;
+      $('fsLoader').classList.remove('active');
+    });
   }
 
+  /* ── Export Google Sheet with Interactive Process Screen ── */
   function exportToGSheet() {
-    if (!filtered.length) return;
-    $('btnGSheet').textContent = 'Preparing...'; $('fsLoader').classList.add('active');
-    
-    var c = cityTS.getValue(), s = storeTS.getValue();
-    var detail = [['CMSM', 'Dark Store', 'Name', 'Casper ID', 'Induction', 'Refresher']].concat(filtered.map(function (i) { return [i.cm, i.darkStore, i.name, i.id, i.ind, i.ref]; }));
-    
-    var win = window.open('about:blank', '_blank');
-    if (win && win.document) {
-      win.document.write('<body style="background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;"><h2>Generating G-Sheet... Please wait.</h2></body>');
-    }
+    if (!filtered.length) return FK.toast('No records to export.', true);
 
-    FK.post({ action: 'export', f: (managerMode ? c : s), detailData: detail })
-      .then(function (d) { 
-        if (win && !win.closed) { win.location.href = d.url; } 
-        else { window.open(d.url, '_blank'); }
-        FK.toast('G-Sheet is ready!'); 
+    var processWin = FK.createInteractiveGSheetWindow();
+    var c = cityTS.getValue(), s = storeTS.getValue();
+    var targetName = managerMode ? c : s;
+
+    // Build data array for Google Sheet: Dark Store, Picker Name, Casper ID, Cluster Manager, City
+    var detail = [['Dark Store', 'Picker Name', 'Casper ID', 'Cluster Manager', 'City']].concat(
+      filtered.map(function (i) {
+        return [i.darkStore, i.name, i.id, i.cm, i.city];
       })
-      .catch(function () { 
-        if (win) win.close(); 
-        FK.toast('Export failed.', true); 
-      })
-      .then(function () { $('btnGSheet').textContent = 'Export G-Sheet'; $('fsLoader').classList.remove('active'); });
+    );
+
+    if (processWin) processWin.updateStep(2);
+
+    FK.post({
+      action: 'export',
+      f: targetName,
+      detailData: detail
+    }).then(function (res) {
+      if (res && res.url) {
+        if (processWin) {
+          processWin.updateStep(4);
+          processWin.done(res.url);
+        }
+        FK.toast('Google Sheet created successfully!');
+      } else {
+        throw new Error(res && res.error ? res.error : 'Unknown server response');
+      }
+    }).catch(function (err) {
+      if (processWin) processWin.error(err.message || 'Export failed.');
+      FK.toast('Google Sheet export failed.', true);
+    });
   }
 
   FK.delegate({
-    theme: FK.toggleTheme, install: FK.install, dismissInstall: FK.dismissInstall, mode: function(el) { setMode(el.getAttribute('data-mode')==='1'); },
-    copy: function(el) { copyId(el.getAttribute('data-id'), el); }, exit: function(el) { showExitModal(el.getAttribute('data-id')); },
-    batchExit: showBatchExitModal, confirmExit: confirmExit, closeExit: closeExitModal, pdf: exportPdf, gsheet: exportToGSheet
+    theme: FK.toggleTheme,
+    mode: function (el) { setMode(el.getAttribute('data-mode') === '1'); },
+    copy: function (el) { copyCasperId(el.getAttribute('data-id'), el); },
+    batchExit: showBatchExitModal,
+    clearSelection: function () { selected.clear(); render(); },
+    confirmExit: confirmExit,
+    closeExit: closeExitModal,
+    pdf: exportPdf,
+    gsheet: exportToGSheet
   });
-  
-  $('exitModal').addEventListener('click', function(e) { if(e.target===this) closeExitModal(); });
 
-  var tsRender = { item: function(d,e){ return '<div style="display:block;width:100%">' + e(d.text) + '</div>'; }, option: function(d,e){ return '<div>' + e(d.text) + '</div>'; } };
+  $('exitModal').addEventListener('click', function (e) { if (e.target === this) closeExitModal(); });
+
+  var tsRender = {
+    item: function (d, e) { return '<div style="display:block;width:100%">' + e(d.text) + '</div>'; },
+    option: function (d, e) { return '<div>' + e(d.text) + '</div>'; }
+  };
   cityTS = new TomSelect('#citySelect', { placeholder: 'Select City', create: false, render: tsRender, onChange: onCityChange });
-  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Store', create: false, render: tsRender, onChange: function(){ selected.clear(); render(); }});
+  storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Dark Store', create: false, render: tsRender, onChange: function () { selected.clear(); render(); } });
 
   var cached = FK.readCache(CACHE_KEY);
   if (cached && cached.data.length) { db = cached.data; }
-  
-  FK.fetchJson(FK.API_URL + '?action=getData').then(function(d){
+
+  FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
     if (d && d.error) throw new Error(d.error);
-    db = d.map(normalizeRow).filter(Boolean); FK.writeCache(CACHE_KEY, db);
+    db = d.map(normalizeRow).filter(Boolean);
+    FK.writeCache(CACHE_KEY, db);
     var u = new URLSearchParams(window.location.search);
     refreshFilters();
-    if(u.get('city')) cityTS.setValue(u.get('city'), true);
-    if(u.get('store')) { fillSelect(storeTS, storesOf(u.get('city')), false); storeTS.setValue(u.get('store'), true); }
-    if(u.get('mode') === '1') setMode(true); else render();
-  }).catch(function(e) {
+    if (u.get('city')) cityTS.setValue(u.get('city'), true);
+    if (u.get('store')) { fillSelect(storeTS, storesOf(u.get('city')), false); storeTS.setValue(u.get('store'), true); }
+    if (u.get('mode') === '1') setMode(true); else render();
+  }).catch(function (e) {
     FK.toast('Error: ' + (e.message || 'Could not connect to server'), true, 5000);
-  }).then(function() {
+  }).then(function () {
     FK.hideLoader();
   });
 });

@@ -1,21 +1,33 @@
-/* Flipkart Minutes service worker
- *  - same-origin app files : network-first with a 4 s timeout (fresh when online, instant cache on weak signal / offline)
- *  - CDN / fonts / images  : stale-while-revalidate, capped cache size
- *  - Apps Script API calls : never touched
+/* Flipkart Minutes Service Worker — v14
+ *  - Shell files: network-first with 3.5s fallback to cache
+ *  - CDN / fonts / images: stale-while-revalidate
+ *  - Google Apps Script API calls: bypass cache
  */
-var VERSION = 'v13';
+var VERSION = 'v14';
 var SHELL_CACHE = 'fk-shell-' + VERSION;
 var STATIC_CACHE = 'fk-static-' + VERSION;
-var STATIC_MAX = 40;                 // opaque cross-origin responses are expensive in the storage quota
-var NET_TIMEOUT = 4000;
-var SHELL = ['./', 'index.html', 'completion.html', 'common.css', 'common.js', 'icons/icon-192.png', 'icons/icon-512.png'];
+var STATIC_MAX = 50;
+var NET_TIMEOUT = 3500;
+var SHELL = [
+  './',
+  'index.html',
+  'completion.html',
+  'common.css',
+  'common.js',
+  'manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/disprz.logo.webp'
+];
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(SHELL_CACHE).then(function (cache) {
-      return Promise.all(SHELL.map(function (u) {
-        return cache.add(new Request(u, { cache: 'reload' })).catch(function () { /* a missing file must not block install */ });
-      }));
+      return Promise.all(
+        SHELL.map(function (u) {
+          return cache.add(new Request(u, { cache: 'reload' })).catch(function () {});
+        })
+      );
     }).then(function () { return self.skipWaiting(); })
   );
 });
@@ -23,8 +35,10 @@ self.addEventListener('install', function (event) {
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys().then(function (keys) {
-      return Promise.all(keys.filter(function (k) { return k !== SHELL_CACHE && k !== STATIC_CACHE; })
-        .map(function (k) { return caches.delete(k); }));
+      return Promise.all(
+        keys.filter(function (k) { return k !== SHELL_CACHE && k !== STATIC_CACHE; })
+          .map(function (k) { return caches.delete(k); })
+      );
     }).then(function () { return self.clients.claim(); })
   );
 });
@@ -35,7 +49,9 @@ function isApi(url) {
 
 function trim(cache) {
   return cache.keys().then(function (keys) {
-    return Promise.all(keys.slice(0, Math.max(0, keys.length - STATIC_MAX)).map(function (k) { return cache.delete(k); }));
+    return Promise.all(
+      keys.slice(0, Math.max(0, keys.length - STATIC_MAX)).map(function (k) { return cache.delete(k); })
+    );
   });
 }
 
@@ -71,7 +87,7 @@ function staleWhileRevalidate(event, req) {
       var copy = res.clone();
       return caches.open(STATIC_CACHE)
         .then(function (c) { return c.put(req, copy).then(function () { return trim(c); }); })
-        .catch(function () { })
+        .catch(function () {})
         .then(function () { return res; });
     }
     return res;
