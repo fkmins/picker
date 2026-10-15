@@ -580,9 +580,17 @@ function logSystemError_(source, error) {
   } catch (_) {}
 }
 
-/* ── Full Diagnostic & Authorization Function ──
-   Select 'setupSharingAndPermissions' in the toolbar and click Run to authorize Drive!
+/* ── Drive Authorization & Diagnostic Functions ──
+   1. If you haven't enabled Drive in appsscript.json yet, follow Step 1 below!
+   2. Run 'forceDriveAuthorization' once in the toolbar to pop up Google's "Authorization Required" dialog.
+   3. Run 'setupSharingAndPermissions' to verify sharing test.
 */
+function forceDriveAuthorization() {
+  Logger.log('Triggering Google Drive OAuth Prompt...');
+  var root = DriveApp.getRootFolder();
+  Logger.log('Drive authorized successfully! Root Folder: ' + root.getName());
+}
+
 function setupSharingAndPermissions() {
   Logger.log('─── Starting Full Diagnostic & Permissions Setup ───');
   var testSheet = SpreadsheetApp.create('Sharing_Verification_Test');
@@ -590,7 +598,7 @@ function setupSharingAndPermissions() {
   Logger.log('Created temporary sheet: ' + testId);
 
   var sharingResult = setSharingAnyoneWithLink_(testId);
-  Logger.log('setSharingAnyoneWithLink_ result: ' + sharingResult);
+  Logger.log('setSharingAnyoneWithLink_ result: ' + (sharingResult ? 'SUCCESS (Anyone with link can view)' : 'FAILED'));
 
   try {
     DriveApp.getFileById(testId).setTrashed(true);
@@ -599,6 +607,11 @@ function setupSharingAndPermissions() {
     Logger.log('Cleanup notice: ' + trashErr.message);
   }
 
+  if (sharingResult) {
+    Logger.log('SUCCESS: Google Drive sharing is fully working!');
+  } else {
+    Logger.log('ATTENTION: Google Drive permission is missing. Please make sure "https://www.googleapis.com/auth/drive" is added to appsscript.json.');
+  }
   Logger.log('─── Authorization & Sharing Test Complete! ───');
 }
 
