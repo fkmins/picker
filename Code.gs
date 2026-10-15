@@ -624,11 +624,20 @@ function trashFileSafely_(fileId) {
   return false;
 }
 
-/* ── Drive Authorization & Diagnostic Functions ── */
+/* ── Force Full OAuth Authorization ──
+   Run this function from the toolbar! Because it contains uncaught calls to
+   UrlFetchApp and DriveApp.setSharing, Google is FORCED to show the consent dialog.
+*/
 function forceDriveAuthorization() {
-  Logger.log('Triggering Google Drive OAuth Prompt...');
-  var root = DriveApp.getRootFolder();
-  Logger.log('Drive authorized successfully! Root Folder: ' + root.getName());
+  // 1. Forces consent for: https://www.googleapis.com/auth/script.external_request
+  UrlFetchApp.fetch('https://www.google.com');
+
+  // 2. Forces consent for: https://www.googleapis.com/auth/drive
+  var testFile = DriveApp.createFile('permission_handshake.txt', 'Google Drive OAuth Verification');
+  testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  testFile.setTrashed(true);
+
+  Logger.log('>>> ALL PERMISSIONS (Drive Full Access + UrlFetch) GRANTED SUCCESSFULLY! <<<');
 }
 
 function setupSharingAndPermissions() {
