@@ -328,8 +328,6 @@ function generateExportSheet_(payload) {
 
 /* ── Robust Sharing Helper: Sets "Anyone with the link can view" ── */
 function setSharingAnyoneWithLink_(fileId) {
-  var success = false;
-
   // Method 0: Advanced Google Drive Service (Drive API v3)
   if (typeof Drive !== 'undefined' && Drive.Permissions && Drive.Permissions.create) {
     try {
@@ -337,20 +335,31 @@ function setSharingAnyoneWithLink_(fileId) {
         role: 'reader',
         type: 'anyone'
       }, fileId, { supportsAllDrives: true });
+      Logger.log('[Method 0 - Drive API v3] SUCCESS: Anyone with link can view granted');
       return true;
     } catch (advErr) {
-      logSystemError_('Drive API v3 Permissions.create failed: ' + advErr.message, advErr);
+      Logger.log('[Method 0 - Drive API v3] Error: ' + advErr.message);
     }
   }
 
-  // Method 1: DriveApp standard
+  // Method 1: DriveApp standard (Anyone with link)
   try {
     var file = DriveApp.getFileById(fileId);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    success = true;
+    Logger.log('[Method 1 - DriveApp] SUCCESS: Anyone with link can view granted');
     return true;
   } catch (driveAppErr) {
-    logSystemError_('DriveApp.setSharing failed: ' + driveAppErr.message, driveAppErr);
+    Logger.log('[Method 1 - DriveApp] Error: ' + driveAppErr.message);
+  }
+
+  // Method 1B: Domain with link fallback (Google Workspace policy)
+  try {
+    var fileDom = DriveApp.getFileById(fileId);
+    fileDom.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+    Logger.log('[Method 1B - Domain] SUCCESS: Domain with link granted');
+    return true;
+  } catch (domErr) {
+    Logger.log('[Method 1B - Domain] Error: ' + domErr.message);
   }
 
   // Method 2: Drive REST API v3 via UrlFetchApp with OAuth Token
@@ -371,12 +380,13 @@ function setSharingAnyoneWithLink_(fileId) {
     });
     var code = response.getResponseCode();
     if (code >= 200 && code < 300) {
+      Logger.log('[Method 2 - REST v3] SUCCESS (HTTP ' + code + ')');
       return true;
     } else {
-      logSystemError_('Drive REST v3 failed (' + code + '): ' + response.getContentText(), new Error(response.getContentText()));
+      Logger.log('[Method 2 - REST v3] Failed HTTP ' + code + ': ' + response.getContentText());
     }
   } catch (restErr) {
-    logSystemError_('REST v3 error: ' + restErr.message, restErr);
+    Logger.log('[Method 2 - REST v3] Exception: ' + restErr.message);
   }
 
   // Method 3: Drive REST API v2
@@ -397,12 +407,13 @@ function setSharingAnyoneWithLink_(fileId) {
     });
     var code2 = response2.getResponseCode();
     if (code2 >= 200 && code2 < 300) {
+      Logger.log('[Method 3 - REST v2] SUCCESS (HTTP ' + code2 + ')');
       return true;
     } else {
-      logSystemError_('Drive REST v2 failed (' + code2 + '): ' + response2.getContentText(), new Error(response2.getContentText()));
+      Logger.log('[Method 3 - REST v2] Failed HTTP ' + code2 + ': ' + response2.getContentText());
     }
   } catch (restErr2) {
-    logSystemError_('REST v2 error: ' + restErr2.message, restErr2);
+    Logger.log('[Method 3 - REST v2] Exception: ' + restErr2.message);
   }
 
   return false;
@@ -595,16 +606,25 @@ function logSystemError_(source, error) {
 
 function trashFileSafely_(fileId) {
   if (typeof Drive !== 'undefined' && Drive.Files && Drive.Files.remove) {
-    try { Drive.Files.remove(fileId); return true; } catch (_) {}
+    try {
+      Drive.Files.remove(fileId);
+      Logger.log('[Cleanup] Trashed via Drive API v3 remove');
+      return true;
+    } catch (e0) {
+      Logger.log('[Cleanup] Drive.Files.remove error: ' + e0.message);
+    }
   }
-  try { DriveApp.getFileById(fileId).setTrashed(true); return true; } catch (_) {}
+  try {
+    DriveApp.getFileById(fileId).setTrashed(true);
+    Logger.log('[Cleanup] Trashed via DriveApp.setTrashed');
+    return true;
+  } catch (e1) {
+    Logger.log('[Cleanup] DriveApp.setTrashed error: ' + e1.message);
+  }
   return false;
 }
 
-/* ── Drive Authorization & Diagnostic Functions ──
-   1. The line below forces Apps Script to show the "Authorization Required" popup modal!
-   2. Once authorized, it runs the full diagnostic test.
-*/
+/* ── Drive Authorization & Diagnostic Functions ── */
 function forceDriveAuthorization() {
   Logger.log('Triggering Google Drive OAuth Prompt...');
   var root = DriveApp.getRootFolder();
@@ -612,26 +632,30 @@ function forceDriveAuthorization() {
 }
 
 function setupSharingAndPermissions() {
-  // CRITICAL: Forces Google's "Authorization Required" consent screen if not yet authorized!
-  DriveApp.getRootFolder();
-
   Logger.log('─── Starting Full Diagnostic & Permissions Setup ───');
+  try {
+    var root = DriveApp.getRootFolder();
+    Logger.log('[Check] DriveApp Root folder: ' + root.getName());
+  } catch (eRoot) {
+    Logger.log('[Check] DriveApp Root folder ERROR: ' + eRoot.message);
+  }
+
   var testSheet = SpreadsheetApp.create('Sharing_Verification_Test');
   var testId = testSheet.getId();
   Logger.log('Created temporary sheet: ' + testId);
 
   var sharingResult = setSharingAnyoneWithLink_(testId);
-  Logger.log('setSharingAnyoneWithLink_ result: ' + (sharingResult ? 'SUCCESS (Anyone with link can view)' : 'FAILED'));
+  Logger.log('setSharingAnyoneWithLink_ overall: ' + (sharingResult ? 'SUCCESS' : 'FAILED'));
 
   var cleaned = trashFileSafely_(testId);
   Logger.log('Temporary sheet cleaned up: ' + cleaned);
 
   if (sharingResult) {
-    Logger.log('SUCCESS: Google Drive sharing is fully working!');
+    Logger.log('>>> SUCCESS: Google Sheet is now shared! <<<');
   } else {
-    Logger.log('ATTENTION: Google Drive permission is missing. Please make sure "https://www.googleapis.com/auth/drive" is added to appsscript.json.');
+    Logger.log('>>> FAILED: Check the method error details above to see why Google rejected it. <<<');
   }
-  Logger.log('─── Authorization & Sharing Test Complete! ───');
+  Logger.log('─── Diagnostic Complete ───');
 }
 
 function diagnoseAuth_() {
