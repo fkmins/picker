@@ -128,9 +128,9 @@ function fetchDashboardData_() {
     var isExplicitNo = (indActive.toUpperCase() === 'NO') || (refActive.toUpperCase() === 'NO');
     var isExited = !!exitedIds[id] || isExplicitNo;
 
-    // Standardized display strings
-    var indDisplay = indRecord ? (indIsPending ? 'Pending' : (indRawStatus || 'Completed')) : 'N/A';
-    var refDisplay = refRecord ? (refIsPending ? 'Pending' : (refRawStatus || 'Completed')) : 'N/A';
+    // Standardized display strings (Use 'Not Assigned' if missing from sheet)
+    var indDisplay = indRecord ? (indIsPending ? 'Pending' : (indRawStatus || 'Completed')) : 'Not Assigned';
+    var refDisplay = refRecord ? (refIsPending ? 'Pending' : (refRawStatus || 'Completed')) : 'Not Assigned';
 
     var item = {
       id: id,

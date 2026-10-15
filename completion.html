@@ -124,7 +124,7 @@
   <hr class="divider">
 
   <!-- Program Selection Tabs (Refresher || Induction || All) -->
-  <div class="program-tabs">
+  <div class="program-tabs" id="progTabs">
     <button class="btn-prog active" id="tabProgAll" data-action="prog" data-prog="all">All Combined</button>
     <button class="btn-prog" id="tabProgInd" data-action="prog" data-prog="induction">Induction</button>
     <button class="btn-prog" id="tabProgRef" data-action="prog" data-prog="refresher">Refresher</button>
@@ -191,12 +191,13 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'completionReport_v18', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
+  var CACHE_KEY = 'completionReport_v19', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
   var AUTH_HASH = '6e077073d1d6a2571a403f0da77a08610904bb64c88e68f122158d33f3b5a522';
   var UNMAPPED_CM = 'Unmapped';
 
   var rawData = [], trainerTS = null, shareText = '', loading = false, lastLoad = 0;
   var currentProg = 'all'; // 'all', 'induction', 'refresher'
+  var hasRefresher = false;
 
   FK.syncThemeBtn();
   FK.registerSW();
@@ -241,9 +242,9 @@ document.addEventListener('DOMContentLoaded', function () {
       store: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
       cm: cm,
-      sm: FK.titleCase(FK.clean(r.sm)) || 'N/A',
-      ind: r.ind || 'N/A',
-      ref: r.ref || 'N/A',
+      sm: FK.titleCase(FK.clean(r.sm)) || 'Not Assigned',
+      ind: r.ind || 'Not Assigned',
+      ref: r.ref || 'Not Assigned',
       indPending: !!r.indPending,
       refPending: !!r.refPending
     };
@@ -253,9 +254,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var list = [];
     if (d && d.pending) {
       list = d.pending;
+      hasRefresher = !!d.hasRefresher;
     } else if (Array.isArray(d)) {
       list = d;
+      hasRefresher = list.some(function (x) { return x.ref && x.ref !== 'Not Assigned' && x.ref !== 'N/A'; });
     }
+
+    // Hide Refresher section if missing from Google Sheet
+    if (!hasRefresher) {
+      $('tabProgRef').style.display = 'none';
+      $('tabProgAll').style.display = 'none';
+      setProgramTab('induction');
+    } else {
+      $('tabProgRef').style.display = '';
+      $('tabProgAll').style.display = '';
+    }
+
     rawData = list.map(normalizeRow).filter(Boolean);
     populateTrainers();
     renderTrainerPendencySummary();

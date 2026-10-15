@@ -1,9 +1,9 @@
-/* Flipkart Minutes Service Worker — v18
+/* Flipkart Minutes Service Worker — v19
  *  - Shell files: network-first with 3.5s fallback to cache
  *  - CDN / fonts / images: stale-while-revalidate
  *  - Google Apps Script API calls: bypass cache
  */
-var VERSION = 'v18';
+var VERSION = 'v19';
 var SHELL_CACHE = 'fk-shell-' + VERSION;
 var STATIC_CACHE = 'fk-static-' + VERSION;
 var STATIC_MAX = 50;

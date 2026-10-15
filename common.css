@@ -303,7 +303,7 @@ body::after{
   align-items:center!important;
 }
 
-/* ═══ Tables (All Center-Aligned & Crisp Black Borders) ═══ */
+/* ═══ Tables (No Zebra Striping, Clean Transparent Rows, Crisp Borders) ═══ */
 .table-holder,.tbl-wrap{
   background:var(--card-bg);
   border-radius:18px;
@@ -341,10 +341,18 @@ body::after{
 .table td,.tbl td{
   font-weight:600;
   font-size:13.5px;
+  background:transparent;
 }
-.table tbody tr:nth-child(even) td,.tbl tbody tr:nth-child(even) td{background:var(--table-hover)}
-.table tbody tr:hover td,.tbl tbody tr:hover td{background:rgba(225,29,72,.09)}
-.tr-selected td{background:rgba(225,29,72,.14)!important}
+/* User explicitly requested: No light-colored alternating row background */
+.table tbody tr td, .tbl tbody tr td{
+  background:transparent;
+}
+.table tbody tr:hover td,.tbl tbody tr:hover td{
+  background:rgba(225,29,72,.07);
+}
+.tr-selected td{
+  background:rgba(225,29,72,.14)!important;
+}
 .empty-cell{padding:32px!important;color:var(--text-muted);font-weight:700}
 .total-row td{
   font-weight:900!important;
@@ -356,7 +364,15 @@ body::after{
 .normal-count{font-weight:900;font-size:15px;color:var(--fk-yellow)}
 :root:not(.dark-mode) .normal-count{color:var(--fk-crimson)}
 
-/* ═══ Casper ID Pill (Single Clean Feedback) ═══ */
+/* ═══ Casper ID Cell & Button Styling (ONLY Casper ID gets button style) ═══ */
+.td-casper{
+  cursor:pointer;
+  user-select:none;
+  transition:background .18s ease;
+}
+.td-casper:hover{
+  background:rgba(255,210,0,.08)!important;
+}
 .pill-id{
   background:linear-gradient(135deg,rgba(186,8,67,.12),rgba(255,210,0,.1));
   color:var(--fk-crimson-light);
@@ -378,7 +394,7 @@ body::after{
   color:var(--fk-yellow);
   border-color:rgba(255,210,0,.4);
 }
-.pill-id:hover{
+.pill-id:hover, .td-casper:hover .pill-id{
   transform:translateY(-2px) scale(1.03);
   box-shadow:0 4px 14px var(--fk-crimson-glow);
   border-color:var(--fk-yellow);
@@ -389,6 +405,57 @@ body::after{
   color:#10b981!important;
   border-color:#10b981!important;
   animation:copyPulse .4s ease both!important;
+}
+
+/* ═══ Plain Text Status Styling (Completed & Pending are normal text colour, no button) ═══ */
+.txt-pending{
+  color:var(--fk-crimson-light);
+  font-weight:800;
+  font-size:13px;
+}
+.txt-completed{
+  color:#10b981;
+  font-weight:800;
+  font-size:13px;
+}
+.txt-not-assigned{
+  color:var(--text-muted);
+  font-weight:600;
+  font-size:12.5px;
+}
+
+/* ═══ Action Cell (Checkbox + Exit Button) ═══ */
+.action-cell{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.btn-row-exit{
+  background:rgba(225,29,72,.12);
+  color:var(--fk-crimson-light);
+  border:1.2px solid var(--fk-crimson);
+  padding:4px 12px;
+  border-radius:8px;
+  font-weight:800;
+  font-size:11.5px;
+  cursor:pointer;
+  font-family:inherit;
+  transition:all .2s ease;
+}
+.btn-row-exit:hover{
+  background:var(--fk-crimson);
+  color:#fff;
+  transform:translateY(-1px);
+  box-shadow:0 3px 10px var(--fk-crimson-glow);
+}
+.btn-row-exit:active{
+  transform:scale(.95);
+}
+.badge-inactive{
+  color:var(--text-muted);
+  font-weight:700;
+  font-size:12px;
 }
 
 /* ═══ Loaders ═══ */

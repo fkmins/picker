@@ -72,16 +72,6 @@
 
 .row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-crimson);vertical-align:middle}
 
-.badge-pending{
-  background:rgba(225,29,72,.15);color:var(--fk-crimson-light);border:1px solid var(--fk-crimson);
-  padding:4px 10px;border-radius:50px;font-weight:800;font-size:11.5px;text-transform:uppercase;display:inline-block;
-}
-.badge-completed{
-  background:rgba(16,185,129,.15);color:#10b981;border:1px solid #10b981;
-  padding:4px 10px;border-radius:50px;font-weight:800;font-size:11.5px;text-transform:uppercase;display:inline-block;
-}
-.badge-na{color:var(--text-muted);font-weight:600;font-size:12px}
-
 /* Exit Modal */
 .exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
 .exit-modal{
@@ -119,7 +109,6 @@
       </div>
     </div>
     <div class="hdr-actions">
-      <a href="completion.html" class="icon-btn">Completion Report</a>
       <button class="icon-btn" id="themeBtn" data-action="theme">Save Your Eyes</button>
     </div>
   </div>
@@ -163,9 +152,9 @@
 <!-- Inactive / Exit Confirmation Modal -->
 <div id="exitModal" class="exit-overlay" style="display:none" role="dialog" aria-modal="true">
   <div class="exit-modal">
-    <div class="exit-modal-title" id="exitModalTitle">Confirm Inactive Pickers</div>
+    <div class="exit-modal-title" id="exitModalTitle">Confirm Inactive Picker</div>
     <div class="exit-modal-name" id="exitModalName"></div>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">These picker(s) will be recorded as Inactive and removed from active pendency.</p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">This picker will be recorded as Inactive and removed from active pendency.</p>
     <div class="exit-modal-actions">
       <button class="exit-modal-btn exit-btn-confirm" id="exitConfirmBtn" data-action="confirmExit">Yes, Mark Inactive</button>
       <button class="exit-modal-btn exit-btn-cancel" data-action="closeExit">Cancel</button>
@@ -179,7 +168,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v18';
+  var CACHE_KEY = 'pickerDash_v19';
   var pendingDb = [], inactiveDb = [], filtered = [], selected = new Set();
   var hasRefresher = false, hasInduction = true;
   var cityTS, storeTS, managerMode = false, currentView = 'pending', loading = false;
@@ -194,15 +183,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!id) return null;
     return {
       id: id,
-      name: FK.titleCase(FK.clean(r.nm)) || 'N/A',
+      name: FK.titleCase(FK.clean(r.nm)) || 'Not Assigned',
       darkStore: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
-      cm: FK.titleCase(FK.clean(r.cm)) || 'N/A',
-      sm: FK.titleCase(FK.clean(r.sm)) || 'N/A',
-      trainer: FK.titleCase(FK.clean(r.tn)) || 'N/A',
+      cm: FK.titleCase(FK.clean(r.cm)) || 'Not Assigned',
+      sm: FK.titleCase(FK.clean(r.sm)) || 'Not Assigned',
+      trainer: FK.titleCase(FK.clean(r.tn)) || 'Not Assigned',
       wh: wh,
-      ind: r.ind || 'N/A',
-      ref: r.ref || 'N/A',
+      ind: r.ind || 'Not Assigned',
+      ref: r.ref || 'Not Assigned',
       indPending: !!r.indPending,
       refPending: !!r.refPending,
       active: r.active !== false
@@ -218,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (Array.isArray(d)) {
       pendingDb = d.map(normalizeRow).filter(Boolean);
       inactiveDb = [];
-      hasRefresher = pendingDb.some(function (x) { return x.ref && x.ref !== 'N/A'; });
+      hasRefresher = pendingDb.some(function (x) { return x.ref && x.ref !== 'Not Assigned' && x.ref !== 'N/A'; });
     }
     refreshFilters();
   }
@@ -299,16 +288,21 @@ document.addEventListener('DOMContentLoaded', function () {
     render();
   }
 
+  /* ── Plain Text Status Rendering (Completed & Pending are normal text colour, no button) ── */
   function renderStatusBadge(status) {
-    if (!status || status === 'N/A' || status === '-') return '<span class="badge-na">N/A</span>';
-    if (status === 'Pending' || status === 'Not Started' || status === 'In-Progress') {
-      return '<span class="badge-pending">Pending</span>';
+    if (!status || status === 'Not Assigned' || status === 'N/A' || status === '-') {
+      return '<span class="txt-not-assigned">Not Assigned</span>';
     }
-    if (status === 'Completed') return '<span class="badge-completed">Completed</span>';
-    return '<span class="badge-na">' + esc(status) + '</span>';
+    if (status === 'Pending' || status === 'Not Started' || status === 'In-Progress') {
+      return '<span class="txt-pending">Pending</span>';
+    }
+    if (status === 'Completed') {
+      return '<span class="txt-completed">Completed</span>';
+    }
+    return '<span class="txt-not-assigned">' + esc(status) + '</span>';
   }
 
-  var checkNA = function (v) { return FK.isNA(v) ? '<span style="color:var(--text-muted)">N/A</span>' : esc(v); };
+  var checkNA = function (v) { return FK.isNA(v) ? '<span class="txt-not-assigned">Not Assigned</span>' : esc(v); };
 
   function render() {
     var c = cityTS.getValue(), s = storeTS.getValue();
@@ -335,13 +329,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var tH = $('tableHead'), tB = $('tableBody');
     if (!filtered.length) {
       tH.innerHTML = '';
-      tB.innerHTML = '<tr><td class="empty-cell" colspan="5">No Records Found</td></tr>';
+      tB.innerHTML = '<tr><td class="empty-cell" colspan="6">No Records Found</td></tr>';
       updateBatchUI();
       return;
     }
 
     if (managerMode) {
-      // Cluster Manager View: Aggregated counts + details
+      // Cluster Manager View: Aggregated counts
       tH.innerHTML = '<tr><th>Cluster Manager</th><th>' + (currentView === 'inactive' ? 'Inactive Count' : 'Pendency Count') + '</th></tr>';
       var grouped = {}, rowsHtml = '', total = 0;
       filtered.forEach(function (i) { grouped[i.cm] = (grouped[i.cm] || 0) + 1; total++; });
@@ -354,37 +348,52 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Dynamic Columns: If Refresher is present, show Induction & Refresher
-    if (hasRefresher) {
-      tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
-        '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th></tr>';
+    var isPendingView = (currentView === 'pending');
 
+    // Action Header: Select All Checkbox + Label
+    var actionTh = isPendingView
+      ? '<th style="width:110px"><div class="action-cell"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all" title="Select All"><span style="font-size:11.5px">Select</span></div></th>'
+      : '<th style="width:100px">Status</th>';
+
+    // Conditional columns based on hasRefresher
+    if (hasRefresher) {
+      tH.innerHTML = '<tr>' + actionTh + '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th></tr>';
       tB.innerHTML = filtered.map(function (i) {
         var id = esc(i.id), chk = selected.has(id);
+        var actionTd = isPendingView
+          ? '<td><div class="action-cell"><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + ' aria-label="Select picker"><button type="button" class="btn-row-exit" data-action="singleExit" data-id="' + id + '" title="Mark picker as Inactive">Exit</button></div></td>'
+          : '<td><span class="badge-inactive">Inactive</span></td>';
+
         return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
-          '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
+          actionTd +
           '<td class="p-name">' + checkNA(i.name) + '</td>' +
-          '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
+          '<td class="td-casper p-id" data-action="copyCasperCell" data-id="' + id + '" title="Click anywhere to copy Casper ID"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
           '<td>' + renderStatusBadge(i.ind) + '</td>' +
           '<td>' + renderStatusBadge(i.ref) + '</td>' +
           '</tr>';
       }).join('');
     } else {
-      // Induction Only Mode
-      tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
-        '<th>Picker Name</th><th>Casper ID</th></tr>';
-
+      // Induction Only Mode (Refresher hidden completely)
+      tH.innerHTML = '<tr>' + actionTh + '<th>Picker Name</th><th>Casper ID</th><th>Induction</th></tr>';
       tB.innerHTML = filtered.map(function (i) {
         var id = esc(i.id), chk = selected.has(id);
+        var actionTd = isPendingView
+          ? '<td><div class="action-cell"><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + ' aria-label="Select picker"><button type="button" class="btn-row-exit" data-action="singleExit" data-id="' + id + '" title="Mark picker as Inactive">Exit</button></div></td>'
+          : '<td><span class="badge-inactive">Inactive</span></td>';
+
         return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
-          '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
+          actionTd +
           '<td class="p-name">' + checkNA(i.name) + '</td>' +
-          '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
+          '<td class="td-casper p-id" data-action="copyCasperCell" data-id="' + id + '" title="Click anywhere to copy Casper ID"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
+          '<td>' + renderStatusBadge(i.ind) + '</td>' +
           '</tr>';
       }).join('');
     }
 
-    $('selectAllCheck').checked = selected.size > 0 && selected.size === filtered.length;
+    var selAll = $('selectAllCheck');
+    if (selAll) {
+      selAll.checked = selected.size > 0 && selected.size === filtered.length;
+    }
     updateBatchUI();
   }
 
@@ -426,15 +435,18 @@ document.addEventListener('DOMContentLoaded', function () {
     render();
   });
 
-  /* ── Casper ID Click to Copy ── */
+  /* ── Casper ID Click to Copy (Click anywhere in Casper ID cell) ── */
   function copyCasperId(id, pill) {
-    var orig = pill.textContent;
-    pill.textContent = '✓ Copied';
-    pill.classList.add('pill-id-copied');
-    setTimeout(function () {
-      pill.textContent = orig;
-      pill.classList.remove('pill-id-copied');
-    }, 1200);
+    var p = pill.classList.contains('pill-id') ? pill : pill.querySelector('.pill-id');
+    if (p) {
+      var orig = p.textContent;
+      p.textContent = '✓ Copied';
+      p.classList.add('pill-id-copied');
+      setTimeout(function () {
+        p.textContent = orig;
+        p.classList.remove('pill-id-copied');
+      }, 1200);
+    }
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(id).catch(function () {});
@@ -442,12 +454,26 @@ document.addEventListener('DOMContentLoaded', function () {
     FK.toast('Copied Casper ID: ' + id);
   }
 
-  /* ── Exit Modal ── */
+  /* ── Exit Modal: Batch or Single Picker ── */
   function showBatchExitModal() {
     if (!selected.size) return;
-    exitIsBatch = true; exitTarget = null;
+    exitIsBatch = true;
+    exitTarget = null;
     $('exitModalTitle').textContent = 'Confirm Inactive Pickers';
     $('exitModalName').textContent = 'Mark ' + selected.size + ' selected picker(s) as Inactive?';
+    $('exitConfirmBtn').textContent = 'Yes, Mark Inactive';
+    $('exitModal').style.display = 'flex';
+    FK.trapFocus($('exitModal'));
+    $('exitConfirmBtn').focus();
+  }
+
+  function showSingleExitModal(id) {
+    var p = pendingDb.find(function (x) { return x.id === id; });
+    var name = p ? p.name : id;
+    exitIsBatch = false;
+    exitTarget = id;
+    $('exitModalTitle').textContent = 'Confirm Inactive Picker';
+    $('exitModalName').textContent = name + ' (' + id + ')';
     $('exitConfirmBtn').textContent = 'Yes, Mark Inactive';
     $('exitModal').style.display = 'flex';
     FK.trapFocus($('exitModal'));
@@ -461,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function confirmExit() {
-    var ids = Array.from(selected);
+    var ids = exitIsBatch ? Array.from(selected) : (exitTarget ? [exitTarget] : []);
     closeExitModal();
     if (!ids.length) return;
 
@@ -474,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var moved = pendingDb.filter(function (x) { return ids.indexOf(x.id) !== -1; });
       pendingDb = pendingDb.filter(function (x) { return ids.indexOf(x.id) === -1; });
       inactiveDb = inactiveDb.concat(moved);
-      selected.clear();
+      ids.forEach(function (i) { selected.delete(i); });
       render();
       return FK.toast('Offline. ' + ids.length + ' picker(s) marked inactive and queued for auto-sync.');
     }
@@ -488,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var moved = pendingDb.filter(function (x) { return ids.indexOf(x.id) !== -1; });
         pendingDb = pendingDb.filter(function (x) { return ids.indexOf(x.id) === -1; });
         inactiveDb = inactiveDb.concat(moved);
-        selected.clear();
+        ids.forEach(function (i) { selected.delete(i); });
         render();
         FK.toast(ids.length + ' picker(s) marked as Inactive');
       })
@@ -498,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function () { $('fsLoader').classList.remove('active'); });
   }
 
-  /* ── Lightweight PDF Export ── */
+  /* ── Lightweight PDF Export without Footer ── */
   function exportPdf() {
     if (!filtered.length) return FK.toast('No records to export.', true);
 
@@ -522,9 +548,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.darkStore), FK.pdf.safe(i.sm), FK.pdf.safe(i.cm), FK.pdf.safe(i.ind), FK.pdf.safe(i.ref)];
           });
         } else {
-          headers = [['Picker Name', 'Casper ID', 'Store', 'Store Manager', 'Cluster Manager']];
+          headers = [['Picker Name', 'Casper ID', 'Store', 'Store Manager', 'Cluster Manager', 'Induction']];
           body = filtered.map(function (i) {
-            return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.darkStore), FK.pdf.safe(i.sm), FK.pdf.safe(i.cm)];
+            return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.darkStore), FK.pdf.safe(i.sm), FK.pdf.safe(i.cm), FK.pdf.safe(i.ind)];
           });
         }
       } else {
@@ -534,8 +560,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.ind), FK.pdf.safe(i.ref)];
           });
         } else {
-          headers = [['Picker Name', 'Casper ID']];
-          body = filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id)]; });
+          headers = [['Picker Name', 'Casper ID', 'Induction']];
+          body = filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.ind)]; });
         }
       }
 
@@ -549,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function () {
         margin: { left: 14, right: 14, bottom: 15 }
       });
 
-      FK.pdf.pageNumbers(doc);
+      // No footer as requested
       doc.save(title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
       FK.toast('PDF Downloaded successfully!');
     }).catch(function () {
@@ -560,11 +586,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ── Export Google Sheet with Full Detail ── */
+  /* ── Export Google Sheet with Full Detail (Direct Open, No Popup Window) ── */
   function exportToGSheet() {
     if (!filtered.length) return FK.toast('No records to export.', true);
 
-    var processWin = FK.createInteractiveGSheetWindow();
     var c = cityTS.getValue(), s = storeTS.getValue();
     var targetName = managerMode ? c + '_CM_Wise' : s;
 
@@ -576,20 +601,24 @@ document.addEventListener('DOMContentLoaded', function () {
       })
     );
 
+    $('fsLoaderText').textContent = 'Generating Google Sheet & setting Anyone-with-link permissions...';
+    $('fsLoader').classList.add('active');
+
     FK.post({
       action: 'export',
       f: targetName,
       detailData: detail
     }).then(function (res) {
+      $('fsLoader').classList.remove('active');
       if (res && res.url) {
-        if (processWin) processWin.done(res.url);
-        FK.toast('Google Sheet ready!');
+        window.open(res.url, '_blank');
+        FK.toast('Google Sheet ready! Opened in new tab.');
       } else {
         throw new Error(res && res.error ? res.error : 'Server response error');
       }
     }).catch(function (err) {
-      if (processWin) processWin.error(err.message || 'Export failed.');
-      FK.toast('Google Sheet export failed.', true);
+      $('fsLoader').classList.remove('active');
+      FK.toast('Google Sheet export failed: ' + (err.message || 'Error'), true);
     });
   }
 
@@ -598,6 +627,8 @@ document.addEventListener('DOMContentLoaded', function () {
     mode: function (el) { setMode(el.getAttribute('data-mode') === '1'); },
     viewTab: function (el) { setViewTab(el.getAttribute('data-tab')); },
     copy: function (el) { copyCasperId(el.getAttribute('data-id'), el); },
+    copyCasperCell: function (el) { copyCasperId(el.getAttribute('data-id'), el); },
+    singleExit: function (el) { showSingleExitModal(el.getAttribute('data-id')); },
     batchExit: showBatchExitModal,
     confirmExit: confirmExit,
     closeExit: closeExitModal,
