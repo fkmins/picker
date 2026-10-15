@@ -7,6 +7,7 @@ var IND_SHEET = 'Raw - Picker - Induction';
 var REF_SHEET = 'Raw - Picker - Refresher';
 var EXIT_SHEET = 'Exits';
 var LOG_SHEET = 'Log Error';
+var CACHE_KEY_DATA = 'dash_data_v3';
 
 var PENDING_STATUSES = {
   'Not Started': 1,
@@ -39,11 +40,13 @@ function processRequest_(e) {
 
     switch (action) {
       case 'getData':
-        return buildJsonResponse_(fetchDashboardData_());
+        return buildJsonResponse_(fetchDashboardDataCached_());
       case 'exit':
         return buildJsonResponse_(processBatchExits_(body));
       case 'export':
         return buildJsonResponse_(generateExportSheet_(body));
+      case 'diagnoseAuth':
+        return buildJsonResponse_(diagnoseAuth_());
       default:
         return buildJsonResponse_({ error: 'Invalid action: ' + action });
     }
@@ -64,55 +67,134 @@ function sanitizeString_(value) {
   return (trimmed === '' || trimmed === '#N/A' || trimmed.toUpperCase() === 'N/A') ? '' : trimmed;
 }
 
-/* ── Fetch Dashboard Data ── */
+/* ── Fast Cached Dashboard Data (< 200ms response time) ── */
+function fetchDashboardDataCached_() {
+  var cached = getCachedJson_(CACHE_KEY_DATA);
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (_) {}
+  }
+
+  var freshData = fetchDashboardData_();
+  setCachedJson_(CACHE_KEY_DATA, JSON.stringify(freshData), 600); // 10 minutes cache
+  return freshData;
+}
+
+/* ── Fetch & Match Induction + Refresher + Active Status ── */
 function fetchDashboardData_() {
   var ss = SpreadsheetApp.openById(SS_ID);
   var indData = fetchSheetData_(ss, IND_SHEET);
   var refData = fetchSheetData_(ss, REF_SHEET);
   var exitedIds = fetchExitedIds_(ss);
 
-  var indMap = {}, refMap = {}, relevantIds = {};
+  var hasInduction = indData.length > 0;
+  var hasRefresher = refData.length > 0;
+
+  var indMap = {}, refMap = {}, allIds = {};
 
   for (var i = 0; i < indData.length; i++) {
     var rInd = indData[i];
     indMap[rInd.id] = rInd;
-    if (PENDING_STATUSES[rInd.status]) relevantIds[rInd.id] = true;
+    allIds[rInd.id] = true;
   }
 
   for (var j = 0; j < refData.length; j++) {
     var rRef = refData[j];
     refMap[rRef.id] = rRef;
-    if (PENDING_STATUSES[rRef.status]) relevantIds[rRef.id] = true;
+    allIds[rRef.id] = true;
   }
 
-  var resultList = [];
-  for (var id in relevantIds) {
-    if (exitedIds[id]) continue;
+  var pendingList = [];
+  var inactiveList = [];
 
+  for (var id in allIds) {
     var indRecord = indMap[id];
     var refRecord = refMap[id];
     var baseRecord = indRecord || refRecord;
 
-    var indStatus = indRecord ? indRecord.status : 'Not Assigned';
-    var refStatus = refRecord ? refRecord.status : 'Not Assigned';
+    var indRawStatus = indRecord ? indRecord.status : '';
+    var refRawStatus = refRecord ? refRecord.status : '';
 
-    if (PENDING_STATUSES[indStatus]) indStatus = 'Pending';
-    if (PENDING_STATUSES[refStatus]) refStatus = 'Pending';
+    var indIsPending = !!PENDING_STATUSES[indRawStatus];
+    var refIsPending = !!PENDING_STATUSES[refRawStatus];
 
-    resultList.push({
+    // Check if either program is pending ("Not Started" or "In-Progress")
+    var isPending = (hasInduction && indIsPending) || (hasRefresher && refIsPending);
+
+    // Active ? logic: Column 11 = 'No' (case-insensitive) OR present in Exits sheet -> Inactive
+    var indActive = indRecord ? indRecord.active : '';
+    var refActive = refRecord ? refRecord.active : '';
+    var isExplicitNo = (indActive.toUpperCase() === 'NO') || (refActive.toUpperCase() === 'NO');
+    var isExited = !!exitedIds[id] || isExplicitNo;
+
+    // Standardized display strings
+    var indDisplay = indRecord ? (indIsPending ? 'Pending' : (indRawStatus || 'Completed')) : 'N/A';
+    var refDisplay = refRecord ? (refIsPending ? 'Pending' : (refRawStatus || 'Completed')) : 'N/A';
+
+    var item = {
       id: id,
       nm: baseRecord.name,
       ds: baseRecord.store,
       ct: baseRecord.city,
       cm: (indRecord && indRecord.cm) ? indRecord.cm : ((refRecord && refRecord.cm) ? refRecord.cm : ''),
+      sm: (indRecord && indRecord.sm) ? indRecord.sm : ((refRecord && refRecord.sm) ? refRecord.sm : ''),
       tn: (indRecord && indRecord.trainer) ? indRecord.trainer : ((refRecord && refRecord.trainer) ? refRecord.trainer : ''),
       wh: baseRecord.wh,
-      ind: indStatus,
-      ref: refStatus
-    });
+      ind: indDisplay,
+      ref: refDisplay,
+      indPending: indIsPending,
+      refPending: refIsPending,
+      active: !isExited
+    };
+
+    if (isExited) {
+      inactiveList.push(item);
+    } else if (isPending) {
+      pendingList.push(item);
+    }
   }
 
-  return resultList;
+  return {
+    hasInduction: hasInduction,
+    hasRefresher: hasRefresher,
+    pending: pendingList,
+    inactive: inactiveList,
+    totalPending: pendingList.length,
+    totalInactive: inactiveList.length
+  };
+}
+
+/* ── Read Raw Sheet Data (All 11 Columns) ── */
+function fetchSheetData_(ss, sheetName) {
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+
+  var lastRow = sheet.getLastRow();
+  var numRows = lastRow - 1;
+  var numCols = Math.max(sheet.getLastColumn(), 11);
+  var data = sheet.getRange(2, 1, numRows, numCols).getValues();
+  var parsed = [];
+
+  for (var i = 0; i < data.length; i++) {
+    var id = sanitizeString_(data[i][0]);
+    if (id) {
+      parsed.push({
+        id: id,
+        name: sanitizeString_(data[i][1]),
+        status: sanitizeString_(data[i][2]),
+        wh: sanitizeString_(data[i][3]),
+        sm: sanitizeString_(data[i][4]),        // Store Manager
+        cm: sanitizeString_(data[i][5]),        // Cluster Manager
+        trainer: sanitizeString_(data[i][6]),   // Trainer
+        city: sanitizeString_(data[i][7]),      // City
+        store: sanitizeString_(data[i][8]),     // Dark Store Name
+        type: sanitizeString_(data[i][9]),      // Type (Induction / Refresher)
+        active: sanitizeString_(data[i][10])    // Active ? ('Yes' / 'No')
+      });
+    }
+  }
+  return parsed;
 }
 
 /* ── Read Exited Casper IDs ── */
@@ -168,6 +250,9 @@ function processBatchExits_(payload) {
     SpreadsheetApp.flush();
   }
 
+  // Clear cache so fresh data loads immediately
+  clearCachedJson_(CACHE_KEY_DATA);
+
   return { status: 'Success', count: rowsToAppend.length };
 }
 
@@ -215,7 +300,7 @@ function generateExportSheet_(payload) {
       dataSheet.autoResizeColumn(col);
     }
 
-    // ── DELETE ALL EMPTY CELLS (No extra empty columns, No extra empty rows) ──
+    // ── DELETE ALL EMPTY CELLS ──
     var maxCols = dataSheet.getMaxColumns();
     if (maxCols > numCols) {
       dataSheet.deleteColumns(numCols + 1, maxCols - numCols);
@@ -232,7 +317,7 @@ function generateExportSheet_(payload) {
     try { spreadsheet.deleteSheet(defaultSheet); } catch (_) {}
   }
 
-  // Set default sharing: Anyone with link can view (with dual DriveApp + REST fallback)
+  // Set default sharing: Anyone with link can view (Multi-method fallback)
   setSharingAnyoneWithLink_(spreadsheet.getId());
 
   // Track file for auto-cleanup after 24h
@@ -243,13 +328,16 @@ function generateExportSheet_(payload) {
 
 /* ── Robust Sharing Helper: Sets "Anyone with the link can view" ── */
 function setSharingAnyoneWithLink_(fileId) {
+  var success = false;
+
   // Method 1: DriveApp standard
   try {
     var file = DriveApp.getFileById(fileId);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    success = true;
     return true;
   } catch (driveAppErr) {
-    logSystemError_('DriveApp.setSharing failed, trying REST API', driveAppErr);
+    logSystemError_('DriveApp.setSharing failed: ' + driveAppErr.message, driveAppErr);
   }
 
   // Method 2: Drive REST API v3 via UrlFetchApp with OAuth Token
@@ -263,7 +351,8 @@ function setSharingAnyoneWithLink_(fileId) {
       },
       payload: JSON.stringify({
         'role': 'reader',
-        'type': 'anyone'
+        'type': 'anyone',
+        'allowFileDiscovery': false
       }),
       muteHttpExceptions: true
     });
@@ -271,11 +360,38 @@ function setSharingAnyoneWithLink_(fileId) {
     if (code >= 200 && code < 300) {
       return true;
     } else {
-      logSystemError_('Drive REST API failed (' + code + ')', new Error(response.getContentText()));
+      logSystemError_('Drive REST v3 failed (' + code + '): ' + response.getContentText(), new Error(response.getContentText()));
     }
   } catch (restErr) {
-    logSystemError_('setSharingAnyoneWithLink_ REST error', restErr);
+    logSystemError_('REST v3 error: ' + restErr.message, restErr);
   }
+
+  // Method 3: Drive REST API v2
+  try {
+    var url2 = 'https://www.googleapis.com/drive/v2/files/' + fileId + '/permissions';
+    var response2 = UrlFetchApp.fetch(url2, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + ScriptApp.getOAuthToken(),
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify({
+        'role': 'reader',
+        'type': 'anyone',
+        'withLink': true
+      }),
+      muteHttpExceptions: true
+    });
+    var code2 = response2.getResponseCode();
+    if (code2 >= 200 && code2 < 300) {
+      return true;
+    } else {
+      logSystemError_('Drive REST v2 failed (' + code2 + '): ' + response2.getContentText(), new Error(response2.getContentText()));
+    }
+  } catch (restErr2) {
+    logSystemError_('REST v2 error: ' + restErr2.message, restErr2);
+  }
+
   return false;
 }
 
@@ -329,41 +445,60 @@ function createGuideSheet_(spreadsheet) {
   }
 }
 
-/* ── Read Raw Sheet Data safely ── */
-function fetchSheetData_(ss, sheetName) {
-  var sheet = ss.getSheetByName(sheetName);
-  if (!sheet || sheet.getLastRow() < 2) return [];
+/* ═══════════════════════════════════════════════════════════════════
+   LARGE-PAYLOAD CHUNKED CACHING ENGINE
+   ═══════════════════════════════════════════════════════════════════ */
 
-  var lastRow = sheet.getLastRow();
-  var numRows = lastRow - 1;
-  var data = sheet.getRange(2, 1, numRows, 9).getValues();
-  var parsed = [];
-
-  for (var i = 0; i < data.length; i++) {
-    var id = sanitizeString_(data[i][0]);
-    if (id) {
-      parsed.push({
-        id: id,
-        name: sanitizeString_(data[i][1]),
-        status: sanitizeString_(data[i][2]),
-        wh: sanitizeString_(data[i][3]),
-        cm: sanitizeString_(data[i][5]),
-        trainer: sanitizeString_(data[i][6]),
-        city: sanitizeString_(data[i][7]),
-        store: sanitizeString_(data[i][8])
-      });
+function setCachedJson_(key, jsonStr, ttlSeconds) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var CHUNK_SIZE = 90000;
+    var numChunks = Math.ceil(jsonStr.length / CHUNK_SIZE);
+    var chunks = {};
+    for (var i = 0; i < numChunks; i++) {
+      chunks[key + '_' + i] = jsonStr.substr(i * CHUNK_SIZE, CHUNK_SIZE);
     }
-  }
-  return parsed;
+    chunks[key + '_meta'] = JSON.stringify({ count: numChunks });
+    cache.putAll(chunks, ttlSeconds || 600);
+  } catch (_) {}
+}
+
+function getCachedJson_(key) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var metaStr = cache.get(key + '_meta');
+    if (!metaStr) return null;
+    var meta = JSON.parse(metaStr);
+    var keys = [];
+    for (var i = 0; i < meta.count; i++) keys.push(key + '_' + i);
+    var chunks = cache.getAll(keys);
+    var full = '';
+    for (var j = 0; j < meta.count; j++) {
+      var piece = chunks[key + '_' + j];
+      if (!piece) return null;
+      full += piece;
+    }
+    return full;
+  } catch (_) { return null; }
+}
+
+function clearCachedJson_(key) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var metaStr = cache.get(key + '_meta');
+    if (metaStr) {
+      var meta = JSON.parse(metaStr);
+      var keys = [key + '_meta'];
+      for (var i = 0; i < meta.count; i++) keys.push(key + '_' + i);
+      cache.removeAll(keys);
+    }
+  } catch (_) {}
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    AUTOMATIC CLEANUP & HOUSEKEEPING
    ═══════════════════════════════════════════════════════════════════ */
 
-/**
- * Tracks generated export files in ScriptProperties for auto-deletion after 24h.
- */
 function trackFileForDeletion_(fileId) {
   try {
     var props = PropertiesService.getScriptProperties();
@@ -379,9 +514,6 @@ function trackFileForDeletion_(fileId) {
   } catch (_) {}
 }
 
-/**
- * Runs daily to trash export files older than 24 hours and clean error logs.
- */
 function runDailyCleanup() {
   var props = PropertiesService.getScriptProperties();
   var files = [];
@@ -402,13 +534,9 @@ function runDailyCleanup() {
     props.setProperty("FILES_TO_DELETE", JSON.stringify(remaining));
   }
 
-  // Clean old logs: keep only the latest 200 rows in "Log Error"
   cleanOldLogs_();
 }
 
-/**
- * Keeps Log Error sheet compact to prevent script performance degradation.
- */
 function cleanOldLogs_() {
   try {
     var ss = SpreadsheetApp.openById(SS_ID);
@@ -421,9 +549,6 @@ function cleanOldLogs_() {
   } catch (_) {}
 }
 
-/**
- * Sets up daily trigger for runDailyCleanup at 3 AM.
- */
 function setupTriggers() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
@@ -435,14 +560,10 @@ function setupTriggers() {
   ScriptApp.newTrigger("runDailyCleanup").timeBased().atHour(3).everyDays(1).create();
 }
 
-/**
- * Manual cleanup trigger.
- */
 function manualCleanup() {
   runDailyCleanup();
 }
 
-/* ── Error Logging ── */
 function logSystemError_(source, error) {
   try {
     var ss = SpreadsheetApp.openById(SS_ID);
@@ -451,24 +572,61 @@ function logSystemError_(source, error) {
       sheet.appendRow([
         new Date(),
         source,
-        error.message || String(error),
-        error.stack || '',
+        (error && error.message) ? error.message : String(error),
+        (error && error.stack) ? error.stack : '',
         'Flipkart Minutes Apps Script Log'
       ]);
     }
   } catch (_) {}
 }
 
-/* ── One-Time Authorization Helper Function ──
-   Run this once from the Apps Script Editor to grant permissions for Drive & Sheets!
+/* ── Full Diagnostic & Authorization Function ──
+   Select 'setupSharingAndPermissions' in the toolbar and click Run to authorize Drive!
 */
-function authorizeDrive() {
-  Logger.log('Starting full Drive authorization check...');
-  var temp = SpreadsheetApp.create('Auth_Test_' + Date.now());
-  var tempId = temp.getId();
-  var success = setSharingAnyoneWithLink_(tempId);
+function setupSharingAndPermissions() {
+  Logger.log('─── Starting Full Diagnostic & Permissions Setup ───');
+  var testSheet = SpreadsheetApp.create('Sharing_Verification_Test');
+  var testId = testSheet.getId();
+  Logger.log('Created temporary sheet: ' + testId);
+
+  var sharingResult = setSharingAnyoneWithLink_(testId);
+  Logger.log('setSharingAnyoneWithLink_ result: ' + sharingResult);
+
   try {
-    DriveApp.getFileById(tempId).setTrashed(true);
-  } catch (_) {}
-  Logger.log('Authorization complete! Sharing test succeeded: ' + success);
+    DriveApp.getFileById(testId).setTrashed(true);
+    Logger.log('Temporary sheet cleaned up.');
+  } catch (trashErr) {
+    Logger.log('Cleanup notice: ' + trashErr.message);
+  }
+
+  Logger.log('─── Authorization & Sharing Test Complete! ───');
+}
+
+function diagnoseAuth_() {
+  var diag = {};
+  try {
+    var testSheet = SpreadsheetApp.create('Auth_Diag_' + Date.now());
+    var id = testSheet.getId();
+    diag.sheetCreated = true;
+    diag.sheetId = id;
+
+    diag.driveAppSharing = false;
+    try {
+      var f = DriveApp.getFileById(id);
+      f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      diag.driveAppSharing = true;
+    } catch (e1) {
+      diag.driveAppError = e1.message;
+    }
+
+    try {
+      DriveApp.getFileById(id).setTrashed(true);
+      diag.trashed = true;
+    } catch (e2) {
+      diag.trashError = e2.message;
+    }
+  } catch (eGlobal) {
+    diag.globalError = eGlobal.message;
+  }
+  return diag;
 }

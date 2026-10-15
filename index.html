@@ -44,7 +44,10 @@
 .metric-card{
   background:var(--card-bg);border:1.5px solid var(--border-color);border-radius:18px;
   padding:22px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-card);
+  cursor:pointer;transition:transform .2s,border-color .2s;user-select:none;
 }
+.metric-card:hover{transform:translateY(-2px);border-color:var(--fk-yellow)}
+.metric-card.active-metric{border-color:var(--fk-crimson);box-shadow:0 6px 22px var(--fk-crimson-glow)}
 .metric-card::before{
   content:"";position:absolute;top:0;left:0;right:0;height:3.5px;
   background:linear-gradient(90deg,var(--fk-crimson),var(--fk-yellow),var(--fk-crimson));
@@ -68,6 +71,16 @@
 .btn-batch.visible{display:inline-block}
 
 .row-check,.select-all-check{width:18px;height:18px;cursor:pointer;accent-color:var(--fk-crimson);vertical-align:middle}
+
+.badge-pending{
+  background:rgba(225,29,72,.15);color:var(--fk-crimson-light);border:1px solid var(--fk-crimson);
+  padding:4px 10px;border-radius:50px;font-weight:800;font-size:11.5px;text-transform:uppercase;display:inline-block;
+}
+.badge-completed{
+  background:rgba(16,185,129,.15);color:#10b981;border:1px solid #10b981;
+  padding:4px 10px;border-radius:50px;font-weight:800;font-size:11.5px;text-transform:uppercase;display:inline-block;
+}
+.badge-na{color:var(--text-muted);font-weight:600;font-size:12px}
 
 /* Exit Modal */
 .exit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn .2s ease}
@@ -124,8 +137,14 @@
 
   <div id="resultArea">
     <div class="metrics-grid">
-      <div class="metric-card"><div class="val" id="countBadge">0</div><div class="lbl">Pending Pickers</div></div>
-      <div class="metric-card"><div class="val" id="exitedBadge">0</div><div class="lbl">Inactive Picker</div></div>
+      <div class="metric-card active-metric" id="cardPending" data-action="viewTab" data-tab="pending">
+        <div class="val" id="countBadge">0</div>
+        <div class="lbl">Pending Pickers</div>
+      </div>
+      <div class="metric-card" id="cardInactive" data-action="viewTab" data-tab="inactive">
+        <div class="val" id="exitedBadge">0</div>
+        <div class="lbl">Inactive Picker</div>
+      </div>
     </div>
     <div class="search-wrapper" id="searchWrapper">
       <input type="search" id="searchInput" class="search-box" placeholder="Search Name or Casper ID" autocomplete="off">
@@ -160,9 +179,10 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'pickerDash_v16';
-  var db = [], filtered = [], selected = new Set();
-  var cityTS, storeTS, managerMode = false, loading = false;
+  var CACHE_KEY = 'pickerDash_v18';
+  var pendingDb = [], inactiveDb = [], filtered = [], selected = new Set();
+  var hasRefresher = false, hasInduction = true;
+  var cityTS, storeTS, managerMode = false, currentView = 'pending', loading = false;
   var exitTarget = null, exitIsBatch = false;
 
   FK.registerSW();
@@ -177,8 +197,30 @@ document.addEventListener('DOMContentLoaded', function () {
       name: FK.titleCase(FK.clean(r.nm)) || 'N/A',
       darkStore: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
-      cm: FK.titleCase(FK.clean(r.cm)) || 'N/A'
+      cm: FK.titleCase(FK.clean(r.cm)) || 'N/A',
+      sm: FK.titleCase(FK.clean(r.sm)) || 'N/A',
+      trainer: FK.titleCase(FK.clean(r.tn)) || 'N/A',
+      wh: wh,
+      ind: r.ind || 'N/A',
+      ref: r.ref || 'N/A',
+      indPending: !!r.indPending,
+      refPending: !!r.refPending,
+      active: r.active !== false
     };
+  }
+
+  function handleDataPayload(d) {
+    if (d && d.pending) {
+      hasRefresher = !!d.hasRefresher;
+      hasInduction = !!d.hasInduction;
+      pendingDb = d.pending.map(normalizeRow).filter(Boolean);
+      inactiveDb = (d.inactive || []).map(normalizeRow).filter(Boolean);
+    } else if (Array.isArray(d)) {
+      pendingDb = d.map(normalizeRow).filter(Boolean);
+      inactiveDb = [];
+      hasRefresher = pendingDb.some(function (x) { return x.ref && x.ref !== 'N/A'; });
+    }
+    refreshFilters();
   }
 
   function loadData(showErr, preserveSelection) {
@@ -186,18 +228,21 @@ document.addEventListener('DOMContentLoaded', function () {
     loading = true;
     FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
       if (d && d.error) throw new Error(d.error);
-      db = d.map(normalizeRow).filter(Boolean);
-      FK.writeCache(CACHE_KEY, db);
+      FK.writeCache(CACHE_KEY, d);
       if (!preserveSelection) selected.clear();
-      refreshFilters();
+      handleDataPayload(d);
     }).catch(function (e) {
-      if (showErr || !db.length) FK.toast(FK.isNetworkError(e) ? 'Network Error.' : 'Error: ' + e.message, true, 5000);
+      if (showErr || !pendingDb.length) FK.toast(FK.isNetworkError(e) ? 'Network Error.' : 'Error: ' + e.message, true, 5000);
     }).then(function () { loading = false; FK.hideLoader(); });
   }
 
   setInterval(function () {
     if (!document.hidden && navigator.onLine) loadData(false, true);
   }, 60000);
+
+  function getActiveDb() {
+    return currentView === 'inactive' ? inactiveDb : pendingDb;
+  }
 
   function uniq(arr, key) {
     var seen = {}, out = [];
@@ -213,13 +258,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function refreshFilters() {
-    fillSelect(cityTS, uniq(db, 'city'), true);
+    var allDb = pendingDb.concat(inactiveDb);
+    fillSelect(cityTS, uniq(allDb, 'city'), true);
     if (!managerMode) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
     render();
   }
 
   function storesOf(city) {
-    return city ? uniq(db.filter(function (i) { return i.city === city; }), 'darkStore') : [];
+    var allDb = pendingDb.concat(inactiveDb);
+    return city ? uniq(allDb.filter(function (i) { return i.city === city; }), 'darkStore') : [];
   }
 
   function onCityChange() {
@@ -240,10 +287,25 @@ document.addEventListener('DOMContentLoaded', function () {
     managerMode = m; selected.clear(); $('searchInput').value = '';
     $('btnNormal').classList.toggle('active', !m); $('btnManager').classList.toggle('active', m);
     $('storeWrapper').style.display = m ? 'none' : '';
-    $('searchWrapper').style.display = m ? 'none' : '';
     if (!m) fillSelect(storeTS, storesOf(cityTS.getValue()), true);
     syncURLParams(cityTS.getValue(), storeTS.getValue(), m);
     render();
+  }
+
+  function setViewTab(tab) {
+    currentView = tab; selected.clear();
+    $('cardPending').classList.toggle('active-metric', tab === 'pending');
+    $('cardInactive').classList.toggle('active-metric', tab === 'inactive');
+    render();
+  }
+
+  function renderStatusBadge(status) {
+    if (!status || status === 'N/A' || status === '-') return '<span class="badge-na">N/A</span>';
+    if (status === 'Pending' || status === 'Not Started' || status === 'In-Progress') {
+      return '<span class="badge-pending">Pending</span>';
+    }
+    if (status === 'Completed') return '<span class="badge-completed">Completed</span>';
+    return '<span class="badge-na">' + esc(status) + '</span>';
   }
 
   var checkNA = function (v) { return FK.isNA(v) ? '<span style="color:var(--text-muted)">N/A</span>' : esc(v); };
@@ -258,26 +320,29 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    filtered = db.filter(function (i) {
+    var targetDb = getActiveDb();
+    filtered = targetDb.filter(function (i) {
       if (i.city !== c) return false;
       return managerMode ? true : i.darkStore === s;
     });
 
-    var queue = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
-    $('countBadge').textContent = filtered.length;
-    $('exitedBadge').textContent = queue.length;
+    // Metric counts for current city / store filter
+    var cityFilter = function(i) { return i.city === c && (managerMode ? true : i.darkStore === s); };
+    $('countBadge').textContent = pendingDb.filter(cityFilter).length;
+    $('exitedBadge').textContent = inactiveDb.filter(cityFilter).length;
     $('resultArea').style.display = 'flex';
 
     var tH = $('tableHead'), tB = $('tableBody');
     if (!filtered.length) {
       tH.innerHTML = '';
-      tB.innerHTML = '<tr><td class="empty-cell" colspan="3">No Records Found</td></tr>';
+      tB.innerHTML = '<tr><td class="empty-cell" colspan="5">No Records Found</td></tr>';
       updateBatchUI();
       return;
     }
 
     if (managerMode) {
-      tH.innerHTML = '<tr><th>Cluster Manager</th><th>Pendency Count</th></tr>';
+      // Cluster Manager View: Aggregated counts + details
+      tH.innerHTML = '<tr><th>Cluster Manager</th><th>' + (currentView === 'inactive' ? 'Inactive Count' : 'Pendency Count') + '</th></tr>';
       var grouped = {}, rowsHtml = '', total = 0;
       filtered.forEach(function (i) { grouped[i.cm] = (grouped[i.cm] || 0) + 1; total++; });
       Object.keys(grouped).sort().forEach(function (k) {
@@ -289,18 +354,35 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Exact columns: Checkbox | Picker Name | Casper ID
-    tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
-      '<th>Picker Name</th><th>Casper ID</th></tr>';
+    // Dynamic Columns: If Refresher is present, show Induction & Refresher
+    if (hasRefresher) {
+      tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
+        '<th>Picker Name</th><th>Casper ID</th><th>Induction</th><th>Refresher</th></tr>';
 
-    tB.innerHTML = filtered.map(function (i) {
-      var id = esc(i.id), chk = selected.has(id);
-      return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
-        '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
-        '<td class="p-name">' + checkNA(i.name) + '</td>' +
-        '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
-        '</tr>';
-    }).join('');
+      tB.innerHTML = filtered.map(function (i) {
+        var id = esc(i.id), chk = selected.has(id);
+        return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
+          '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
+          '<td class="p-name">' + checkNA(i.name) + '</td>' +
+          '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
+          '<td>' + renderStatusBadge(i.ind) + '</td>' +
+          '<td>' + renderStatusBadge(i.ref) + '</td>' +
+          '</tr>';
+      }).join('');
+    } else {
+      // Induction Only Mode
+      tH.innerHTML = '<tr><th style="width:48px"><input type="checkbox" class="select-all-check" id="selectAllCheck" aria-label="Select all"></th>' +
+        '<th>Picker Name</th><th>Casper ID</th></tr>';
+
+      tB.innerHTML = filtered.map(function (i) {
+        var id = esc(i.id), chk = selected.has(id);
+        return '<tr' + (chk ? ' class="tr-selected"' : '') + '>' +
+          '<td><input type="checkbox" class="row-check" data-id="' + id + '" ' + (chk ? 'checked' : '') + '></td>' +
+          '<td class="p-name">' + checkNA(i.name) + '</td>' +
+          '<td class="p-id"><button type="button" class="pill-id" data-action="copy" data-id="' + id + '">' + id + '</button></td>' +
+          '</tr>';
+      }).join('');
+    }
 
     $('selectAllCheck').checked = selected.size > 0 && selected.size === filtered.length;
     updateBatchUI();
@@ -319,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateBatchUI() {
     $('batchCount').textContent = selected.size;
-    $('btnBatchExit').classList.toggle('visible', selected.size > 0 && !managerMode);
+    $('btnBatchExit').classList.toggle('visible', selected.size > 0 && !managerMode && currentView !== 'inactive');
   }
 
   $('tableHead').addEventListener('change', function (e) {
@@ -344,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
     render();
   });
 
-  /* ── Casper ID Click to Copy (Single Clean Feedback) ── */
+  /* ── Casper ID Click to Copy ── */
   function copyCasperId(id, pill) {
     var orig = pill.textContent;
     pill.textContent = '✓ Copied';
@@ -387,7 +469,11 @@ document.addEventListener('DOMContentLoaded', function () {
       var q = JSON.parse(FK.store.get('fk_offline_exits') || '[]');
       ids.forEach(function (i) { if (q.indexOf(i) === -1) q.push(i); });
       FK.store.set('fk_offline_exits', JSON.stringify(q));
-      db = db.filter(function (x) { return ids.indexOf(x.id) === -1; });
+      
+      // Move from pending to inactive locally
+      var moved = pendingDb.filter(function (x) { return ids.indexOf(x.id) !== -1; });
+      pendingDb = pendingDb.filter(function (x) { return ids.indexOf(x.id) === -1; });
+      inactiveDb = inactiveDb.concat(moved);
       selected.clear();
       render();
       return FK.toast('Offline. ' + ids.length + ' picker(s) marked inactive and queued for auto-sync.');
@@ -399,7 +485,9 @@ document.addEventListener('DOMContentLoaded', function () {
     FK.post({ action: 'exit', items: ids.map(function (i) { return { id: i }; }) })
       .then(function (res) {
         if (!res || res.status !== 'Success') throw new Error('Failed');
-        db = db.filter(function (x) { return ids.indexOf(x.id) === -1; });
+        var moved = pendingDb.filter(function (x) { return ids.indexOf(x.id) !== -1; });
+        pendingDb = pendingDb.filter(function (x) { return ids.indexOf(x.id) === -1; });
+        inactiveDb = inactiveDb.concat(moved);
         selected.clear();
         render();
         FK.toast(ids.length + ' picker(s) marked as Inactive');
@@ -410,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function () { $('fsLoader').classList.remove('active'); });
   }
 
-  /* ── Lightweight PDF Export (unit: mm, Generous clearance, Center-Aligned, Black Borders) ── */
+  /* ── Lightweight PDF Export ── */
   function exportPdf() {
     if (!filtered.length) return FK.toast('No records to export.', true);
 
@@ -421,21 +509,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     FK.ensureJsPdf().then(function () {
       var doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
-      var title = managerMode ? 'Pendency Summary - ' + cityTS.getValue() : 'Picker Pendency - ' + storeTS.getValue();
+      var title = managerMode ? 'Picker Detail - CM Wise - ' + cityTS.getValue() : 'Picker Pendency - ' + storeTS.getValue();
       var y = FK.pdf.loginGuide(doc);
       y = FK.pdf.title(doc, title, y);
 
       var headers, body;
       if (managerMode) {
-        headers = [['Cluster Manager', 'Pendency Count']];
-        var grp = {};
-        filtered.forEach(function (i) { grp[i.cm] = (grp[i.cm] || 0) + 1; });
-        body = Object.keys(grp).sort().map(function (k) { return [k, String(grp[k])]; });
-        body.push(['TOTAL', String(filtered.length)]);
+        // Detailed picker data for Cluster Manager Wise Export
+        if (hasRefresher) {
+          headers = [['Picker Name', 'Casper ID', 'Store', 'Store Manager', 'Cluster Manager', 'Induction', 'Refresher']];
+          body = filtered.map(function (i) {
+            return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.darkStore), FK.pdf.safe(i.sm), FK.pdf.safe(i.cm), FK.pdf.safe(i.ind), FK.pdf.safe(i.ref)];
+          });
+        } else {
+          headers = [['Picker Name', 'Casper ID', 'Store', 'Store Manager', 'Cluster Manager']];
+          body = filtered.map(function (i) {
+            return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.darkStore), FK.pdf.safe(i.sm), FK.pdf.safe(i.cm)];
+          });
+        }
       } else {
-        // Picker Name & Casper ID only as requested
-        headers = [['Picker Name', 'Casper ID']];
-        body = filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id)]; });
+        if (hasRefresher) {
+          headers = [['Picker Name', 'Casper ID', 'Induction', 'Refresher']];
+          body = filtered.map(function (i) {
+            return [FK.pdf.safe(i.name), FK.pdf.safe(i.id), FK.pdf.safe(i.ind), FK.pdf.safe(i.ref)];
+          });
+        } else {
+          headers = [['Picker Name', 'Casper ID']];
+          body = filtered.map(function (i) { return [FK.pdf.safe(i.name), FK.pdf.safe(i.id)]; });
+        }
       }
 
       doc.autoTable({
@@ -445,13 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
         theme: 'grid',
         styles: FK.pdf.bodyStyles,
         headStyles: FK.pdf.headStyles,
-        margin: { left: 14, right: 14, bottom: 15 },
-        didParseCell: function (data) {
-          if (data.section === 'body' && managerMode && data.row.index === body.length - 1) {
-            data.cell.styles.fontStyle = 'bold';
-            data.cell.styles.fillColor = [240, 240, 240];
-          }
-        }
+        margin: { left: 14, right: 14, bottom: 15 }
       });
 
       FK.pdf.pageNumbers(doc);
@@ -465,17 +560,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ── Export Google Sheet with Interactive Process Screen ── */
+  /* ── Export Google Sheet with Full Detail ── */
   function exportToGSheet() {
     if (!filtered.length) return FK.toast('No records to export.', true);
 
     var processWin = FK.createInteractiveGSheetWindow();
     var c = cityTS.getValue(), s = storeTS.getValue();
-    var targetName = managerMode ? c : s;
+    var targetName = managerMode ? c + '_CM_Wise' : s;
 
-    var detail = [['Dark Store', 'Picker Name', 'Casper ID', 'Cluster Manager', 'City']].concat(
+    // Full detailed picker export including Store Manager & both statuses
+    var detailHeader = ['Dark Store', 'Picker Name', 'Casper ID', 'Store Manager', 'Cluster Manager', 'Trainer', 'City', 'Induction Status', 'Refresher Status'];
+    var detail = [detailHeader].concat(
       filtered.map(function (i) {
-        return [i.darkStore, i.name, i.id, i.cm, i.city];
+        return [i.darkStore, i.name, i.id, i.sm, i.cm, i.trainer, i.city, i.ind, i.ref];
       })
     );
 
@@ -499,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function () {
   FK.delegate({
     theme: FK.toggleTheme,
     mode: function (el) { setMode(el.getAttribute('data-mode') === '1'); },
+    viewTab: function (el) { setViewTab(el.getAttribute('data-tab')); },
     copy: function (el) { copyCasperId(el.getAttribute('data-id'), el); },
     batchExit: showBatchExitModal,
     confirmExit: confirmExit,
@@ -517,14 +615,15 @@ document.addEventListener('DOMContentLoaded', function () {
   storeTS = new TomSelect('#storeSelect', { placeholder: 'Select Store', create: false, render: tsRender, onChange: function () { selected.clear(); render(); } });
 
   var cached = FK.readCache(CACHE_KEY);
-  if (cached && cached.data.length) { db = cached.data; }
+  if (cached && cached.data) {
+    handleDataPayload(cached.data);
+  }
 
   FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
     if (d && d.error) throw new Error(d.error);
-    db = d.map(normalizeRow).filter(Boolean);
-    FK.writeCache(CACHE_KEY, db);
+    FK.writeCache(CACHE_KEY, d);
+    handleDataPayload(d);
     var u = new URLSearchParams(window.location.search);
-    refreshFilters();
     if (u.get('city')) cityTS.setValue(u.get('city'), true);
     if (u.get('store')) { fillSelect(storeTS, storesOf(u.get('city')), false); storeTS.setValue(u.get('store'), true); }
     if (u.get('mode') === '1') setMode(true); else render();

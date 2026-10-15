@@ -56,7 +56,7 @@ var disprzLogoDataUrl = null;
 
   FK.isNA = function (v) {
     var s = String(v == null ? '' : v).trim().toUpperCase();
-    return !s || s === 'N/A' || s === '#N/A' || s === 'NOT ASSIGNED';
+    return !s || s === 'N/A' || s === '#N/A' || s === 'NOT ASSIGNED' || s === '-';
   };
 
   FK.clean = function (v) { return FK.isNA(v) ? '' : String(v).trim(); };
@@ -117,7 +117,7 @@ var disprzLogoDataUrl = null;
   FK.readCache = function (key) {
     try {
       var c = JSON.parse(FK.store.get(key) || 'null');
-      return c && Array.isArray(c.data) ? c : null;
+      return c && c.data ? c : null;
     } catch (e) { return null; }
   };
 
@@ -223,13 +223,7 @@ var disprzLogoDataUrl = null;
       else { cell.styles.fillColor = [220, 252, 231]; cell.styles.textColor = [22, 101, 52]; }
     },
     pageNumbers: function (doc) {
-      var n = doc.internal.getNumberOfPages();
-      for (var i = 1; i <= n; i++) {
-        doc.setPage(i);
-        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(100, 100, 100);
-        var txt = 'Page ' + i + ' of ' + n + ' | Flipkart Minutes East L&D | Generated: ' + FK.dateStamp();
-        doc.text(txt, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
-      }
+      // User request: No footer line on exported PDF
     },
     centeredPair: function (doc, y, label, value, url) {
       var pw = doc.internal.pageSize.getWidth();
@@ -243,7 +237,7 @@ var disprzLogoDataUrl = null;
       if (url) doc.textWithLink(value, x + lw + 2, y, { url: url });
       else doc.text(value, x + lw + 2, y);
     },
-    /* ── Mobile & Desktop Safe Center-Aligned Login Guide (Generous spacing, Zero overlap) ── */
+    /* ── Mobile & Desktop Safe Center-Aligned Login Guide ── */
     loginGuide: function (doc) {
       var pw = doc.internal.pageSize.getWidth(); // A4 mm = 210
       var M = 14; // 14 mm margin
@@ -251,7 +245,6 @@ var disprzLogoDataUrl = null;
       var PLAY = 'https://play.google.com/store/apps/details?id=com.disprz';
       var APPLE = 'https://apps.apple.com/in/app/disprz/id1458716803';
 
-      // Embed Disprz Logo if preloaded
       if (disprzLogoDataUrl) {
         try {
           doc.addImage(disprzLogoDataUrl, 'PNG', (pw - 9) / 2, y, 9, 9);
@@ -277,7 +270,7 @@ var disprzLogoDataUrl = null;
       doc.text('Step 1: Download the Disprz App (blue icon)', pw / 2, y, { align: 'center' });
       y += 6;
 
-      // App Links (Centered with generous line height)
+      // App Links
       FK.pdf.centeredPair(doc, y, 'Android App Link: ', PLAY, PLAY);
       y += 5.5;
       FK.pdf.centeredPair(doc, y, 'iPhone App Link: ', APPLE, APPLE);
@@ -288,8 +281,8 @@ var disprzLogoDataUrl = null;
 
       // Box 1: Organisational URL (Border Red, Inside Yellow)
       var x1 = M;
-      doc.setFillColor(254, 240, 138); // Yellow inside
-      doc.setDrawColor(220, 38, 38);   // Border red
+      doc.setFillColor(254, 240, 138);
+      doc.setDrawColor(220, 38, 38);
       doc.setLineWidth(0.45);
       doc.roundedRect(x1, y, bw, boxH, 2, 2, 'FD');
       doc.setFont('helvetica', 'bold').setFontSize(7.5).setTextColor(186, 8, 67);
@@ -312,8 +305,8 @@ var disprzLogoDataUrl = null;
 
       // Box 3: Password (Border Red, Inside Yellow)
       var x3 = M + 2 * (bw + gap);
-      doc.setFillColor(254, 240, 138); // Yellow inside
-      doc.setDrawColor(220, 38, 38);   // Border red
+      doc.setFillColor(254, 240, 138);
+      doc.setDrawColor(220, 38, 38);
       doc.setLineWidth(0.45);
       doc.roundedRect(x3, y, bw, boxH, 2, 2, 'FD');
       doc.setFont('helvetica', 'bold').setFontSize(7.5).setTextColor(186, 8, 67);

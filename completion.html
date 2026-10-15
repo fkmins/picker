@@ -39,6 +39,18 @@
 .auth-btn:hover{border-color:var(--danger);color:var(--danger)}
 .auth-error{color:var(--danger);font-size:13px;font-weight:800;margin-top:16px;min-height:18px}
 
+.program-tabs{display:flex;justify-content:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.btn-prog{
+  border:1.5px solid var(--border-color);padding:10px 22px;border-radius:50px;font-weight:800;
+  font-size:13px;background:var(--card-bg);color:var(--text-muted);transition:all .22s cubic-bezier(.22,1,.36,1);
+  flex:1;max-width:200px;cursor:pointer;font-family:inherit;
+}
+.btn-prog:hover:not(.active){border-color:var(--fk-yellow);color:var(--fk-yellow);transform:translateY(-1px)}
+.btn-prog.active{
+  background:linear-gradient(135deg,var(--fk-crimson),#880E4F);color:#fff;border-color:var(--fk-crimson-light);
+  box-shadow:0 6px 18px var(--fk-crimson-glow);
+}
+
 .filter-area{display:flex;justify-content:center;margin-bottom:24px;width:100%}
 .filter-col{flex:1 1 320px;max-width:520px}
 
@@ -50,7 +62,7 @@
 #results{display:none;animation:fadeIn .4s ease both}
 .export-row{display:flex;gap:12px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
 .btn-export{
-  border:none;padding:14px 26px;border-radius:14px;font-weight:800;font-size:14px;
+  border:none;padding:14px 26px;border-radius:14px;font-weight:800;font-size:13.5px;
   font-family:inherit;cursor:pointer;transition:all .2s;
   background:linear-gradient(135deg,#334155,#1e293b);color:#fff;
 }
@@ -111,6 +123,13 @@
   </div>
   <hr class="divider">
 
+  <!-- Program Selection Tabs (Refresher || Induction || All) -->
+  <div class="program-tabs">
+    <button class="btn-prog active" id="tabProgAll" data-action="prog" data-prog="all">All Combined</button>
+    <button class="btn-prog" id="tabProgInd" data-action="prog" data-prog="induction">Induction</button>
+    <button class="btn-prog" id="tabProgRef" data-action="prog" data-prog="refresher">Refresher</button>
+  </div>
+
   <!-- Trainer Selection (Strictly Center Aligned) -->
   <div class="filter-area">
     <div class="filter-col">
@@ -120,7 +139,7 @@
 
   <!-- Trainer Pendency Summary Section -->
   <div class="trainer-summary-section" id="trainerSummarySection">
-    <div class="section-title">~ : Trainer Wise Pendency : ~</div>
+    <div class="section-title" id="summaryTitle">~ : Trainer Wise Pendency : ~</div>
     <div class="tbl-wrap">
       <table class="tbl">
         <thead><tr><th>Trainer</th><th>Pendency</th></tr></thead>
@@ -172,11 +191,12 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
   var $ = FK.$, esc = FK.esc;
-  var CACHE_KEY = 'completionReport_v16', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
+  var CACHE_KEY = 'completionReport_v18', AUTH_KEY = 'fkCompletionAuth', STALE_MS = 5 * 60 * 1000;
   var AUTH_HASH = '6e077073d1d6a2571a403f0da77a08610904bb64c88e68f122158d33f3b5a522';
   var UNMAPPED_CM = 'Unmapped';
 
   var rawData = [], trainerTS = null, shareText = '', loading = false, lastLoad = 0;
+  var currentProg = 'all'; // 'all', 'induction', 'refresher'
 
   FK.syncThemeBtn();
   FK.registerSW();
@@ -220,8 +240,25 @@ document.addEventListener('DOMContentLoaded', function () {
       owner: trainer || (cm !== UNMAPPED_CM ? cm : 'Unassigned'),
       store: FK.titleCase(FK.clean(r.ds)) || (wh ? 'Store ' + wh : 'Unmapped Store'),
       city: FK.titleCase(FK.clean(r.ct)) || 'Unmapped City',
-      cm: cm
+      cm: cm,
+      sm: FK.titleCase(FK.clean(r.sm)) || 'N/A',
+      ind: r.ind || 'N/A',
+      ref: r.ref || 'N/A',
+      indPending: !!r.indPending,
+      refPending: !!r.refPending
     };
+  }
+
+  function handleDataPayload(d) {
+    var list = [];
+    if (d && d.pending) {
+      list = d.pending;
+    } else if (Array.isArray(d)) {
+      list = d;
+    }
+    rawData = list.map(normalizeRow).filter(Boolean);
+    populateTrainers();
+    renderTrainerPendencySummary();
   }
 
   function loadData(showErr) {
@@ -229,20 +266,41 @@ document.addEventListener('DOMContentLoaded', function () {
     loading = true;
     FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
       if (d && d.error) throw new Error(d.error);
-      rawData = d.map(normalizeRow).filter(Boolean);
       lastLoad = Date.now();
-      FK.writeCache(CACHE_KEY, rawData);
-      populateTrainers();
-      renderTrainerPendencySummary();
+      FK.writeCache(CACHE_KEY, d);
+      handleDataPayload(d);
       if (!rawData.length) FK.toast('No pending pickers found.');
     }).catch(function (e) {
       if (showErr || !rawData.length) FK.toast('Network Error or Data Missing.', true, 5000);
     }).then(function () { loading = false; FK.hideLoader(); });
   }
 
+  function filterByProg(rows) {
+    if (currentProg === 'induction') {
+      return rows.filter(function (r) { return r.indPending; });
+    }
+    if (currentProg === 'refresher') {
+      return rows.filter(function (r) { return r.refPending; });
+    }
+    return rows; // all combined
+  }
+
+  function setProgramTab(prog) {
+    currentProg = prog;
+    $('tabProgAll').classList.toggle('active', prog === 'all');
+    $('tabProgInd').classList.toggle('active', prog === 'induction');
+    $('tabProgRef').classList.toggle('active', prog === 'refresher');
+    
+    var label = prog === 'induction' ? 'Induction' : (prog === 'refresher' ? 'Refresher' : 'All Programs');
+    $('summaryTitle').textContent = '~ : Trainer Wise Pendency (' + label + ') : ~';
+    populateTrainers();
+    render();
+  }
+
   function populateTrainers() {
+    var progData = filterByProg(rawData);
     var prev = selectedOwners(), seen = {}, list = [];
-    rawData.forEach(function (r) { if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); } });
+    progData.forEach(function (r) { if (!seen[r.owner]) { seen[r.owner] = 1; list.push(r.owner); } });
     list.sort(function (a, b) { return a.localeCompare(b); });
     trainerTS.clear(true); trainerTS.clearOptions();
     list.forEach(function (t) { trainerTS.addOption({ value: t, text: t }); });
@@ -257,9 +315,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function rowsFor(owners) {
+    var progData = filterByProg(rawData);
     if (!owners || !owners.length) return [];
     var set = new Set(owners);
-    return rawData.filter(function (r) { return set.has(r.owner); });
+    return progData.filter(function (r) { return set.has(r.owner); });
   }
 
   function groupBy(arr, key) {
@@ -276,7 +335,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!tbody) return;
 
     var selected = selectedOwners();
-    var targetRows = (selected.length > 0) ? rowsFor(selected) : rawData;
+    var progData = filterByProg(rawData);
+    var targetRows = (selected.length > 0) ? rowsFor(selected) : progData;
 
     if (!targetRows.length) {
       tbody.innerHTML = '<tr><td colspan="2" class="empty-cell">No pendency data found</td></tr>';
@@ -327,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('results').style.display = 'block';
   }
 
-  /* ── Lightweight PDF Export (unit: mm, Generous clearance, Center-Aligned, Black Borders) ── */
+  /* ── Lightweight PDF Export without Footer ── */
   var MODES = {
     store: { key: 'store', head: 'Store Name', title: 'Store Name Wise Pendency' },
     cm:    { key: 'cm',    head: 'Cluster Manager', title: 'Cluster Manager Wise Pendency' },
@@ -341,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var data = rowsFor(selected);
     if (!data.length) return FK.toast('Select a trainer first.', true);
 
+    var progLabel = currentProg === 'induction' ? ' [Induction]' : (currentProg === 'refresher' ? ' [Refresher]' : ' [Combined]');
     var buttons = document.querySelectorAll('.btn-export'), orig = btn.textContent;
     Array.prototype.forEach.call(buttons, function (b) { b.disabled = true; });
     $('fsLoader').classList.add('active');
@@ -348,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
     FK.ensureJsPdf().then(function () {
       var doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
       var y = FK.pdf.loginGuide(doc);
-      y = FK.pdf.title(doc, m.title + ' (' + selected.join(', ') + ')', y);
+      y = FK.pdf.title(doc, m.title + progLabel + ' (' + selected.join(', ') + ')', y);
 
       var g = groupBy(data, m.key);
       var rows = g.entries.map(function (e) { return [FK.pdf.safe(e[0]), String(e[1])]; });
@@ -370,11 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
 
-      FK.pdf.pageNumbers(doc);
-      doc.save(m.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
+      // No footer line as requested
+      doc.save((m.title + progLabel).replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf');
 
       FK.toast('PDF Downloaded successfully!');
-      shareText = 'Hello team, please find the ' + m.title + ' attached for your reference.';
+      shareText = 'Hello team, please find the ' + m.title + progLabel + ' attached for your reference.';
       openShare();
     }).catch(function (e) {
       FK.toast('PDF failed.', true, 5000);
@@ -397,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   FK.delegate({
     theme: FK.toggleTheme,
+    prog: function (el) { setProgramTab(el.getAttribute('data-prog')); },
     goHome: function () { window.location.href = 'index.html'; },
     pdf: exportPdf,
     waClose: closeShare,
@@ -421,20 +483,16 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   var cached = FK.readCache(CACHE_KEY);
-  if (cached && cached.data.length) {
-    rawData = cached.data;
-    populateTrainers();
-    renderTrainerPendencySummary();
+  if (cached && cached.data) {
+    handleDataPayload(cached.data);
     FK.hideLoader();
   }
 
   FK.fetchJson(FK.API_URL + '?action=getData').then(function (d) {
     if (d && d.error) throw new Error(d.error);
-    rawData = d.map(normalizeRow).filter(Boolean);
     lastLoad = Date.now();
-    FK.writeCache(CACHE_KEY, rawData);
-    populateTrainers();
-    renderTrainerPendencySummary();
+    FK.writeCache(CACHE_KEY, d);
+    handleDataPayload(d);
     if (!rawData.length) FK.toast('No pending pickers found.');
   }).catch(function (e) {
     FK.toast('Network Error or Data Missing.', true, 5000);
