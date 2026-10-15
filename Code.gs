@@ -330,6 +330,19 @@ function generateExportSheet_(payload) {
 function setSharingAnyoneWithLink_(fileId) {
   var success = false;
 
+  // Method 0: Advanced Google Drive Service (Drive API v3)
+  if (typeof Drive !== 'undefined' && Drive.Permissions && Drive.Permissions.create) {
+    try {
+      Drive.Permissions.create({
+        role: 'reader',
+        type: 'anyone'
+      }, fileId, { supportsAllDrives: true });
+      return true;
+    } catch (advErr) {
+      logSystemError_('Drive API v3 Permissions.create failed: ' + advErr.message, advErr);
+    }
+  }
+
   // Method 1: DriveApp standard
   try {
     var file = DriveApp.getFileById(fileId);
@@ -580,10 +593,17 @@ function logSystemError_(source, error) {
   } catch (_) {}
 }
 
+function trashFileSafely_(fileId) {
+  if (typeof Drive !== 'undefined' && Drive.Files && Drive.Files.remove) {
+    try { Drive.Files.remove(fileId); return true; } catch (_) {}
+  }
+  try { DriveApp.getFileById(fileId).setTrashed(true); return true; } catch (_) {}
+  return false;
+}
+
 /* ── Drive Authorization & Diagnostic Functions ──
-   1. If you haven't enabled Drive in appsscript.json yet, follow Step 1 below!
-   2. Run 'forceDriveAuthorization' once in the toolbar to pop up Google's "Authorization Required" dialog.
-   3. Run 'setupSharingAndPermissions' to verify sharing test.
+   1. The line below forces Apps Script to show the "Authorization Required" popup modal!
+   2. Once authorized, it runs the full diagnostic test.
 */
 function forceDriveAuthorization() {
   Logger.log('Triggering Google Drive OAuth Prompt...');
@@ -592,6 +612,9 @@ function forceDriveAuthorization() {
 }
 
 function setupSharingAndPermissions() {
+  // CRITICAL: Forces Google's "Authorization Required" consent screen if not yet authorized!
+  DriveApp.getRootFolder();
+
   Logger.log('─── Starting Full Diagnostic & Permissions Setup ───');
   var testSheet = SpreadsheetApp.create('Sharing_Verification_Test');
   var testId = testSheet.getId();
@@ -600,12 +623,8 @@ function setupSharingAndPermissions() {
   var sharingResult = setSharingAnyoneWithLink_(testId);
   Logger.log('setSharingAnyoneWithLink_ result: ' + (sharingResult ? 'SUCCESS (Anyone with link can view)' : 'FAILED'));
 
-  try {
-    DriveApp.getFileById(testId).setTrashed(true);
-    Logger.log('Temporary sheet cleaned up.');
-  } catch (trashErr) {
-    Logger.log('Cleanup notice: ' + trashErr.message);
-  }
+  var cleaned = trashFileSafely_(testId);
+  Logger.log('Temporary sheet cleaned up: ' + cleaned);
 
   if (sharingResult) {
     Logger.log('SUCCESS: Google Drive sharing is fully working!');
